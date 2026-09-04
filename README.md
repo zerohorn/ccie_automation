@@ -10,6 +10,9 @@ https://learningcontent.cisco.com/documents/marketing/exam-topics/CCIE-Automatio
 
 ## Equipment and Software List
 https://learningnetwork.cisco.com/s/article/ccie-automation-v1-1-equipment-and-software-list
+CWA Password
+1234QWer!
+
 
 ## Resources for Preparing
 

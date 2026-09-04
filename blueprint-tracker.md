@@ -8,6 +8,33 @@ Keep this file in sync with `github.com/zerohorn/ccie_automation`.
 
 ---
 
+## Phase 0 — Environment Verification Log
+
+**Status: Complete.** The gate condition from `study-plan.md` ("confirm Cat8000V and IOSv/IOSvL2 are deployed and reachable before starting domain work") is satisfied. Recommended entry point: blueprint domain **2.8 (Terraform)** — resource graphs and state management, as a proficiency confirmation.
+
+| Item | Status | Notes |
+|---|---|---|
+| Cat8000V reachability (SSH/RESTCONF) | ✅ Confirmed | RESTCONF verified via `curl` against router1 and router2 |
+| IOSv/IOSvL2 reachability (SSH) | ✅ Confirmed | Required client-side SSH KEX workaround — see gotcha below |
+| IOSvL2 RESTCONF | ❌ Confirmed non-functional | `restconf` is accepted into running-config (shared classic-IOS command parser) but every endpoint returns 404 — no working YANG/RESTCONF agent behind it. Note: IOL-L2's documented lack of RESTCONF/NETCONF does **not** automatically extend to IOSvL2 — different CML node type/image, confirmed by direct test rather than assumption |
+| N9Kv 9.3(8) image | ✅ Confirmed | Custom image definition imported, labeled `NX-OS 9300v 9.3.8`, sized 4 vCPU / 8192 MB RAM |
+| APIC + ACI Simulator | ⏸ Deferred | Pending 128GB RAM upgrade |
+| CWS SSH KEX compatibility | ⚠️ Assumed, not yet tested on actual CWS build | Same fix will very likely be needed regardless of workstation OS — verify directly on CWS before exam day, don't assume |
+
+**Gotcha — SSH key exchange failure against IOSv/IOSvL2:**
+IOS 15.x's SSH server only offers SHA1-era key exchange (`diffie-hellman-group-exchange-sha1`, `diffie-hellman-group14-sha1`, `diffie-hellman-group1-sha1`). Modern OpenSSH clients (macOS and Ubuntu 24.04/CWS alike) reject these by default → `Unable to negotiate ... no matching key exchange method found`. Fix is client-side; add to `~/.ssh/config`:
+
+```
+Host 10.0.0.*
+    KexAlgorithms +diffie-hellman-group14-sha1
+    HostKeyAlgorithms +ssh-rsa
+    Ciphers +aes128-cbc
+```
+
+Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.ssh/config` isn't read by Paramiko. Use `ansible_paramiko_disabled_algorithms` for Ansible, or an explicit Paramiko transport override for Netmiko, when automation work starts.
+
+---
+
 ## 1.0 Software Design, Development, and Deployment — 20%
 
 - [ ] 1.1 Design a solution based on on-prem, hybrid, or public cloud deployment
@@ -117,3 +144,23 @@ Keep this file in sync with `github.com/zerohorn/ccie_automation`.
 - Core VMs: IOSvL2 15.2, IOSv 15.9, Catalyst 8000V 17.5, Nexus 9300v (N9Kv) 9.3(8), Cisco APIC 6.1 w/ ACI Simulator
 - Key tooling: Python 3.13.9, Ansible Core 2.19.3, Terraform 1.13.3, Cisco NSO 6.5, Docker 28.4 + Compose, kubectl 1.33, uv for Python env management
 - Other: GitLab 18.4, HashiCorp Vault 1.20, Grafana 12.2, Kubernetes 1.33, Cisco AppDynamics/ThousandEyes (cloud)
+- Authoritative source: [CCIE Automation v1.1 Equipment and Software List (PDF)](https://learningcontent.cisco.com/documents/marketing/exam-topics/ccie-automation-1.1-Software-and-Equipment-list-24.04.pdf)
+
+### Actual Lab Build (HORNLAB01, CML 2.9.1+build.7, refplat-20250616-fcs.iso)
+
+| Platform | Exam target | Running version | Status |
+|---|---|---|---|
+| IOSvL2 | 15.2 | 15.2 (`high_iron_20200929` build) | Exact match |
+| IOSv | 15.9 | 15.9(3)M10 | Exact match |
+| Catalyst 8000V | 17.5 | 17.16.01a (refplat default) | Accepted drift — Cisco's equipment list explicitly allows newer software; only baseline features are tested |
+| Nexus 9300v (N9Kv) | 9.3(8) | 9.3.8 (custom image def, sourced separately — refplat default of 10.5.3.F was a full NX-OS generation off-target, not used) | Exact match |
+| APIC 6.1 w/ ACI Simulator | 6.1 | Not yet deployed | Deferred pending 128GB RAM upgrade |
+
+### Device-to-Domain Mapping (locked in)
+
+| Device | Domains | Notes |
+|---|---|---|
+| Catalyst 8000V | 2.4–2.6, 2.7.d (HTTPAPI/NETCONF plugins), 3.4–3.5 | Only RESTCONF/NETCONF/YANG/gNMI-capable platform in the lab — confirmed via curl |
+| IOSv / IOSvL2 | 2.7.d (network_cli plugin), 3.2 | CLI automation only — RESTCONF confirmed non-functional on IOSvL2 despite being accepted into the command tree |
+| N9Kv | 3.1 (NX-API / Python vs. APIs) | |
+| APIC + ACI Simulator | 3.1 (ACI) | Standalone OVA, not a CML node — pending RAM upgrade |
