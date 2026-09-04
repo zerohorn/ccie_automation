@@ -1,0 +1,27 @@
+# Local .terraform directories (contains provider plugins and modules)
+.terraform/
+
+# .tfstate files (contains sensitive backend state and secrets)
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Ignore override files (used to override resources locally)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore transient lock info files created by terraform apply
+.terraform.tfstate.lock.info
+.terraform.lock.hcl
+
+# Optional: Ignore CLI configuration files if they are in your working directory
+.terraformrc
+terraform.rc
+
+# Mac file
+.DS_Store
