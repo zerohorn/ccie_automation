@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{BLUEPRINT_ID}} {{TOPIC_NAME}} Workbook — {{TARGET_PLATFORM}}</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2e38;
+    --text: #dfe3ea;
+    --muted: #9aa3b2;
+    --accent: #4fb0ff;
+    --hint: #d9a441;
+    --solution: #4caf7d;
+    --code-bg: #0b0d11;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 16px 60px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+    font-size: 16px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header {
+    padding: 28px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 1.5rem; margin: 0 0 6px; }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  .meta strong { color: var(--text); }
+  .note {
+    background: var(--panel);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 0.94rem;
+    color: var(--muted);
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin-top: 34px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--accent);
+    color: #0b0d11;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 1px 8px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+  }
+  h3 { font-size: 0.95rem; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: "SF Mono", Consolas, Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
+  pre code { background: none; padding: 0; }
+  details {
+    margin: 10px 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  summary {
+    cursor: pointer;
+    padding: 9px 14px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; transition: transform 0.15s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details.hint summary { color: var(--hint); background: rgba(217,164,65,0.08); }
+  details.solution summary { color: var(--solution); background: rgba(76,175,125,0.08); }
+  details > div.content { padding: 4px 14px 14px; }
+  .checklist label { display: block; margin: 6px 0; }
+  input[type=checkbox] { margin-right: 8px; }
+  .task-block {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 8px;
+  }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Lab Workbook — {{BLUEPRINT_ID}} {{TOPIC_TITLE}}</h1>
+  <div class="meta">
+    <strong>Target:</strong> {{TARGET_PLATFORM_AND_METHOD}} &nbsp;·&nbsp;
+    <strong>Weight:</strong> {{BLUEPRINT_ID}} is one of {{N}} sub-items inside {{PARENT_DOMAIN}} ({{DOMAIN_WEIGHT}}% of the exam)
+  </div>
+</header>
+
+<div class="note">
+  No official per-task timing is published for the CCIE Automation lab — treat any time box here as a study discipline, not an exam-accurate simulation.
+  <strong>Suggested time box: {{MINUTES}} min.</strong> If you're stuck past it, open the hint before the solution — retrieval practice is the point.
+</div>
+
+<h2><span class="num">Prereq</span>Before Task 1</h2>
+<div class="task-block checklist">
+  <label><input type="checkbox"> {{PREREQ_1}}</label>
+  <label><input type="checkbox"> {{PREREQ_2}}</label>
+  <label><input type="checkbox"> {{PREREQ_3}}</label>
+</div>
+
+<!-- TASK N — copy this block per task -->
+<h2><span class="num">1</span>{{TASK_TITLE}} <small style="color:var(--muted)">({{SUB_ITEM_REF}})</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>{{WHAT_TO_BUILD}}</p>
+  <h3>Reference (verified against docs)</h3>
+  <ul>
+    <li>{{REFERENCE_FACT_1}}</li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>{{VERIFICATION_COMMAND}}</code></pre>
+  <p>{{EXPECTED_RESULT}}</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>{{HINT_TEXT}}</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code>{{SOLUTION_CODE}}</code></pre>
+  </div></details>
+</div>
+
+<h2>Self-check process</h2>
+<div class="task-block">
+  <ol>
+    <li>Attempt everything above first, timer running.</li>
+    <li>Stuck past the time box? Open the hint for that task.</li>
+    <li>Only after attempting: open the solution and <strong>diff</strong> your work against it — don't just read it. The gap between "I could do this" and "I recognize this when I see it" is what the exam tests.</li>
+  </ol>
+</div>
+
+<footer>
+  Generated from the CCIE Automation workbook template ({{DATE}}). Format: requirement → reference → verification → collapsed hint → collapsed solution → reflection.
+</footer>
+
+</div>
+</body>
+</html>

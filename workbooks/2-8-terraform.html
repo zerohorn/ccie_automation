@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.8 Terraform Workbook — Cat8000V</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2e38;
+    --text: #dfe3ea;
+    --muted: #9aa3b2;
+    --accent: #4fb0ff;
+    --hint: #d9a441;
+    --solution: #4caf7d;
+    --code-bg: #0b0d11;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 16px 60px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+    font-size: 16px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header {
+    padding: 28px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 1.5rem; margin: 0 0 6px; }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  .meta strong { color: var(--text); }
+  .note {
+    background: var(--panel);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 0.94rem;
+    color: var(--muted);
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin-top: 34px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--accent);
+    color: #0b0d11;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 1px 8px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+  }
+  h3 { font-size: 0.95rem; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: "SF Mono", Consolas, Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
+  pre code { background: none; padding: 0; }
+  details {
+    margin: 10px 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  summary {
+    cursor: pointer;
+    padding: 9px 14px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; transition: transform 0.15s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details.hint summary { color: var(--hint); background: rgba(217,164,65,0.08); }
+  details.solution summary { color: var(--solution); background: rgba(76,175,125,0.08); }
+  details > div.content { padding: 4px 14px 14px; }
+  .checklist label { display: block; margin: 6px 0; }
+  input[type=checkbox] { margin-right: 8px; }
+  .task-block {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 8px;
+  }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Lab Workbook — 2.8 Terraform Statefully Manage Infrastructure</h1>
+  <div class="meta">
+    <strong>Target:</strong> Cat8000V via CiscoDevNet/iosxe provider (NETCONF) &nbsp;·&nbsp;
+    <strong>Weight:</strong> 2.8 is one of nine sub-items inside 2.0 IaC (30% of the exam)
+  </div>
+</header>
+
+<div class="note">
+  No official per-task timing is published for the CCIE Automation lab — treat any time box here as a study discipline, not an exam-accurate simulation.
+  <strong>Suggested time box: 60 min.</strong> If you're stuck past it, open the hint before the solution — retrieval practice is the point.
+</div>
+
+<h2><span class="num">Prereq</span>Before Task 1</h2>
+<div class="task-block checklist">
+  <label><input type="checkbox"> <code>netconf-yang</code> enabled on the Cat8000V (<code>show running-config | include netconf</code>)</label>
+  <label><input type="checkbox"> SSH port 830 reachable from the CWS to the Cat8000V mgmt IP</label>
+  <label><input type="checkbox"> <code>terraform -version</code> shows ≥1.13</label>
+  <label><input type="checkbox"> Credentials plan decided — <code>TF_VAR_*</code> env vars or gitignored <code>terraform.tfvars</code></label>
+</div>
+
+<!-- TASK 1 -->
+<h2><span class="num">1</span>Provider config + connectivity check <small style="color:var(--muted)">(2.8.d Resource retrieval)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Write a <code>terraform</code> block declaring the CiscoDevNet/iosxe provider, and a <code>provider "iosxe"</code> block pointing at your device over NETCONF. Then write a <code>data</code> source that reads the existing config for VLAN 1 — this proves connectivity/auth before you provision anything.</p>
+  <h3>Reference (verified against the registry docs)</h3>
+  <ul>
+    <li>Provider source: <code>CiscoDevNet/iosxe</code></li>
+    <li>Provider args include: <code>host</code>, <code>username</code>, <code>password</code>, <code>protocol</code> (<code>netconf</code> or <code>restconf</code>, defaults to <code>netconf</code>)</li>
+    <li>Data source <code>iosxe_vlan</code> requires: <code>vlan_id</code> (number)</li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>terraform init
+terraform plan</code></pre>
+  <p>Should complete with no errors and resolve the data source. Note the returned VLAN 1 name.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>Provider block needs three connection args plus one protocol arg — you already have all four from the prereqs checklist.</p>
+    <p>The data source block name is <code>iosxe_vlan</code> — same type name as the resource you'll provision in Task 3, just declared with <code>data</code> instead of <code>resource</code>.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code>terraform {
+  required_version = "&gt;= 1.13.0"
+  required_providers {
+    iosxe = {
+      source  = "CiscoDevNet/iosxe"
+      version = "~&gt; 0.18"
+    }
+  }
+}
+
+provider "iosxe" {
+  host     = var.device_host
+  username = var.device_username
+  password = var.device_password
+  protocol = "netconf"
+}
+
+data "iosxe_vlan" "existing_default" {
+  vlan_id = 1
+}</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 2 -->
+<h2><span class="num">2</span>Variables <small style="color:var(--muted)">(2.8.c)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Externalize everything Task 1 hardcoded: device connection vars (mark credentials <code>sensitive = true</code>), plus a variable representing a <em>set</em> of VLANs you'll provision in Task 3 — you decide the type.</p>
+  <h3>Verification</h3>
+  <pre><code>terraform validate</code></pre>
+  <p>Should pass with no type errors. Sketch a <code>terraform.tfvars</code> entry for your VLAN variable before moving on.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>If you go with <code>map(object({...}))</code>, each object needs at least an <code>id</code> (number) and <code>name</code> (string) to match what <code>iosxe_vlan</code> expects.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code>variable "device_host" {
+  type = string
+}
+
+variable "device_username" {
+  type      = string
+  sensitive = true
+}
+
+variable "device_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "device_hostname" {
+  type    = string
+  default = "CAT8000V-01"
+}
+
+variable "domain_name" {
+  type    = string
+  default = "ccie-lab.local"
+}
+
+variable "access_vlans" {
+  type = map(object({
+    id   = number
+    name = string
+  }))
+  default = {
+    students = { id = 100, name = "STUDENTS" }
+    staff    = { id = 200, name = "STAFF" }
+    mgmt     = { id = 999, name = "MGMT" }
+  }
+}</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 3 -->
+<h2><span class="num">3</span>Provisioning + loop control <small style="color:var(--muted)">(2.8.a, 2.8.e)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Using <code>for_each</code> (not <code>count</code> — <code>for_each</code> keys resources by a stable identifier, so removing one VLAN from your map doesn't force-recreate the others; <code>count</code> reindexes by position and will), provision each VLAN as an <code>iosxe_vlan</code> resource. Separately, provision one <code>iosxe_system</code> resource setting hostname and domain name.</p>
+  <h3>Reference (verified)</h3>
+  <ul>
+    <li><code>iosxe_vlan</code>: <code>vlan_id</code> (number), <code>name</code> (string), <code>shutdown</code> (bool)</li>
+    <li><code>iosxe_system</code> includes: <code>hostname</code> (string), <code>ip_domain_name</code> (string)</li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>terraform plan</code></pre>
+  <p>Resource count in the plan should equal (number of VLANs) + 1.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p><code>for_each = var.access_vlans</code> — address the current item as <code>each.value.id</code> / <code>each.value.name</code>.</p>
+    <p><code>iosxe_system</code> is a singleton — no <code>for_each</code> needed.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code>resource "iosxe_system" "device" {
+  hostname       = var.device_hostname
+  ip_domain_name = var.domain_name
+}
+
+resource "iosxe_vlan" "access" {
+  for_each = var.access_vlans
+
+  vlan_id  = each.value.id
+  name     = each.value.name
+  shutdown = false
+}
+
+output "provisioned_vlans" {
+  value = { for k, v in iosxe_vlan.access : k =&gt; v.vlan_id }
+}</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 4 -->
+<h2><span class="num">4</span>Resource graph <small style="color:var(--muted)">(2.8.b)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Run the graph command against your Task 3 config (no dependency between VLANs and system). Then add an explicit <code>depends_on</code> from your VLAN resources to the system resource, re-run, and compare.</p>
+  <pre><code>terraform graph | dot -Tsvg &gt; graph_before.svg
+# add depends_on, save
+terraform graph | dot -Tsvg &gt; graph_after.svg</code></pre>
+  <p style="color:var(--muted); font-size:0.88rem;">Needs Graphviz — <code>apt install graphviz</code> on the CWS if missing.</p>
+  <h3>Reflection (your own notes, not for me)</h3>
+  <ul>
+    <li>What edge appeared in <code>graph_after.svg</code> that wasn't in <code>graph_before.svg</code>?</li>
+    <li>When would Terraform infer this ordering <em>without</em> an explicit <code>depends_on</code>?</li>
+  </ul>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p><code>depends_on</code> takes a list even for one dependency: <code>depends_on = [resource_type.resource_name]</code>. On a <code>for_each</code> resource it goes inside the block once and applies to every instance.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code>resource "iosxe_vlan" "access" {
+  for_each = var.access_vlans
+
+  vlan_id  = each.value.id
+  name     = each.value.name
+  shutdown = false
+
+  depends_on = [iosxe_system.device]
+}</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 5 -->
+<h2><span class="num">5</span>Apply + state management <small style="color:var(--muted)">(2.8.f)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <ol>
+    <li><code>terraform apply</code> — confirm success.</li>
+    <li>Verify on the device itself — <code>show vlan brief</code>. A clean apply doesn't guarantee the device did what you think.</li>
+    <li><code>terraform state list</code> and <code>terraform state show</code> on one VLAN instance.</li>
+    <li><strong>Drift exercise:</strong> manually rename one VLAN via device CLI (not Terraform). Run <code>terraform plan</code> — what shows? Then <code>terraform apply -refresh-only</code> — what's different?</li>
+  </ol>
+  <p style="color:var(--muted);">A lab partner or your own mid-troubleshooting CLI edit is a far more likely drift source on a network device than on cloud infra. Knowing "detect drift" vs. "overwrite drift" under time pressure is a real exam skill.</p>
+
+  <details class="solution"><summary>Commands</summary><div class="content">
+<pre><code>terraform state list
+terraform state show 'iosxe_vlan.access["staff"]'
+terraform show
+terraform apply -refresh-only</code></pre>
+    <p style="color:var(--muted); font-size:0.85rem;"><code>-refresh-only</code> updates state to match reality without touching the device or your .tf files — "acknowledge drift," not "fix drift." A normal apply afterward pushes your .tf config back onto the device, overwriting the manual change.</p>
+  </div></details>
+</div>
+
+<!-- TASK 6 -->
+<h2><span class="num">6</span>Stretch — interface assignment via schema discovery</h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Assign one of your VLANs to an interface. Field names for <code>iosxe_interface_switchport</code> / <code>iosxe_interface_vlan</code> aren't given — this task is finding them yourself, which is closer to the real exam than memorized syntax.</p>
+  <pre><code>terraform providers schema -json | jq '.provider_schemas["registry.terraform.io/ciscodevnet/iosxe"].resource_schemas.iosxe_interface_switchport'</code></pre>
+  <p style="color:var(--muted);">No solution provided — this one's intentionally open-ended. Verify against the schema output itself.</p>
+</div>
+
+<h2>Self-check process</h2>
+<div class="task-block">
+  <ol>
+    <li>Attempt everything above first, timer running.</li>
+    <li>Stuck past the time box? Open the hint for that task.</li>
+    <li>Only after attempting: open the solution and <strong>diff</strong> your HCL against it — don't just read it. The gap between "I could write this" and "I recognize this when I see it" is what the exam tests.</li>
+  </ol>
+</div>
+
+<footer>
+  Worth keeping: this requirement → reference → verification format (no solution code visible by default) is reusable for every remaining domain — especially 2.1/2.2, 2.4–2.6, and 2.9, where the actual exam risk sits.
+</footer>
+
+</div>
+</body>
+</html>
