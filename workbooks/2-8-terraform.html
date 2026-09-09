@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2.8 Terraform Workbook — Cat8000V</title>
+<title>2.8 Terraform Workbook — Cisco APIC (ACI)</title>
 <style>
   :root {
     --bg: #0f1115;
@@ -15,6 +15,7 @@
     --hint: #d9a441;
     --solution: #4caf7d;
     --code-bg: #0b0d11;
+    --warn: #e0705c;
   }
   * { box-sizing: border-box; }
   body {
@@ -44,6 +45,10 @@
     font-size: 0.94rem;
     color: var(--muted);
   }
+  .note.warn { border-left-color: var(--warn); }
+  .docs { font-size: 0.88rem; }
+  .docs a { color: var(--accent); }
+  .docs code { font-size: 0.85em; }
   h2 {
     font-size: 1.15rem;
     margin-top: 34px;
@@ -119,65 +124,82 @@
 <header>
   <h1>Lab Workbook — 2.8 Terraform Statefully Manage Infrastructure</h1>
   <div class="meta">
-    <strong>Target:</strong> Cat8000V via CiscoDevNet/iosxe provider (NETCONF) &nbsp;·&nbsp;
+    <strong>Target:</strong> Cisco APIC via CiscoDevNet/aci provider (HTTPS REST, not NETCONF) &nbsp;·&nbsp;
     <strong>Weight:</strong> 2.8 is one of nine sub-items inside 2.0 IaC (30% of the exam)
   </div>
 </header>
+
+<div class="note warn">
+  <strong>Revision note:</strong> the v1.1 Equipment and Software List only installs <code>ciscodevnet/aci v2.17.0</code> under Terraform — no <code>CiscoDevNet/iosxe</code> provider is on the Candidate Workstation. An earlier draft of this workbook targeted IOS XE/NETCONF; that provider isn't part of the tested surface, so this version targets ACI instead. The Terraform <em>mechanics</em> (loop control, resource graphs, variables, state management) carry over unchanged — only the provider/resource schema below is new.
+</div>
 
 <div class="note">
   No official per-task timing is published for the CCIE Automation lab — treat any time box here as a study discipline, not an exam-accurate simulation.
   <strong>Suggested time box: 60 min.</strong> If you're stuck past it, open the hint before the solution — retrieval practice is the point.
 </div>
 
+<div class="note docs">
+  <strong>Official docs (for study use only — not available during the exam):</strong>
+  <a href="https://registry.terraform.io/providers/CiscoDevNet/aci/latest/docs" target="_blank" rel="noopener">CiscoDevNet/aci provider docs (registry.terraform.io)</a> ·
+  <a href="https://github.com/CiscoDevNet/terraform-provider-aci/tree/master/docs" target="_blank" rel="noopener">provider docs source (GitHub)</a>.
+  Web docs can't reliably pin to your exact installed <code>2.17.x</code> patch version — <code>terraform providers schema -json</code> against your own provider install is the authoritative source when it disagrees with a web page.
+</div>
+
 <h2><span class="num">Prereq</span>Before Task 1</h2>
 <div class="task-block checklist">
-  <label><input type="checkbox"> <code>netconf-yang</code> enabled on the Cat8000V (<code>show running-config | include netconf</code>)</label>
-  <label><input type="checkbox"> SSH port 830 reachable from the CWS to the Cat8000V mgmt IP</label>
+  <label><input type="checkbox"> A reachable APIC (real hardware, ACI Simulator, or a DevNet sandbox — <code>blueprint-tracker.md</code> currently shows the local ACI Simulator deferred pending your RAM upgrade, so line up an interim target, e.g. a reservable sandbox at <code>developer.cisco.com/site/sandbox</code>, before starting)</label>
+  <label><input type="checkbox"> APIC GUI/API reachable over HTTPS from the CWS — <code>curl -k -X POST https://&lt;apic&gt;/api/aaaLogin.json -d '{"aaaUser":{"attributes":{"name":"admin","pwd":"..."}}}'</code> returns a token, not a connection error</label>
   <label><input type="checkbox"> <code>terraform -version</code> shows ≥1.13</label>
   <label><input type="checkbox"> Credentials plan decided — <code>TF_VAR_*</code> env vars or gitignored <code>terraform.tfvars</code></label>
+  <label><input type="checkbox"> Working in a dedicated lab tenant (not <code>common</code>/<code>infra</code>) so apply/destroy cycles can't touch shared fabric objects</label>
 </div>
 
 <!-- TASK 1 -->
 <h2><span class="num">1</span>Provider config + connectivity check <small style="color:var(--muted)">(2.8.d Resource retrieval)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Write a <code>terraform</code> block declaring the CiscoDevNet/iosxe provider, and a <code>provider "iosxe"</code> block pointing at your device over NETCONF. Then write a <code>data</code> source that reads the existing config for VLAN 1 — this proves connectivity/auth before you provision anything.</p>
-  <h3>Reference (verified against the registry docs)</h3>
+  <p>Write a <code>terraform</code> block declaring the CiscoDevNet/aci provider, and a <code>provider "aci"</code> block pointing at your APIC over HTTPS. Then write a <code>data</code> source that reads the built-in <code>common</code> tenant — this proves connectivity/auth before you provision anything, without risking any object that matters.</p>
+  <h3>Reference (verified against the CiscoDevNet/terraform-provider-aci docs)</h3>
   <ul>
-    <li>Provider source: <code>CiscoDevNet/iosxe</code></li>
-    <li>Provider args include: <code>host</code>, <code>username</code>, <code>password</code>, <code>protocol</code> (<code>netconf</code> or <code>restconf</code>, defaults to <code>netconf</code>)</li>
-    <li>Data source <code>iosxe_vlan</code> requires: <code>vlan_id</code> (number)</li>
+    <li>Provider source: <code>CiscoDevNet/aci</code></li>
+    <li>Provider args include: <code>username</code>, <code>password</code>, <code>url</code>, <code>insecure</code> (APIC's default cert is self-signed in most labs)</li>
+    <li>Data source <code>aci_tenant</code> requires: <code>name</code> (string)</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://github.com/CiscoDevNet/terraform-provider-aci/blob/master/docs/index.md" target="_blank" rel="noopener">Provider configuration (index.md)</a></li>
+    <li><a href="https://github.com/CiscoDevNet/terraform-provider-aci/blob/master/docs/data-sources/tenant.md" target="_blank" rel="noopener"><code>aci_tenant</code> data source</a></li>
   </ul>
   <h3>Verification</h3>
   <pre><code>terraform init
 terraform plan</code></pre>
-  <p>Should complete with no errors and resolve the data source. Note the returned VLAN 1 name.</p>
+  <p>Should complete with no errors and resolve the data source. Note the returned tenant DN (<code>uni/tn-common</code>).</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p>Provider block needs three connection args plus one protocol arg — you already have all four from the prereqs checklist.</p>
-    <p>The data source block name is <code>iosxe_vlan</code> — same type name as the resource you'll provision in Task 3, just declared with <code>data</code> instead of <code>resource</code>.</p>
+    <p>Provider block needs three connection args plus one TLS-handling arg — you already have all four from the prereqs checklist.</p>
+    <p>The data source block name is <code>aci_tenant</code> — same type name as the resource you'll provision in Task 3, just declared with <code>data</code> instead of <code>resource</code>.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
 <pre><code>terraform {
   required_version = "&gt;= 1.13.0"
   required_providers {
-    iosxe = {
-      source  = "CiscoDevNet/iosxe"
-      version = "~&gt; 0.18"
+    aci = {
+      source  = "CiscoDevNet/aci"
+      version = "~&gt; 2.17"
     }
   }
 }
 
-provider "iosxe" {
-  host     = var.device_host
-  username = var.device_username
-  password = var.device_password
-  protocol = "netconf"
+provider "aci" {
+  username = var.apic_username
+  password = var.apic_password
+  url      = var.apic_url
+  insecure = true
 }
 
-data "iosxe_vlan" "existing_default" {
-  vlan_id = 1
+data "aci_tenant" "existing_common" {
+  name = "common"
 }</code></pre>
   </div></details>
 </div>
@@ -186,49 +208,49 @@ data "iosxe_vlan" "existing_default" {
 <h2><span class="num">2</span>Variables <small style="color:var(--muted)">(2.8.c)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Externalize everything Task 1 hardcoded: device connection vars (mark credentials <code>sensitive = true</code>), plus a variable representing a <em>set</em> of VLANs you'll provision in Task 3 — you decide the type.</p>
+  <p>Externalize everything Task 1 hardcoded: APIC connection vars (mark credentials <code>sensitive = true</code>), plus a variable representing a <em>set</em> of EPGs you'll provision in Task 3 — you decide the type.</p>
   <h3>Verification</h3>
   <pre><code>terraform validate</code></pre>
-  <p>Should pass with no type errors. Sketch a <code>terraform.tfvars</code> entry for your VLAN variable before moving on.</p>
+  <p>Should pass with no type errors. Sketch a <code>terraform.tfvars</code> entry for your EPG variable before moving on.</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p>If you go with <code>map(object({...}))</code>, each object needs at least an <code>id</code> (number) and <code>name</code> (string) to match what <code>iosxe_vlan</code> expects.</p>
+    <p>If you go with <code>map(object({...}))</code>, each object needs at least a <code>name</code> (string) to match what <code>aci_application_epg</code> expects; a <code>description</code> field is a natural second attribute.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
-<pre><code>variable "device_host" {
+<pre><code>variable "apic_url" {
   type = string
 }
 
-variable "device_username" {
+variable "apic_username" {
   type      = string
   sensitive = true
 }
 
-variable "device_password" {
+variable "apic_password" {
   type      = string
   sensitive = true
 }
 
-variable "device_hostname" {
+variable "lab_tenant_name" {
   type    = string
-  default = "CAT8000V-01"
+  default = "CCIE_LAB"
 }
 
-variable "domain_name" {
+variable "app_profile_name" {
   type    = string
-  default = "ccie-lab.local"
+  default = "STUDY_AP"
 }
 
-variable "access_vlans" {
+variable "epgs" {
   type = map(object({
-    id   = number
-    name = string
+    name        = string
+    description = string
   }))
   default = {
-    students = { id = 100, name = "STUDENTS" }
-    staff    = { id = 200, name = "STAFF" }
-    mgmt     = { id = 999, name = "MGMT" }
+    web = { name = "WEB", description = "Web tier EPG" }
+    app = { name = "APP", description = "App tier EPG" }
+    db  = { name = "DB",  description = "DB tier EPG" }
   }
 }</code></pre>
   </div></details>
@@ -238,37 +260,50 @@ variable "access_vlans" {
 <h2><span class="num">3</span>Provisioning + loop control <small style="color:var(--muted)">(2.8.a, 2.8.e)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Using <code>for_each</code> (not <code>count</code> — <code>for_each</code> keys resources by a stable identifier, so removing one VLAN from your map doesn't force-recreate the others; <code>count</code> reindexes by position and will), provision each VLAN as an <code>iosxe_vlan</code> resource. Separately, provision one <code>iosxe_system</code> resource setting hostname and domain name.</p>
+  <p>Using <code>for_each</code> (not <code>count</code> — <code>for_each</code> keys resources by a stable identifier, so removing one EPG from your map doesn't force-recreate the others; <code>count</code> reindexes by position and will), provision: one <code>aci_tenant</code>, one <code>aci_application_profile</code> underneath it, and one <code>aci_application_epg</code> per entry in your map.</p>
   <h3>Reference (verified)</h3>
   <ul>
-    <li><code>iosxe_vlan</code>: <code>vlan_id</code> (number), <code>name</code> (string), <code>shutdown</code> (bool)</li>
-    <li><code>iosxe_system</code> includes: <code>hostname</code> (string), <code>ip_domain_name</code> (string)</li>
+    <li><code>aci_tenant</code>: <code>name</code> (string), <code>description</code> (string, optional)</li>
+    <li><code>aci_application_profile</code>: <code>parent_dn</code> (string — the tenant's DN), <code>name</code> (string)</li>
+    <li><code>aci_application_epg</code>: <code>parent_dn</code> (string — the application profile's DN), <code>name</code> (string), <code>description</code> (string, optional)</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://github.com/CiscoDevNet/terraform-provider-aci/blob/master/docs/resources/tenant.md" target="_blank" rel="noopener"><code>aci_tenant</code></a>,
+        <a href="https://github.com/CiscoDevNet/terraform-provider-aci/blob/master/docs/resources/application_profile.md" target="_blank" rel="noopener"><code>aci_application_profile</code></a>,
+        <a href="https://github.com/CiscoDevNet/terraform-provider-aci/blob/master/docs/resources/application_epg.md" target="_blank" rel="noopener"><code>aci_application_epg</code></a></li>
+    <li><a href="https://developer.hashicorp.com/terraform/language/meta-arguments/for_each" target="_blank" rel="noopener"><code>for_each</code> meta-argument</a> (Terraform language docs)</li>
   </ul>
   <h3>Verification</h3>
   <pre><code>terraform plan</code></pre>
-  <p>Resource count in the plan should equal (number of VLANs) + 1.</p>
+  <p>Resource count in the plan should equal 1 (tenant) + 1 (application profile) + (number of EPGs).</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p><code>for_each = var.access_vlans</code> — address the current item as <code>each.value.id</code> / <code>each.value.name</code>.</p>
-    <p><code>iosxe_system</code> is a singleton — no <code>for_each</code> needed.</p>
+    <p><code>for_each = var.epgs</code> — address the current item as <code>each.value.name</code> / <code>each.value.description</code>.</p>
+    <p>Every child object's <code>parent_dn</code> is just the parent resource's <code>.id</code> — ACI resources use their DN as the resource ID.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
-<pre><code>resource "iosxe_system" "device" {
-  hostname       = var.device_hostname
-  ip_domain_name = var.domain_name
+<pre><code>resource "aci_tenant" "lab" {
+  name        = var.lab_tenant_name
+  description = "CCIE Automation study tenant - safe to destroy/recreate"
 }
 
-resource "iosxe_vlan" "access" {
-  for_each = var.access_vlans
-
-  vlan_id  = each.value.id
-  name     = each.value.name
-  shutdown = false
+resource "aci_application_profile" "study" {
+  parent_dn = aci_tenant.lab.id
+  name      = var.app_profile_name
 }
 
-output "provisioned_vlans" {
-  value = { for k, v in iosxe_vlan.access : k =&gt; v.vlan_id }
+resource "aci_application_epg" "tier" {
+  for_each = var.epgs
+
+  parent_dn   = aci_application_profile.study.id
+  name        = each.value.name
+  description = each.value.description
+}
+
+output "provisioned_epgs" {
+  value = { for k, v in aci_application_epg.tier : k =&gt; v.name }
 }</code></pre>
   </div></details>
 </div>
@@ -277,31 +312,24 @@ output "provisioned_vlans" {
 <h2><span class="num">4</span>Resource graph <small style="color:var(--muted)">(2.8.b)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Run the graph command against your Task 3 config (no dependency between VLANs and system). Then add an explicit <code>depends_on</code> from your VLAN resources to the system resource, re-run, and compare.</p>
-  <pre><code>terraform graph | dot -Tsvg &gt; graph_before.svg
-# add depends_on, save
-terraform graph | dot -Tsvg &gt; graph_after.svg</code></pre>
+  <p>Run the graph command against your Task 3 config.</p>
+  <pre><code>terraform graph | dot -Tsvg &gt; graph.svg</code></pre>
   <p style="color:var(--muted); font-size:0.88rem;">Needs Graphviz — <code>apt install graphviz</code> on the CWS if missing.</p>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://developer.hashicorp.com/terraform/cli/commands/graph" target="_blank" rel="noopener"><code>terraform graph</code></a>,
+        <a href="https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on" target="_blank" rel="noopener"><code>depends_on</code></a> (Terraform language docs)</li>
+  </ul>
+  <p>Find the edges <code>tenant → application profile → each EPG</code>. You never wrote a <code>depends_on</code> anywhere in Task 3 — they're there anyway.</p>
   <h3>Reflection (your own notes, not for me)</h3>
   <ul>
-    <li>What edge appeared in <code>graph_after.svg</code> that wasn't in <code>graph_before.svg</code>?</li>
-    <li>When would Terraform infer this ordering <em>without</em> an explicit <code>depends_on</code>?</li>
+    <li>Why does Terraform already know the ordering, with zero explicit dependency declarations?</li>
+    <li>Now add a redundant <code>depends_on = [aci_tenant.lab]</code> to one EPG resource and regenerate the graph — does a new edge appear? Why or why not?</li>
+    <li>Contrast this with a scenario like <code>iosxe_system</code> hostname vs. an <code>iosxe_vlan</code> — two resources with no shared attribute to reference. When is explicit <code>depends_on</code> actually load-bearing, vs. redundant noise on top of a reference Terraform already tracks?</li>
   </ul>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p><code>depends_on</code> takes a list even for one dependency: <code>depends_on = [resource_type.resource_name]</code>. On a <code>for_each</code> resource it goes inside the block once and applies to every instance.</p>
-  </div></details>
-
-  <details class="solution"><summary>Solution</summary><div class="content">
-<pre><code>resource "iosxe_vlan" "access" {
-  for_each = var.access_vlans
-
-  vlan_id  = each.value.id
-  name     = each.value.name
-  shutdown = false
-
-  depends_on = [iosxe_system.device]
-}</code></pre>
+    <p><code>parent_dn = aci_tenant.lab.id</code> is an attribute reference, not just a string you typed — Terraform's dependency graph is built from these references automatically. <code>depends_on</code> only matters when there's an ordering requirement <em>without</em> a data dependency to infer it from (e.g. a side-effect ordering, like configuring a device's hostname before its VLANs when neither resource reads the other's attributes).</p>
   </div></details>
 </div>
 
@@ -311,28 +339,38 @@ terraform graph | dot -Tsvg &gt; graph_after.svg</code></pre>
   <h3>Requirement</h3>
   <ol>
     <li><code>terraform apply</code> — confirm success.</li>
-    <li>Verify on the device itself — <code>show vlan brief</code>. A clean apply doesn't guarantee the device did what you think.</li>
-    <li><code>terraform state list</code> and <code>terraform state show</code> on one VLAN instance.</li>
-    <li><strong>Drift exercise:</strong> manually rename one VLAN via device CLI (not Terraform). Run <code>terraform plan</code> — what shows? Then <code>terraform apply -refresh-only</code> — what's different?</li>
+    <li>Verify on APIC itself — GUI: <em>Tenants → your tenant → Application Profiles → EPGs</em>, or <code>curl -k</code> against <code>/api/mo/uni/tn-&lt;tenant&gt;.json</code>. A clean apply doesn't guarantee APIC did what you think.</li>
+    <li><code>terraform state list</code> and <code>terraform state show</code> on one EPG instance.</li>
+    <li><strong>Drift exercise:</strong> manually change one EPG's description via the APIC GUI (not Terraform). Run <code>terraform plan</code> — what shows? Then <code>terraform apply -refresh-only</code> — what's different?</li>
   </ol>
-  <p style="color:var(--muted);">A lab partner or your own mid-troubleshooting CLI edit is a far more likely drift source on a network device than on cloud infra. Knowing "detect drift" vs. "overwrite drift" under time pressure is a real exam skill.</p>
+  <p style="color:var(--muted);">A lab partner or your own mid-troubleshooting GUI edit is a realistic drift source on ACI. Knowing "detect drift" vs. "overwrite drift" under time pressure is a real exam skill.</p>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://developer.hashicorp.com/terraform/cli/commands/state" target="_blank" rel="noopener"><code>terraform state</code></a>,
+        <a href="https://developer.hashicorp.com/terraform/cli/commands/apply#refresh-only-mode" target="_blank" rel="noopener"><code>-refresh-only</code></a> (Terraform CLI docs)</li>
+  </ul>
 
   <details class="solution"><summary>Commands</summary><div class="content">
 <pre><code>terraform state list
-terraform state show 'iosxe_vlan.access["staff"]'
+terraform state show 'aci_application_epg.tier["web"]'
 terraform show
 terraform apply -refresh-only</code></pre>
-    <p style="color:var(--muted); font-size:0.85rem;"><code>-refresh-only</code> updates state to match reality without touching the device or your .tf files — "acknowledge drift," not "fix drift." A normal apply afterward pushes your .tf config back onto the device, overwriting the manual change.</p>
+    <p style="color:var(--muted); font-size:0.85rem;"><code>-refresh-only</code> updates state to match reality without touching APIC or your .tf files — "acknowledge drift," not "fix drift." A normal apply afterward pushes your .tf config back onto APIC, overwriting the manual change.</p>
   </div></details>
 </div>
 
 <!-- TASK 6 -->
-<h2><span class="num">6</span>Stretch — interface assignment via schema discovery</h2>
+<h2><span class="num">6</span>Stretch — contract binding via schema discovery</h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Assign one of your VLANs to an interface. Field names for <code>iosxe_interface_switchport</code> / <code>iosxe_interface_vlan</code> aren't given — this task is finding them yourself, which is closer to the real exam than memorized syntax.</p>
-  <pre><code>terraform providers schema -json | jq '.provider_schemas["registry.terraform.io/ciscodevnet/iosxe"].resource_schemas.iosxe_interface_switchport'</code></pre>
-  <p style="color:var(--muted);">No solution provided — this one's intentionally open-ended. Verify against the schema output itself.</p>
+  <p>Create an <code>aci_contract</code> under your tenant, then bind two of your EPGs to it — one as provider, one as consumer — so traffic between tiers is explicitly permitted. Field names for the EPG-to-contract relationship aren't given here — this task is finding them yourself, which is closer to the real exam than memorized syntax.</p>
+  <pre><code>terraform providers schema -json | jq '.provider_schemas["registry.terraform.io/ciscodevnet/aci"].resource_schemas.aci_application_epg.block.attributes'</code></pre>
+  <p style="color:var(--muted);">No solution provided — this one's intentionally open-ended. Verify against the schema output itself, and confirm on the APIC GUI (<em>Application Profiles → EPG → Contracts</em>) that both sides show up correctly.</p>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://github.com/CiscoDevNet/terraform-provider-aci/blob/master/docs/resources/contract.md" target="_blank" rel="noopener"><code>aci_contract</code></a> —
+        deliberately not linking the EPG-to-contract relation doc here; find it via the schema command above</li>
+  </ul>
 </div>
 
 <h2>Self-check process</h2>
@@ -345,7 +383,7 @@ terraform apply -refresh-only</code></pre>
 </div>
 
 <footer>
-  Worth keeping: this requirement → reference → verification format (no solution code visible by default) is reusable for every remaining domain — especially 2.1/2.2, 2.4–2.6, and 2.9, where the actual exam risk sits.
+  Worth keeping: this requirement → reference → verification format (no solution code visible by default) is reusable for every remaining domain — especially 2.1/2.2, 2.4–2.6, and 2.9, where the actual exam risk sits. Provider/resource facts on this page were checked against the CiscoDevNet/terraform-provider-aci docs on 2026-09-09 — re-verify against <code>terraform providers schema -json</code> once you have real APIC access, since docs and a live provider version can drift.
 </footer>
 
 </div>

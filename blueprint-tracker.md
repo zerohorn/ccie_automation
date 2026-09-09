@@ -63,6 +63,7 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
   - [ ] 2.7.c Variables and templating
   - [ ] 2.7.d Connection plugins (network CLI, HTTPAPI, NETCONF)
 - [ ] 2.8 Use Terraform to statefully manage infrastructure
+  - **Provider correction (2026-09-09):** the v1.1 Equipment and Software List only installs `ciscodevnet/aci v2.17.0` under Terraform — no `CiscoDevNet/iosxe` provider is on the Candidate Workstation. Target platform switched from Cat8000V/NETCONF to APIC/ACI. Blocked on APIC access — local ACI Simulator is still deferred pending the RAM upgrade (see Phase 0 log); use a DevNet sandbox (`developer.cisco.com/site/sandbox`) as an interim target if the upgrade timeline slips.
   - [ ] 2.8.a Loop control
   - [ ] 2.8.b Resource graphs
   - [ ] 2.8.c Variables

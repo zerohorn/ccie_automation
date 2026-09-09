@@ -11,7 +11,7 @@ I'm studying for the CCIE Automation (350-901L CCIEAUTO) lab exam, v1.1 blueprin
 - Using the official Candidate Workstation VM through my home ESXi server (Supermicro SYS-5028D-TN4T, Xeon D-1541 with 128 64GB RAM.  Running Cisco CML 2.9.1 as VM.  Created lab topologies on CML (cml_labs directory contains the lab topologies in CML YAML format)
 - I have an Ubuntu Linux VM that has docker for running containers (HORNLAB01)
 - My study tracker and notes live in this repo (github.com/zerohorn/ccie_automation) — treat this as the canonical source for blueprint progress and notes, not Obsidian
-- `workbooks/` contains standalone HTML lab workbooks, one per blueprint sub-item (requirement → reference → verification → collapsed hint → collapsed solution, per task). This format is locked in as of 2.8 Terraform — reuse it for every remaining topic. See `workbooks/README.md` for the format spec and `workbooks/_template.html` as the starting point for a new topic.
+- `workbooks/` contains standalone HTML lab workbooks, one per blueprint sub-item (requirement → reference → verification → collapsed hint → collapsed solution, per task). This format is locked in as of 2.8 Terraform — reuse it for every remaining topic. `workbooks/index.html` is the launch page/table of contents (update it whenever a new workbook is added — see the maintenance comment at its top); `workbooks/README.md` has the format spec; `workbooks/_template.html` is the starting point for a new topic.
 
 **How to work with me on this:**
 - Be concise and direct. Bullet points and structured formatting over prose.

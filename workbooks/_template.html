@@ -44,6 +44,9 @@
     font-size: 0.94rem;
     color: var(--muted);
   }
+  .docs { font-size: 0.88rem; }
+  .docs a { color: var(--accent); }
+  .docs code { font-size: 0.85em; }
   h2 {
     font-size: 1.15rem;
     margin-top: 34px;
@@ -129,6 +132,12 @@
   <strong>Suggested time box: {{MINUTES}} min.</strong> If you're stuck past it, open the hint before the solution — retrieval practice is the point.
 </div>
 
+<div class="note docs">
+  <strong>Official docs (for study use only — not available during the exam):</strong>
+  {{TOP_LEVEL_DOC_LINK_1}}, {{TOP_LEVEL_DOC_LINK_2}}.
+  Web docs can't reliably pin to your exact installed version — treat <code>{{VERSION_CHECK_COMMAND}}</code> on the CWS itself as the authoritative source when a web page and your installed version disagree.
+</div>
+
 <h2><span class="num">Prereq</span>Before Task 1</h2>
 <div class="task-block checklist">
   <label><input type="checkbox"> {{PREREQ_1}}</label>
@@ -144,6 +153,10 @@
   <h3>Reference (verified against docs)</h3>
   <ul>
     <li>{{REFERENCE_FACT_1}}</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li>{{DOC_LINK_1}}</li>
   </ul>
   <h3>Verification</h3>
   <pre><code>{{VERIFICATION_COMMAND}}</code></pre>

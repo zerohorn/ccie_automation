@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.7 Ansible Workbook — IOSv/IOSvL2 + Cat8000V</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2e38;
+    --text: #dfe3ea;
+    --muted: #9aa3b2;
+    --accent: #4fb0ff;
+    --hint: #d9a441;
+    --solution: #4caf7d;
+    --code-bg: #0b0d11;
+    --warn: #e0705c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0 16px 60px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+    font-size: 16px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header {
+    padding: 28px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  h1 { font-size: 1.5rem; margin: 0 0 6px; }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  .meta strong { color: var(--text); }
+  .note {
+    background: var(--panel);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 0.94rem;
+    color: var(--muted);
+  }
+  .note.warn { border-left-color: var(--warn); }
+  .docs { font-size: 0.88rem; }
+  .docs a { color: var(--accent); }
+  .docs code { font-size: 0.85em; }
+  h2 {
+    font-size: 1.15rem;
+    margin-top: 34px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h2 .num {
+    display: inline-block;
+    background: var(--accent);
+    color: #0b0d11;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 1px 8px;
+    margin-right: 8px;
+    font-size: 0.85rem;
+  }
+  h3 { font-size: 0.95rem; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  code {
+    background: var(--code-bg);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: "SF Mono", Consolas, Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+  }
+  pre code { background: none; padding: 0; }
+  details {
+    margin: 10px 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  summary {
+    cursor: pointer;
+    padding: 9px 14px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: "▸"; transition: transform 0.15s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details.hint summary { color: var(--hint); background: rgba(217,164,65,0.08); }
+  details.solution summary { color: var(--solution); background: rgba(76,175,125,0.08); }
+  details > div.content { padding: 4px 14px 14px; }
+  .checklist label { display: block; margin: 6px 0; }
+  input[type=checkbox] { margin-right: 8px; }
+  .task-block {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 8px;
+  }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Lab Workbook — 2.7 Create/Use an Ansible Role to Manage Infrastructure</h1>
+  <div class="meta">
+    <strong>Target:</strong> IOSv/IOSvL2 + Cat8000V, three connection plugins (<code>network_cli</code>, <code>netconf</code>, <code>httpapi</code>) &nbsp;·&nbsp;
+    <strong>Weight:</strong> 2.7 is one of nine sub-items inside 2.0 IaC (30% of the exam)
+  </div>
+</header>
+
+<div class="note warn">
+  <strong>Schema note:</strong> <code>cisco.ios</code> supports <code>network_cli</code> only — confirmed from the collection's own README, it does not provide netconf or httpapi plugins. The NETCONF and HTTPAPI legs of 2.7.d aren't a Cisco-platform collection at all; they're the generic <code>ansible.netcommon.netconf</code> and <code>ansible.netcommon.httpapi</code> connection plugins (the latter paired with the <code>ansible.netcommon.restconf</code> httpapi plugin), run against Cat8000V — the only NETCONF/RESTCONF-capable device in your lab.
+</div>
+
+<div class="note">
+  No official per-task timing is published for the CCIE Automation lab — treat any time box here as a study discipline, not an exam-accurate simulation.
+  <strong>Suggested time box: 75 min</strong> (three connection plugins in one workbook — longer than a single-platform topic). If you're stuck past it, open the hint before the solution — retrieval practice is the point.
+</div>
+
+<div class="note docs">
+  <strong>Official docs (for study use only — not available during the exam):</strong>
+  <a href="https://docs.ansible.com/ansible/latest/collections/cisco/ios/index.html" target="_blank" rel="noopener">cisco.ios collection</a> ·
+  <a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/index.html" target="_blank" rel="noopener">ansible.netcommon collection</a> ·
+  <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops</a> ·
+  <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_conditionals.html" target="_blank" rel="noopener">Conditionals</a>.
+  <code>docs.ansible.com</code> was rate-limiting live fetches while this workbook was built, so plugin/module existence was verified against each collection's GitHub source rather than every doc page loading successfully — if a link below 404s, run <code>ansible-doc &lt;fqcn&gt;</code> on the CWS instead, which is authoritative for your exact installed version anyway.
+</div>
+
+<h2><span class="num">Prereq</span>Before Task 1</h2>
+<div class="task-block checklist">
+  <label><input type="checkbox"> IOSv/IOSvL2 SSH reachable (KEX workaround from <code>blueprint-tracker.md</code> already applied client-side)</label>
+  <label><input type="checkbox"> Cat8000V reachable on SSH, NETCONF (830), and RESTCONF (443) — all three already confirmed in Phase 0</label>
+  <label><input type="checkbox"> <code>ansible --version</code> shows Core ~2.19; confirm installed collections with <code>ansible-galaxy collection list</code> (expect <code>cisco.ios</code> and <code>ansible.netcommon</code> — verify they're actually present, don't assume, the equipment list only names <code>cisco.aci</code> explicitly)</label>
+  <label><input type="checkbox"> Inventory drafted with three groups: <code>cli_devices</code>, <code>netconf_devices</code>, <code>httpapi_devices</code></label>
+  <label><input type="checkbox"> Credentials plan decided — <code>ansible-vault</code> or gitignored <code>group_vars/*/vault.yml</code></label>
+</div>
+
+<!-- TASK 1 -->
+<h2><span class="num">1</span>network_cli connection + facts <small style="color:var(--muted)">(2.7.d — CLI leg)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Build a <code>cli_devices</code> inventory group for IOSv/IOSvL2 using the <code>network_cli</code> connection plugin and the <code>cisco.ios.ios</code> cliconf plugin. Then run a facts-gathering play with <code>cisco.ios.ios_facts</code> — this proves connectivity/auth before you configure anything.</p>
+  <h3>Reference (verified against collection source)</h3>
+  <ul>
+    <li>Connection vars: <code>ansible_connection: ansible.netcommon.network_cli</code>, <code>ansible_network_os: cisco.ios.ios</code></li>
+    <li><code>cisco.ios.ios_facts</code>: gathers device facts (model, version, interfaces) — no config change</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/network_cli_connection.html" target="_blank" rel="noopener"><code>ansible.netcommon.network_cli</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/ios/ios_facts_module.html" target="_blank" rel="noopener"><code>cisco.ios.ios_facts</code></a></li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>ansible-playbook -i inventory.yml facts.yml</code></pre>
+  <p>Registered output should show <code>ansible_net_version</code> matching the device's actual IOS version.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p><code>ansible_network_os</code> needs the fully-qualified collection name <code>cisco.ios.ios</code>, not just <code>ios</code> — bare names stopped resolving once collections moved out of Ansible core.</p>
+    <p>Put connection vars once under <code>group_vars/cli_devices.yml</code> rather than repeating per host.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code># inventory.yml
+all:
+  children:
+    cli_devices:
+      hosts:
+        iosv-1:
+          ansible_host: 10.0.0.11
+        iosvl2-1:
+          ansible_host: 10.0.0.12
+      vars:
+        ansible_connection: ansible.netcommon.network_cli
+        ansible_network_os: cisco.ios.ios
+        ansible_user: "{{ vault_ios_user }}"
+        ansible_password: "{{ vault_ios_password }}"
+
+# facts.yml
+- name: Gather IOS facts
+  hosts: cli_devices
+  gather_facts: false
+  tasks:
+    - name: Collect device facts
+      cisco.ios.ios_facts:
+        gather_subset: min
+      register: facts_out
+
+    - name: Show version
+      debug:
+        var: facts_out.ansible_facts.ansible_net_version</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 2 -->
+<h2><span class="num">2</span>NETCONF connection plugin <small style="color:var(--muted)">(2.7.d — NETCONF leg)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Add a <code>netconf_devices</code> group for Cat8000V using the generic <code>netconf</code> connection plugin, then use <code>ansible.netcommon.netconf_get</code> with a subtree filter to read its running config — the same NETCONF agent you already validated in Phase 0, just driven through Ansible instead of a raw NETCONF client.</p>
+  <h3>Reference (verified against collection source)</h3>
+  <ul>
+    <li>Connection var: <code>ansible_connection: ansible.netcommon.netconf</code> (port defaults to 830; no platform-specific <code>ansible_network_os</code> needed — this module is platform-agnostic)</li>
+    <li><code>ansible.netcommon.netconf_get</code>: takes <code>source</code> (<code>running</code>/<code>candidate</code>/<code>startup</code>) and a raw XML <code>filter</code>, returns the matching subtree</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/netconf_connection.html" target="_blank" rel="noopener"><code>ansible.netcommon.netconf</code> connection</a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/netconf_get_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.netconf_get</code></a></li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>ansible-playbook -i inventory.yml netconf_facts.yml</code></pre>
+  <p>Output should show raw XML for the requested container, not an error about the connection type.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>The <code>filter</code> argument is a subtree filter matching a YANG container — same concept as the XPath filters from 2.5, just wrapped as a plain string here instead of built with a NETCONF client library.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code># add to inventory.yml
+    netconf_devices:
+      hosts:
+        cat8000v-1:
+          ansible_host: 10.0.0.21
+      vars:
+        ansible_connection: ansible.netcommon.netconf
+        ansible_user: "{{ vault_xe_user }}"
+        ansible_password: "{{ vault_xe_password }}"
+
+# netconf_facts.yml
+- name: Read Cat8000V native config via NETCONF
+  hosts: netconf_devices
+  gather_facts: false
+  tasks:
+    - name: Get native config subtree
+      ansible.netcommon.netconf_get:
+        source: running
+        filter: |
+          <filter>
+            <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"/>
+          </filter>
+      register: netconf_out
+
+    - name: Show result
+      debug:
+        var: netconf_out.output</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 3 -->
+<h2><span class="num">3</span>HTTPAPI/RESTCONF connection plugin <small style="color:var(--muted)">(2.7.d — HTTPAPI leg)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Add an <code>httpapi_devices</code> group for the same Cat8000V using the <code>httpapi</code> connection plugin backed by the generic <code>restconf</code> httpapi implementation, then use <code>ansible.netcommon.restconf_get</code> to fetch the same data as Task 2, this time as RESTCONF JSON.</p>
+  <h3>Reference (verified against collection source)</h3>
+  <ul>
+    <li>Connection vars: <code>ansible_connection: ansible.netcommon.httpapi</code>, <code>ansible_network_os: ansible.netcommon.restconf</code></li>
+    <li><code>ansible.netcommon.restconf_get</code>: takes a <code>path</code> (RESTCONF resource URI relative to <code>/restconf/data/</code>) and a <code>content</code> type</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/httpapi_connection.html" target="_blank" rel="noopener"><code>ansible.netcommon.httpapi</code> connection</a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/restconf_httpapi.html" target="_blank" rel="noopener"><code>ansible.netcommon.restconf</code> httpapi plugin</a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/restconf_get_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.restconf_get</code></a></li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>ansible-playbook -i inventory.yml restconf_facts.yml</code></pre>
+  <p>Output should be JSON describing the same underlying config Task 2 returned as XML.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p><code>path</code> is the same resource identifier you already used with <code>curl</code> against Cat8000V's RESTCONF endpoint in Phase 0 — just without the <code>/restconf/data/</code> prefix, which the plugin adds for you.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code># add to inventory.yml
+    httpapi_devices:
+      hosts:
+        cat8000v-1:
+          ansible_host: 10.0.0.21
+      vars:
+        ansible_connection: ansible.netcommon.httpapi
+        ansible_network_os: ansible.netcommon.restconf
+        ansible_httpapi_use_ssl: true
+        ansible_httpapi_validate_certs: false
+        ansible_user: "{{ vault_xe_user }}"
+        ansible_password: "{{ vault_xe_password }}"
+
+# restconf_facts.yml
+- name: Read Cat8000V native config via RESTCONF
+  hosts: httpapi_devices
+  gather_facts: false
+  tasks:
+    - name: Get native config resource
+      ansible.netcommon.restconf_get:
+        path: /Cisco-IOS-XE-native:native
+        content: config
+      register: restconf_out
+
+    - name: Show result
+      debug:
+        var: restconf_out.response</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 4 -->
+<h2><span class="num">4</span>Variables, templating &amp; loop control <small style="color:var(--muted)">(2.7.a, 2.7.c)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Define a variable representing a <em>set</em> of VLANs (map or list, your choice), then provision them on <code>cli_devices</code> using <code>cisco.ios.ios_vlans</code> — drive the provisioning with Ansible's own <code>loop</code> keyword (not the module's native list-handling) and build at least one field with Jinja2 templating.</p>
+  <h3>Reference (verified against collection source)</h3>
+  <ul>
+    <li><code>cisco.ios.ios_vlans</code>: <code>config</code> is a list of objects with <code>vlan_id</code> and <code>name</code>; <code>state</code> controls merge/replace/deleted/gathered</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/ios/ios_vlans_module.html" target="_blank" rel="noopener"><code>cisco.ios.ios_vlans</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops</a> ·
+        <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Variables</a> ·
+        <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_templating.html" target="_blank" rel="noopener">Templating (Jinja2)</a></li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>ansible-playbook -i inventory.yml vlans.yml</code></pre>
+  <p>Follow with an <code>ios_vlans</code> task using <code>state: gathered</code> (or <code>ios_facts</code>) to confirm each VLAN landed with the expected id/name.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>The module already accepts a native list for <code>config</code> — to actually exercise the <em>loop</em> keyword tested by 2.7.a, call <code>ios_vlans</code> once per dict entry with <code>loop: "{{ vlans | dict2items }}"</code>, and build the name field with a Jinja2 filter (e.g. <code>{{ item.value.name | upper }}</code>) to hit 2.7.c's templating angle in the same task.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code># group_vars/cli_devices.yml
+vlans:
+  students: { id: 100, name: students }
+  staff:    { id: 200, name: staff }
+  mgmt:     { id: 999, name: mgmt }
+
+# vlans.yml
+- name: Provision VLANs via loop + templating
+  hosts: cli_devices
+  gather_facts: false
+  tasks:
+    - name: Create one VLAN per loop iteration
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: "{{ item.value.id }}"
+            name: "{{ item.value.name | upper }}_VLAN"
+        state: merged
+      loop: "{{ vlans | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 5 -->
+<h2><span class="num">5</span>Conditionals <small style="color:var(--muted)">(2.7.b)</small></h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Add a task that only runs on a subset of your inventory — e.g. apply a config change only when a host-level variable flags it as eligible, or only for hosts in a specific group. Run the play against the full inventory and confirm the task is skipped where the condition is false.</p>
+  <h3>Reference (verified against docs)</h3>
+  <ul>
+    <li><code>when</code> evaluates a Jinja2 expression without the surrounding <code>{{ }}</code></li>
+    <li>Group membership is checkable via <code>inventory_hostname in groups['cli_devices']</code></li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_conditionals.html" target="_blank" rel="noopener">Conditionals</a></li>
+  </ul>
+  <h3>Verification</h3>
+  <pre><code>ansible-playbook -i inventory.yml vlans_conditional.yml -vv</code></pre>
+  <p>Verbose output should show <code>skipping: [host]</code> for hosts that don't meet the condition, and normal execution for the rest.</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>A host var like <code>lab_role: study</code> set on only one host in <code>cli_devices</code>, checked with <code>when: lab_role is defined and lab_role == "study"</code>, is the simplest way to produce a real skip/apply contrast without touching group membership logic.</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code>- name: Conditionally set a banner
+  hosts: cli_devices
+  gather_facts: false
+  tasks:
+    - name: Apply banner only on flagged hosts
+      cisco.ios.ios_banner:
+        banner: motd
+        text: "Managed by Ansible - CCIE Automation lab"
+        state: present
+      when: lab_role is defined and lab_role == "study"</code></pre>
+  </div></details>
+</div>
+
+<!-- TASK 6 -->
+<h2><span class="num">6</span>Stretch — package as a role</h2>
+<div class="task-block">
+  <h3>Requirement</h3>
+  <p>Convert Tasks 1–5 into a proper Ansible role — <code>roles/ios_baseline/{tasks,defaults,vars}/main.yml</code> — parameterized via role defaults (VLAN map, banner text, connection type per group), invoked from a single top-level playbook covering all three inventory groups. This is the literal wording of 2.7 ("create/use an Ansible role to manage infrastructure"), so it's worth doing for real rather than skipping to the next topic.</p>
+  <pre><code>ansible-galaxy init roles/ios_baseline</code></pre>
+  <p style="color:var(--muted);">No solution provided — structuring a role from scratch, including deciding what belongs in <code>defaults</code> vs. <code>vars</code>, is the actual skill being tested.</p>
+  <h3>Docs</h3>
+  <ul class="docs">
+    <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html" target="_blank" rel="noopener">Roles</a></li>
+  </ul>
+</div>
+
+<h2>Self-check process</h2>
+<div class="task-block">
+  <ol>
+    <li>Attempt everything above first, timer running.</li>
+    <li>Stuck past the time box? Open the hint for that task.</li>
+    <li>Only after attempting: open the solution and <strong>diff</strong> your playbook against it — don't just read it. The gap between "I could write this" and "I recognize this when I see it" is what the exam tests.</li>
+  </ol>
+</div>
+
+<footer>
+  Provider/module facts on this page were verified against the <code>cisco.ios</code> and <code>ansible.netcommon</code> collections' own GitHub source on 2026-09-09 (docs.ansible.com was rate-limiting live page loads at the time) — reverify with <code>ansible-doc &lt;fqcn&gt;</code> once you're on the actual CWS, since a collection's installed version can drift from what's documented online.
+</footer>
+
+</div>
+</body>
+</html>
