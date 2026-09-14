@@ -18,7 +18,7 @@ provider "iosxe" {
     host = var.host
     username = var.username
     password = var.password
-    protocol = "netconf"
+    # protocol = "netconf"
 }
 
 
