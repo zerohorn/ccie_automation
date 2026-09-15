@@ -1,3 +1,10 @@
+
+## 2.7 Ansible
+### Cheetsheets
+https://spacelift.io/blog/ansible-cheat-sheet
+https://github.com/eon01/AnsibleCheatSheet
+
+
 ## 2.8 Terraform IOS-XE
 ### How to enable netconf on IOS-XE
 config t

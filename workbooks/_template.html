@@ -63,6 +63,22 @@
     margin-right: 8px;
     font-size: 0.85rem;
   }
+  .mode-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .mode-build { background: rgba(79,176,255,0.15); color: var(--accent); }
+  .mode-design { background: rgba(178,142,255,0.15); color: #b28eff; }
+  .mode-modify { background: rgba(76,175,125,0.15); color: var(--solution); }
+  .mode-troubleshoot { background: rgba(217,164,65,0.15); color: var(--hint); }
+  .mode-consume { background: rgba(255,255,255,0.1); color: var(--muted); }
   h3 { font-size: 0.95rem; margin: 16px 0 6px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
   ul, ol { padding-left: 22px; margin: 8px 0; }
   li { margin: 4px 0; }
@@ -145,8 +161,13 @@
   <label><input type="checkbox"> {{PREREQ_3}}</label>
 </div>
 
-<!-- TASK N — copy this block per task -->
-<h2><span class="num">1</span>{{TASK_TITLE}} <small style="color:var(--muted)">({{SUB_ITEM_REF}})</small></h2>
+<!-- TASK N — copy this block per task. Pick the mode block matching the sub-item's
+     tagged verb(s) in blueprint-tracker.md (e.g. [Modify/Troubleshoot]) — see
+     workbooks/README.md "Task modes" table. Don't default to Build for everything. -->
+
+<!-- ================= MODE: BUILD ================= -->
+<!-- Verbs: Create, Automate, Configure, Package/deploy, Apply, Use (as "operate") -->
+<h2><span class="num">1</span>{{TASK_TITLE}} <span class="mode-badge mode-build">Build</span> <small style="color:var(--muted)">({{SUB_ITEM_REF}})</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
   <p>{{WHAT_TO_BUILD}}</p>
@@ -170,6 +191,121 @@
 <pre><code>{{SOLUTION_CODE}}</code></pre>
   </div></details>
 </div>
+
+<!--
+================= MODE: DESIGN =================
+Verbs: Design (1.1, 3.4). No code solution — trade-off reasoning against a scenario,
+matching the exam's Design module (web-based Q&A, not hands-on).
+
+<h2><span class="num">N</span>{{TASK_TITLE}} <span class="mode-badge mode-design">Design</span> <small style="color:var(--muted)">({{SUB_ITEM_REF}})</small></h2>
+<div class="task-block">
+  <h3>Scenario / Constraints</h3>
+  <p>{{BACKGROUND_STORY}} — e.g. a customer ask delivered as a short narrative, plus explicit constraints (budget, HA target, latency bound, existing tooling).</p>
+  <h3>Decision Question</h3>
+  <p>{{WHAT_MUST_BE_DECIDED_AND_JUSTIFIED}}</p>
+  <h3>Reference (trade-off dimensions, not one right answer)</h3>
+  <ul>
+    <li>{{TRADEOFF_DIMENSION_1}} — e.g. active/active vs active/standby, cost of each</li>
+  </ul>
+  <h3>Docs</h3>
+  <ul class="docs"><li>{{DOC_LINK_1}}</li></ul>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>{{HINT_TEXT_POINTS_AT_MISSING_DIMENSION}}</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution (reference answer)</summary><div class="content">
+    <p>{{WRITTEN_RATIONALE}} — state the recommendation, then justify against each constraint. Include a diagram/table if it clarifies the trade-off. No code.</p>
+  </div></details>
+</div>
+-->
+
+<!--
+================= MODE: MODIFY =================
+Verbs: Modify (1.2, 3.3). You're handed EXISTING working code/config and a new
+requirement — the skill is locating and changing the right spot, not writing fresh.
+
+<h2><span class="num">N</span>{{TASK_TITLE}} <span class="mode-badge mode-modify">Modify</span> <small style="color:var(--muted)">({{SUB_ITEM_REF}})</small></h2>
+<div class="task-block">
+  <h3>Starting Point</h3>
+  <p>{{DESCRIPTION_OF_EXISTING_ARTIFACT}} — seed this file/repo state before the session; link or embed it here.</p>
+  <pre><code>{{STARTING_ARTIFACT_CODE}}</code></pre>
+  <h3>Change Requirement</h3>
+  <p>{{THE_NEW_ASK_THAT_CREATES_A_GAP}}</p>
+  <h3>Reference (verified against docs)</h3>
+  <ul><li>{{REFERENCE_FACT_1}}</li></ul>
+  <h3>Docs</h3>
+  <ul class="docs"><li>{{DOC_LINK_1}}</li></ul>
+  <h3>Verification</h3>
+  <pre><code>{{VERIFICATION_COMMAND}}</code></pre>
+  <p>{{EXPECTED_RESULT}}</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>{{HINT_TEXT_POINTS_AT_WHICH_SECTION_CHANGES}}</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution (diff against Starting Point)</summary><div class="content">
+<pre><code>{{SOLUTION_AS_DIFF_NOT_FULL_REWRITE}}</code></pre>
+  </div></details>
+</div>
+-->
+
+<!--
+================= MODE: TROUBLESHOOT / DIAGNOSE =================
+Verbs: Troubleshoot, Diagnose (1.4, 1.5, 3.1, 3.3, 4.4). You're handed a FAILURE and
+evidence, not a spec — withhold root cause until the Solution. No upfront Reference
+block; recall isn't the skill, diagnosis is.
+
+<h2><span class="num">N</span>{{TASK_TITLE}} <span class="mode-badge mode-troubleshoot">Troubleshoot</span> <small style="color:var(--muted)">({{SUB_ITEM_REF}})</small></h2>
+<div class="task-block">
+  <h3>Scenario / Symptom</h3>
+  <p>{{USER_FACING_FAILURE_ONLY}} — e.g. "pipeline fails at the deploy stage" or "BGP session stuck in Idle." Do not name the cause here.</p>
+  <h3>Given Evidence</h3>
+  <pre><code>{{LOG_OR_ERROR_OUTPUT_OR_METRIC_SNIPPET}}</code></pre>
+  <h3>Docs</h3>
+  <ul class="docs"><li>{{DOC_LINK_1}} — where to look up what the error/output means</li></ul>
+  <h3>Diagnostic Verification</h3>
+  <pre><code>{{COMMAND_TO_CONFIRM_A_HYPOTHESIS}}</code></pre>
+  <p>{{WHAT_CONFIRMING_OR_RULING_OUT_LOOKS_LIKE}}</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>{{HINT_POINTS_AT_WHICH_LOG_LINE_OR_FIELD_MATTERS_NOT_THE_ANSWER}}</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+    <p><strong>Root cause:</strong> {{ROOT_CAUSE}}</p>
+    <p><strong>Fix:</strong></p>
+<pre><code>{{FIX_CODE_OR_COMMAND}}</code></pre>
+    <p><strong>Verification the fix worked:</strong></p>
+<pre><code>{{FIX_VERIFICATION_COMMAND}}</code></pre>
+  </div></details>
+</div>
+-->
+
+<!--
+================= MODE: CONSUME =================
+Verb: Consume and use a new API given documentation (2.3). Point is reading unfamiliar
+docs live under time pressure — no pre-digested Reference cheat-sheet.
+
+<h2><span class="num">N</span>{{TASK_TITLE}} <span class="mode-badge mode-consume">Consume</span> <small style="color:var(--muted)">({{SUB_ITEM_REF}})</small></h2>
+<div class="task-block">
+  <h3>Task Given Cold</h3>
+  <p>{{SPEC_WRITTEN_LIKE_A_CUSTOMER_ASK}} — deliberately not pre-digested into field names or endpoints.</p>
+  <h3>Docs (the only reference — read live)</h3>
+  <ul class="docs"><li>{{DOC_LINK_TO_THE_UNFAMILIAR_API}}</li></ul>
+  <h3>Verification</h3>
+  <pre><code>{{VERIFICATION_COMMAND}}</code></pre>
+  <p>{{EXPECTED_RESULT}}</p>
+
+  <details class="hint"><summary>Hint</summary><div class="content">
+    <p>{{WHICH_DOC_SECTION_TO_START_AT_NOT_WHICH_FIELD_TO_USE}}</p>
+  </div></details>
+
+  <details class="solution"><summary>Solution</summary><div class="content">
+<pre><code>{{SOLUTION_CODE}}</code></pre>
+  </div></details>
+</div>
+-->
 
 <h2>Self-check process</h2>
 <div class="task-block">

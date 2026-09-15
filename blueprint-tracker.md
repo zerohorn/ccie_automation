@@ -37,32 +37,32 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
 
 ## 1.0 Software Design, Development, and Deployment — 20%
 
-- [ ] 1.1 Design a solution based on on-prem, hybrid, or public cloud deployment
+- [ ] 1.1 [Design] Design a solution based on on-prem, hybrid, or public cloud deployment
   - [ ] 1.1.a Deployment: maintainability, modularity (containers, VM, orchestration, automation, components, infra requirements)
   - [ ] 1.1.b Reliability: high availability and resiliency
   - [ ] 1.1.c Performance: scalability, latency, rate limiting
   - [ ] 1.1.d Infrastructure: monitoring, observability, metrics
-- [ ] 1.2 Modify an existing network automation solution (gap analysis, source of truth)
-- [ ] 1.3 Use Git in a CI/CD development workflow
-- [ ] 1.4 Troubleshoot CI/CD pipeline issues (code failures, pipeline issues, tool incompatibility)
-- [ ] 1.5 Diagnose application performance issues (async request processing, DB delays, high mem/CPU, microservice network delays, asymmetric routing) using network/app tools + assurance data (AppDynamics, ThousandEyes)
+- [ ] 1.2 [Modify] Modify an existing network automation solution (gap analysis, source of truth)
+- [ ] 1.3 [Build] Use Git in a CI/CD development workflow
+- [ ] 1.4 [Troubleshoot] Troubleshoot CI/CD pipeline issues (code failures, pipeline issues, tool incompatibility)
+- [ ] 1.5 [Troubleshoot] Diagnose application performance issues (async request processing, DB delays, high mem/CPU, microservice network delays, asymmetric routing) using network/app tools + assurance data (AppDynamics, ThousandEyes)
 
 ## 2.0 Infrastructure as Code — 30%
 
-- [ ] 2.1 Build/manage/operate a Python-based REST API with a web framework (endpoints, HTTP req/resp, OpenAPI spec)
-- [ ] 2.2 Build/manage/operate a Python-based CLI app that uses a REST API
-- [ ] 2.3 Consume and use a new API given documentation
+- [ ] 2.1 [Build] Build/manage/operate a Python-based REST API with a web framework (endpoints, HTTP req/resp, OpenAPI spec)
+- [ ] 2.2 [Build] Build/manage/operate a Python-based CLI app that uses a REST API
+- [ ] 2.3 [Consume] Consume and use a new API given documentation
   - [ ] 2.3.a REST
   - [ ] 2.3.b GraphQL
-- [ ] 2.4 Create a RESTCONF or NETCONF payload from a YANG module; interpret the response
-- [ ] 2.5 Create a NETCONF filter using XPath
-- [ ] 2.6 Configure devices via NETCONF/RESTCONF using YANG analysis tools, driven by a source of truth
-- [ ] 2.7 Create/use an Ansible role to manage infrastructure
+- [ ] 2.4 [Build] Create a RESTCONF or NETCONF payload from a YANG module; interpret the response
+- [ ] 2.5 [Build] Create a NETCONF filter using XPath
+- [ ] 2.6 [Build] Configure devices via NETCONF/RESTCONF using YANG analysis tools, driven by a source of truth
+- [ ] 2.7 [Build] Create/use an Ansible role to manage infrastructure
   - [ ] 2.7.a Loop control
   - [ ] 2.7.b Conditionals
   - [ ] 2.7.c Variables and templating
   - [ ] 2.7.d Connection plugins (network CLI, HTTPAPI, NETCONF)
-- [ ] 2.8 Use Terraform to statefully manage infrastructure
+- [ ] 2.8 [Build] Use Terraform to statefully manage infrastructure
   - **Provider correction (2026-09-09):** the v1.1 Equipment and Software List only installs `ciscodevnet/aci v2.17.0` under Terraform — no `CiscoDevNet/iosxe` provider is on the Candidate Workstation. Target platform switched from Cat8000V/NETCONF to APIC/ACI. Blocked on APIC access — local ACI Simulator is still deferred pending the RAM upgrade (see Phase 0 log); use a DevNet sandbox (`developer.cisco.com/site/sandbox`) as an interim target if the upgrade timeline slips.
   - [ ] 2.8.a Loop control
   - [ ] 2.8.b Resource graphs
@@ -70,7 +70,7 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
   - [ ] 2.8.d Resource retrieval
   - [ ] 2.8.e Resource provision
   - [ ] 2.8.f State management of provisioned resources
-- [ ] 2.9 Create a basic Cisco NSO service package (python-and-template type, cisco-ios-cli NED)
+- [ ] 2.9 [Build] Create a basic Cisco NSO service package (python-and-template type, cisco-ios-cli NED)
   - [ ] 2.9.a Service template from a provided NSO device config
   - [ ] 2.9.b Basic YANG module (lists, leaf lists, data types, leaf refs, single-arg when/must)
   - [ ] 2.9.c Basic actions to verify operational status
@@ -78,8 +78,8 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
 
 ## 3.0 Network Programmability and Automation — 25%
 
-- [ ] 3.1 Create/modify/troubleshoot Python scripts against APIs: ACI, AppDynamics, Catalyst Center, FDM, Intersight, IOS XE, Meraki, NSO, Webex
-- [ ] 3.2 Automate Cisco IOS XE device configuration
+- [ ] 3.1 [Build/Modify/Troubleshoot] Create/modify/troubleshoot Python scripts against APIs: ACI, AppDynamics, Catalyst Center, FDM, Intersight, IOS XE, Meraki, NSO, Webex
+- [ ] 3.2 [Build] Automate Cisco IOS XE device configuration
   - [ ] 3.2.a Interfaces
   - [ ] 3.2.b Static routes
   - [ ] 3.2.c VLANs
@@ -87,12 +87,12 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
   - [ ] 3.2.e BGP peering
   - [ ] 3.2.f BGP and OSPF routing tables
   - [ ] 3.2.g BGP and OSPF neighbors
-- [ ] 3.3 Modify/troubleshoot an automated test using pyATS
+- [ ] 3.3 [Modify/Troubleshoot] Modify/troubleshoot an automated test using pyATS
   - [ ] 3.3.a Testbed file for IOS/IOS XE/NX-OS devices
   - [ ] 3.3.b Gather config/operational state via Genie parser/models
   - [ ] 3.3.c Develop/execute test jobs and scripts using AEtest
-- [ ] 3.4 Design a model-driven telemetry solution (gNMI dial-in, gRPC dial-out, NETCONF dial-in)
-- [ ] 3.5 Create YANG model-driven telemetry subscriptions
+- [ ] 3.4 [Design] Design a model-driven telemetry solution (gNMI dial-in, gRPC dial-out, NETCONF dial-in)
+- [ ] 3.5 [Build] Create YANG model-driven telemetry subscriptions
   - [ ] 3.5.a Identify model elements and cadence
   - [ ] 3.5.b On-change or event-driven
   - [ ] 3.5.c Optimize frequency
@@ -103,7 +103,7 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
 
 ## 4.0 Containers — 10%
 
-- [ ] 4.1 Create a Docker image (Dockerfile)
+- [ ] 4.1 [Build] Create a Docker image (Dockerfile)
   - [ ] 4.1.a From a provided image
   - [ ] 4.1.b Expose ports
   - [ ] 4.1.c Add/copy files
@@ -113,29 +113,29 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
   - [ ] 4.1.g Environment variables
   - [ ] 4.1.h .dockerignore
   - [ ] 4.1.i Volumes
-- [ ] 4.2 Package/deploy via Docker Compose
+- [ ] 4.2 [Build] Package/deploy via Docker Compose
   - [ ] 4.2.a Deploy and manage containers
   - [ ] 4.2.b Define services, networks, volumes, links
-- [ ] 4.3 Package/deploy via Kubernetes
+- [ ] 4.3 [Build] Package/deploy via Kubernetes
   - [ ] 4.3.a Deployments, secrets, services, ingress, volumes, namespaces, replicas
   - [ ] 4.3.b Pod lifecycle (scale up/down, status, logs)
   - [ ] 4.3.c Monitor pods via health checks
   - [ ] 4.3.d Use kubectl
-- [ ] 4.4 Create/consume/troubleshoot Docker host + bridge networks, integrate with external networks
+- [ ] 4.4 [Build/Troubleshoot] Create/consume/troubleshoot Docker host + bridge networks, integrate with external networks
 
 ## 5.0 Security — 15%
 
-- [ ] 5.1 Apply OWASP secure coding practices
+- [ ] 5.1 [Build] Apply OWASP secure coding practices
   - [ ] 5.1.a Input validation
   - [ ] 5.1.b Authentication and password management
   - [ ] 5.1.c Access control
   - [ ] 5.1.d Cryptographic practices
   - [ ] 5.1.e Error handling and logging
   - [ ] 5.1.f Communication security
-- [ ] 5.2 Create a CSR via OpenSSL; send to a CA; secure a web app with the cert
-- [ ] 5.3 Use OAuth2+ to obtain an auth token
-- [ ] 5.4 Use a secret management system to secure an application
-- [ ] 5.5 Use tokens, headers, and secrets to secure a REST API
+- [ ] 5.2 [Build] Create a CSR via OpenSSL; send to a CA; secure a web app with the cert
+- [ ] 5.3 [Build] Use OAuth2+ to obtain an auth token
+- [ ] 5.4 [Build] Use a secret management system to secure an application
+- [ ] 5.5 [Build] Use tokens, headers, and secrets to secure a REST API
 
 ---
 
