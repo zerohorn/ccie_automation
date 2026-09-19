@@ -1,0 +1,4 @@
+certs/
+file/
+logs/
+.env

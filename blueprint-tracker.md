@@ -157,6 +157,23 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
 | Nexus 9300v (N9Kv) | 9.3(8) | 9.3.8 (custom image def, sourced separately — refplat default of 10.5.3.F was a full NX-OS generation off-target, not used) | Exact match |
 | APIC 6.1 w/ ACI Simulator | 6.1 | Not yet deployed | Deferred pending 128GB RAM upgrade |
 
+### Lab Infrastructure (lab_infra/, staged 2026-09-19, not yet deployed)
+
+Docker Compose stacks for the supporting tooling on the Equipment/Software
+list that had zero lab coverage — see `lab_infra/README.md` for the full
+writeup, domain mapping, and security notes (upstream Vault reference repo
+ships a public private key/token — do not reuse it).
+
+| Stack | Path | Domain(s) | Status |
+|---|---|---|---|
+| HashiCorp Vault 1.20 | `lab_infra/vault/` | 5.4 | Compose staged, not deployed on HORNLAB01 |
+| Telegraf + InfluxDB + Grafana | `lab_infra/telemetry_tig/` | 3.4, 3.5 | Compose staged, not deployed on HORNLAB01 |
+| GitLab CE | `lab_infra/gitlab/` | 1.3, 1.4 | Compose staged (unverified against live GitLab docs), not deployed |
+
+Still fully unbuilt: Cisco NSO (2.9 — no instance anywhere, own learning
+curve, don't defer to the last month), Kubernetes (4.3 — no cluster; k3s/kind
+on HORNLAB01 is enough for kubectl reps).
+
 ### Device-to-Domain Mapping (locked in)
 
 | Device | Domains | Notes |
