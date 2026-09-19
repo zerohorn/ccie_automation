@@ -1,0 +1,15 @@
+apiVersion: 1
+
+# Values here must match INFLUXDB_BUCKET / INFLUXDB_ADMIN_TOKEN in ../../.env —
+# Grafana's provisioning loader doesn't read that .env file, so this is manual.
+datasources:
+  - name: CCIE_InfluxQL
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    jsonData:
+      dbName: CCIEAutomation
+      httpMode: GET
+      httpHeaderName1: "Authorization"
+    secureJsonData:
+      httpHeaderValue1: "Token change_me_long_random_token"

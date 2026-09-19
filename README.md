@@ -26,3 +26,6 @@ https://doc-search.devnetexperttraining.com
 https://gitlab.com/lintvedt/ccie-automation
 https://devnet-academy.com/blog/devnet-expert-blueprint/
 https://devnet-academy.com/blog/
+https://devnet-academy.com/blog/build-a-free-lab-for-the-devnet-expert-exam/
+https://github.com/lucagubler/DevNet-VAULT
+https://github.com/lucagubler/DevNet-TIG

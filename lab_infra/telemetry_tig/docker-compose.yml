@@ -1,0 +1,49 @@
+services:
+  telegraf:
+    image: telegraf:1.32
+    container_name: telegraf
+    restart: always
+    env_file: .env
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      # Uncomment once certs exist under telegraf/ (see README) for gRPC-TLS dial-out
+      # - ./telegraf/ca.crt:/etc/telegraf/ca.crt:ro
+      # - ./telegraf/telegraf.crt:/etc/telegraf/telegraf.crt:ro
+      # - ./telegraf/telegraf.key:/etc/telegraf/telegraf.key:ro
+    depends_on:
+      - influxdb
+    ports:
+      - "57000:57000"   # gRPC dial-out, plaintext
+      # - "57100:57100" # gRPC dial-out, TLS (uncomment with certs above + telegraf.conf block)
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    restart: always
+    env_file: .env
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_ADMIN_TOKEN}
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./influxdb-data:/var/lib/influxdb2
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: grafana
+    restart: always
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/datasources/influxdb.yml:/etc/grafana/provisioning/datasources/influxdb.yml:ro
+      - ./grafana-data:/var/lib/grafana

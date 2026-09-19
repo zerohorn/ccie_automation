@@ -1,0 +1,9 @@
+.env
+influxdb-data/
+grafana-data/
+telegraf/ca.key
+telegraf/ca.crt
+telegraf/ca.srl
+telegraf/telegraf.key
+telegraf/telegraf.crt
+telegraf/telegraf.csr
