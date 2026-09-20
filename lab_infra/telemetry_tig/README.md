@@ -11,11 +11,33 @@ cp .env.example .env
 # Edit .env with real credentials, then manually mirror INFLUXDB_ADMIN_TOKEN
 # and INFLUXDB_BUCKET into grafana/datasources/influxdb.yml (see the note in
 # that file — Grafana provisioning doesn't read .env).
+mkdir -p grafana-data && sudo chown -R 472:472 grafana-data   # see Troubleshooting below
 docker-compose up -d
 ```
 
 Grafana: `http://<HORNLAB01-IP>:3000` — log in with the admin user/password
 from `.env`.
+
+## Troubleshooting: Grafana stuck in a restart loop
+
+`docker ps -a` shows `grafana` cycling through `Restarting (1)`. Cause: the
+`./grafana-data` bind mount gets created by Docker on first `up` as an empty
+directory owned by `root`, but the Grafana image runs as UID `472` and can't
+write its database into a root-owned directory — it crashes immediately and
+restart-loops forever. This is the standard `grafana/grafana` bind-mount
+gotcha, not specific to this stack.
+
+Fix:
+```bash
+docker compose stop grafana
+sudo chown -R 472:472 grafana-data
+docker compose up -d grafana
+docker ps -a   # should now show grafana as "Up"
+```
+
+If `docker logs grafana --tail 50` shows something other than a permission
+error, check `GRAFANA_ADMIN_PASSWORD` in `.env` isn't blank — Grafana can also
+refuse to start if it can't create the admin user with an empty password.
 
 ## Point the Cat8000V at it (plaintext dial-out, port 57000)
 
