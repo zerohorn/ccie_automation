@@ -20,7 +20,7 @@ don't leave it fighting the other stacks for memory.
 
 ```bash
 cp .env.example .env      # adjust hostname/ports if they collide with anything
-docker-compose up -d
+docker compose up -d
 ```
 
 First boot takes several minutes (reconfigure runs on first start). Then:
@@ -53,7 +53,7 @@ In the GitLab web UI:
 ### 2. Start and register the runner
 
 ```bash
-docker-compose up -d gitlab-runner
+docker compose up -d gitlab-runner
 
 docker exec -it gitlab-runner gitlab-runner register \
   --non-interactive \

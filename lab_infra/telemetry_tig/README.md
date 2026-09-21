@@ -12,7 +12,7 @@ cp .env.example .env
 # and INFLUXDB_BUCKET into grafana/datasources/influxdb.yml (see the note in
 # that file — Grafana provisioning doesn't read .env).
 mkdir -p grafana-data && sudo chown -R 472:472 grafana-data   # see Troubleshooting below
-docker-compose up -d
+docker compose up -d
 ```
 
 Grafana: `http://<HORNLAB01-IP>:3000` — log in with the admin user/password
