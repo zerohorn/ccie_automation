@@ -27,13 +27,15 @@ around and reuse for a year of exam prep. I changed:
   gets the root token from your own `vault operator init` — nothing
   credential-shaped is committed here.
 - **Credentials moved to `.env`** (gitignored) instead of hardcoded in
-  `docker-compose.yml`, with `.env.example` as the template. Small thing, but
+  `docker-compose.yml`, with `.env.example` as the template (run stacks with
+  `docker compose`, the Docker Engine plugin — not the standalone
+  `docker-compose` v1 binary, which may not be installed). Small thing, but
   it's also free reps for blueprint domain 5.0 (secrets management) instead of
   modeling the anti-pattern you're trying to learn to avoid.
 - **Image versions bumped** where the source repo pinned old tags (Vault
   1.8.0 → 1.20 line, to match the v1.1 Equipment/Software list's Vault 1.20
   target; Telegraf 1.19.3 → 1.32). I have not run these bumped versions myself
-  — validate on first `docker-compose up` before you trust them.
+  — validate on first `docker compose up` before you trust them.
 - Removed the obsolete `version:` key and `links:` (both no-ops on current
   Docker Compose; service-name DNS resolution doesn't need `links`).
 - Added persistent volumes for InfluxDB/Grafana data so dashboards survive a
@@ -43,7 +45,7 @@ around and reuse for a year of exam prep. I changed:
 
 Check HORNLAB01's actual allocated RAM/vCPU before running everything at once
 — GitLab Omnibus alone wants 4 GB+ RAM and is heavy relative to the other two.
-Suggested order, each validated with `docker-compose up` before moving on:
+Suggested order, each validated with `docker compose up` before moving on:
 
 1. `vault/` — lightest, ~200 MB RAM, unlocks domain 5.4 immediately.
 2. `telemetry_tig/` — ~1–2 GB RAM, unlocks domains 3.4/3.5 (currently your

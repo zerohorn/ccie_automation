@@ -19,7 +19,7 @@ services:
       - ./data:/var/opt/gitlab
 
   gitlab-runner:
-    image: gitlab/gitlab-runner:latest
+    image: gitlab/gitlab-runner:${GITLAB_RUNNER_VERSION:-v17.5.0}
     container_name: gitlab-runner
     restart: always
     depends_on:

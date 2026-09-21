@@ -20,7 +20,7 @@ don't leave it fighting the other stacks for memory.
 
 ```bash
 cp .env.example .env      # adjust hostname/ports if they collide with anything
-docker-compose up -d
+docker compose up -d
 ```
 
 First boot takes several minutes (reconfigure runs on first start). Then:
@@ -50,10 +50,27 @@ In the GitLab web UI:
 - Copy the authentication token shown (starts with `glrt-`) — it's only
   displayed once.
 
+**Version note:** the runner image is pinned to `GITLAB_RUNNER_VERSION` (default
+`v17.5.0`, matching the GitLab server's `17.5.2-ce.0`) instead of `latest`.
+GitLab explicitly recommends the Runner version not run ahead of the server
+version — an unpinned `latest` runner can silently pick up CLI/behavior
+changes (e.g. how `register` interprets `--token`) that break commands
+written against an older version. I could not verify `v17.5.0` is an exact
+existing tag on Docker Hub during this session (network egress to
+hub.docker.com was unavailable) — if `docker compose up -d gitlab-runner`
+fails to pull it, check available tags at
+[hub.docker.com/r/gitlab/gitlab-runner/tags](https://hub.docker.com/r/gitlab/gitlab-runner/tags)
+and adjust `GITLAB_RUNNER_VERSION` in `.env` to the closest 17.5.x tag that
+exists.
+
+If you already registered (or tried to) with the `:latest` image before this
+fix: delete that runner entry in Admin Area → CI/CD → Runners (it likely
+shows as failed/inactive anyway), then start clean below with a fresh token.
+
 ### 2. Start and register the runner
 
 ```bash
-docker-compose up -d gitlab-runner
+docker compose up -d gitlab-runner
 
 docker exec -it gitlab-runner gitlab-runner register \
   --non-interactive \

@@ -10,7 +10,7 @@ init/unseal/token workflow you'll need to know.
 ```bash
 cp .env.example .env          # adjust VAULT_PORT if needed
 ./generate-certs.sh           # generates certs/vault.{crt,key} locally — do this every time you clone/reset the lab
-docker-compose up -d
+docker compose up -d
 docker ps -a                  # confirm devnet_vault is running
 ```
 
