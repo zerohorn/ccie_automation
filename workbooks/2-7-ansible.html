@@ -130,7 +130,7 @@
 </header>
 
 <div class="note warn">
-  <strong>Schema note:</strong> <code>cisco.ios</code> supports <code>network_cli</code> only — confirmed from the collection's own README, it does not provide netconf or httpapi plugins. The NETCONF and HTTPAPI legs of 2.7.d aren't a Cisco-platform collection at all; they're the generic <code>ansible.netcommon.netconf</code> and <code>ansible.netcommon.httpapi</code> connection plugins (the latter paired with the <code>ansible.netcommon.restconf</code> httpapi plugin), run against Cat8000V — the only NETCONF/RESTCONF-capable device in your lab.
+  <strong>Revision note (2026-09-21):</strong> the v1.1 Equipment and Software List names only <code>cisco.aci 2.12.0</code> under Ansible Core 2.19.3 — no <code>cisco.ios</code>. Confirmed live against a candidate workstation via <code>ansible-galaxy collection list</code>: installed collections are <code>ansible.netcommon 8.4.0</code>, <code>ansible.utils 6.0.1</code>, and <code>cisco.aci 2.12.0</code> only. <code>cisco.ios</code> is absent, which also means there's no IOS <em>cliconf</em> plugin — <code>network_cli</code> against IOSv/IOSvL2/Cat8000V can't use platform-aware prompt handling and falls back to <code>ansible.netcommon</code>'s generic <code>default</code> cliconf/terminal plugins. An earlier draft of this workbook assumed <code>cisco.ios</code> modules (<code>ios_facts</code>, <code>ios_vlans</code>, <code>ios_banner</code>) were available; they are not. This version drives all IOS-family CLI work through <code>ansible.netcommon.cli_command</code>/<code>cli_config</code> instead, and keeps the NETCONF/HTTPAPI legs unchanged since those never depended on <code>cisco.ios</code> in the first place. <strong>Verify the <code>default</code> cliconf actually resolves on your CWS</strong> with <code>ansible-doc -t cliconf ansible.netcommon.default</code> before trusting Task 1 below — if it doesn't, <code>network_cli</code>'s CLI leg of 2.7.d may not be exercisable against IOS at all with only what's installed, which would itself be worth logging as a blueprint-tracker gap.
 </div>
 
 <div class="note">
@@ -140,8 +140,8 @@
 
 <div class="note docs">
   <strong>Official docs (for study use only — not available during the exam):</strong>
-  <a href="https://docs.ansible.com/ansible/latest/collections/cisco/ios/index.html" target="_blank" rel="noopener">cisco.ios collection</a> ·
   <a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/index.html" target="_blank" rel="noopener">ansible.netcommon collection</a> ·
+  <a href="https://docs.ansible.com/ansible/latest/collections/ansible/utils/index.html" target="_blank" rel="noopener">ansible.utils collection</a> ·
   <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops</a> ·
   <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_conditionals.html" target="_blank" rel="noopener">Conditionals</a>.
   <code>docs.ansible.com</code> was rate-limiting live fetches while this workbook was built, so plugin/module existence was verified against each collection's GitHub source rather than every doc page loading successfully — if a link below 404s, run <code>ansible-doc &lt;fqcn&gt;</code> on the CWS instead, which is authoritative for your exact installed version anyway.
@@ -151,7 +151,8 @@
 <div class="task-block checklist">
   <label><input type="checkbox"> IOSv/IOSvL2 SSH reachable (KEX workaround from <code>blueprint-tracker.md</code> already applied client-side)</label>
   <label><input type="checkbox"> Cat8000V reachable on SSH, NETCONF (830), and RESTCONF (443) — all three already confirmed in Phase 0</label>
-  <label><input type="checkbox"> <code>ansible --version</code> shows Core ~2.19; confirm installed collections with <code>ansible-galaxy collection list</code> (expect <code>cisco.ios</code> and <code>ansible.netcommon</code> — verify they're actually present, don't assume, the equipment list only names <code>cisco.aci</code> explicitly)</label>
+  <label><input type="checkbox"> <code>ansible --version</code> shows Core 2.19.3; confirm with <code>ansible-galaxy collection list</code> — expect exactly <code>ansible.netcommon 8.4.0</code>, <code>ansible.utils 6.0.1</code>, <code>cisco.aci 2.12.0</code>. <strong>No <code>cisco.ios</code>.</strong> Don't assume otherwise — the equipment list only names <code>cisco.aci</code> explicitly, and this has been confirmed live.</label>
+  <label><input type="checkbox"> <code>ansible-doc -t cliconf ansible.netcommon.default</code> resolves — this is the fallback cliconf Task 1's <code>network_cli</code> connection depends on in the absence of <code>cisco.ios</code></label>
   <label><input type="checkbox"> Inventory drafted with three groups: <code>cli_devices</code>, <code>netconf_devices</code>, <code>httpapi_devices</code></label>
   <label><input type="checkbox"> Credentials plan decided — <code>ansible-vault</code> or gitignored <code>group_vars/*/vault.yml</code></label>
 </div>
@@ -160,23 +161,25 @@
 <h2><span class="num">1</span>network_cli connection + facts <small style="color:var(--muted)">(2.7.d — CLI leg)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Build a <code>cli_devices</code> inventory group for IOSv/IOSvL2 using the <code>network_cli</code> connection plugin and the <code>cisco.ios.ios</code> cliconf plugin. Then run a facts-gathering play with <code>cisco.ios.ios_facts</code> — this proves connectivity/auth before you configure anything.</p>
-  <h3>Reference (verified against collection source)</h3>
+  <p>Build a <code>cli_devices</code> inventory group for IOSv/IOSvL2 using the <code>network_cli</code> connection plugin. With no <code>cisco.ios</code> collection installed, there's no IOS-specific cliconf — fall back to <code>ansible_network_os: ansible.netcommon.default</code>, the generic cliconf/terminal plugin. Then run a "facts" play using <code>ansible.netcommon.cli_command</code> to issue <code>show version</code> and pull the IOS version out of the raw text with a Jinja2 filter — this proves connectivity/auth before you configure anything.</p>
+  <h3>Reference (verify locally — this is the part most likely to need adjustment)</h3>
   <ul>
-    <li>Connection vars: <code>ansible_connection: ansible.netcommon.network_cli</code>, <code>ansible_network_os: cisco.ios.ios</code></li>
-    <li><code>cisco.ios.ios_facts</code>: gathers device facts (model, version, interfaces) — no config change</li>
+    <li>Connection vars: <code>ansible_connection: ansible.netcommon.network_cli</code>, <code>ansible_network_os: ansible.netcommon.default</code></li>
+    <li><code>ansible.netcommon.cli_command</code>: runs one CLI command over an existing <code>network_cli</code> connection, returns raw text in <code>stdout</code> — no vendor-specific parsing, since that's what a platform collection (<code>cisco.ios</code>) would normally supply and isn't installed here</li>
+    <li>The generic cliconf handles basic <code>&gt;</code>/<code>#</code> prompts and paging reasonably for IOS-like CLIs, but doesn't know IOS-specific quirks (e.g. <code>enable</code> secret handling, config-mode prompt variants) the way <code>cisco.ios</code>'s cliconf would — if a command hangs or mis-detects the prompt, that's the likely cause</li>
   </ul>
   <h3>Docs</h3>
   <ul class="docs">
     <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/network_cli_connection.html" target="_blank" rel="noopener"><code>ansible.netcommon.network_cli</code></a></li>
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/ios/ios_facts_module.html" target="_blank" rel="noopener"><code>cisco.ios.ios_facts</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/cli_command_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.cli_command</code></a></li>
   </ul>
   <h3>Verification</h3>
   <pre><code>ansible-playbook -i inventory.yml facts.yml</code></pre>
-  <p>Registered output should show <code>ansible_net_version</code> matching the device's actual IOS version.</p>
+  <p>Registered output should show a version string matching the device's actual IOS version, extracted from raw <code>show version</code> text.</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p><code>ansible_network_os</code> needs the fully-qualified collection name <code>cisco.ios.ios</code>, not just <code>ios</code> — bare names stopped resolving once collections moved out of Ansible core.</p>
+    <p>Without <code>cisco.ios</code>, there's no fully-qualified vendor <code>ansible_network_os</code> to set — <code>ansible.netcommon.default</code> is the actual value, not a placeholder.</p>
+    <p><code>cli_command</code>'s output lands in <code>stdout</code> as one big string; pull the version line with a regex filter, e.g. <code>| regex_search('Version ([0-9.]+)', '\1')</code>, rather than expecting structured facts.</p>
     <p>Put connection vars once under <code>group_vars/cli_devices.yml</code> rather than repeating per host.</p>
   </div></details>
 
@@ -192,23 +195,27 @@ all:
           ansible_host: 10.0.0.12
       vars:
         ansible_connection: ansible.netcommon.network_cli
-        ansible_network_os: cisco.ios.ios
+        ansible_network_os: ansible.netcommon.default
         ansible_user: "{{ vault_ios_user }}"
         ansible_password: "{{ vault_ios_password }}"
 
 # facts.yml
-- name: Gather IOS facts
+- name: Gather IOS facts via generic CLI command
   hosts: cli_devices
   gather_facts: false
   tasks:
-    - name: Collect device facts
-      cisco.ios.ios_facts:
-        gather_subset: min
-      register: facts_out
+    - name: Run show version
+      ansible.netcommon.cli_command:
+        command: show version
+      register: show_version_out
+
+    - name: Extract IOS version
+      set_fact:
+        ios_version: "{{ show_version_out.stdout | regex_search('Version ([0-9.()A-Za-z]+)', '\\1') | first }}"
 
     - name: Show version
       debug:
-        var: facts_out.ansible_facts.ansible_net_version</code></pre>
+        var: ios_version</code></pre>
   </div></details>
 </div>
 
@@ -325,24 +332,25 @@ all:
 <h2><span class="num">4</span>Variables, templating &amp; loop control <small style="color:var(--muted)">(2.7.a, 2.7.c)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Define a variable representing a <em>set</em> of VLANs (map or list, your choice), then provision them on <code>cli_devices</code> using <code>cisco.ios.ios_vlans</code> — drive the provisioning with Ansible's own <code>loop</code> keyword (not the module's native list-handling) and build at least one field with Jinja2 templating.</p>
+  <p>Define a variable representing a <em>set</em> of VLANs (map or list, your choice), then provision them on <code>cli_devices</code> by pushing raw config lines with <code>ansible.netcommon.cli_config</code> — no <code>cisco.ios.ios_vlans</code> resource module is installed, so the config text itself has to be built. Drive the provisioning with Ansible's own <code>loop</code> keyword (not a single multi-line config block) and build at least one field with Jinja2 templating.</p>
   <h3>Reference (verified against collection source)</h3>
   <ul>
-    <li><code>cisco.ios.ios_vlans</code>: <code>config</code> is a list of objects with <code>vlan_id</code> and <code>name</code>; <code>state</code> controls merge/replace/deleted/gathered</li>
+    <li><code>ansible.netcommon.cli_config</code>: takes <code>config</code> (a string or list of config-mode lines), diffs it against running config, and pushes only what's missing — idempotent like a resource module, just without structured state tracking</li>
   </ul>
   <h3>Docs</h3>
   <ul class="docs">
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/ios/ios_vlans_module.html" target="_blank" rel="noopener"><code>cisco.ios.ios_vlans</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/cli_config_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.cli_config</code></a></li>
     <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops</a> ·
         <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Variables</a> ·
         <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_templating.html" target="_blank" rel="noopener">Templating (Jinja2)</a></li>
   </ul>
   <h3>Verification</h3>
   <pre><code>ansible-playbook -i inventory.yml vlans.yml</code></pre>
-  <p>Follow with an <code>ios_vlans</code> task using <code>state: gathered</code> (or <code>ios_facts</code>) to confirm each VLAN landed with the expected id/name.</p>
+  <p>Follow with an <code>ansible.netcommon.cli_command</code> task running <code>show vlan brief</code> to confirm each VLAN landed with the expected id/name.</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p>The module already accepts a native list for <code>config</code> — to actually exercise the <em>loop</em> keyword tested by 2.7.a, call <code>ios_vlans</code> once per dict entry with <code>loop: "{{ vlans | dict2items }}"</code>, and build the name field with a Jinja2 filter (e.g. <code>{{ item.value.name | upper }}</code>) to hit 2.7.c's templating angle in the same task.</p>
+    <p><code>cli_config</code> takes one block of config text per call — to exercise the <em>loop</em> keyword tested by 2.7.a, call it once per dict entry with <code>loop: "{{ vlans | dict2items }}"</code> rather than building one big multi-VLAN block up front.</p>
+    <p>Build the name field with a Jinja2 filter (e.g. <code>{{ item.value.name | upper }}</code>) to hit 2.7.c's templating angle in the same task.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
@@ -358,11 +366,10 @@ vlans:
   gather_facts: false
   tasks:
     - name: Create one VLAN per loop iteration
-      cisco.ios.ios_vlans:
-        config:
-          - vlan_id: "{{ item.value.id }}"
-            name: "{{ item.value.name | upper }}_VLAN"
-        state: merged
+      ansible.netcommon.cli_config:
+        config: |
+          vlan {{ item.value.id }}
+           name {{ item.value.name | upper }}_VLAN
       loop: "{{ vlans | dict2items }}"
       loop_control:
         label: "{{ item.key }}"</code></pre>
@@ -397,10 +404,11 @@ vlans:
   gather_facts: false
   tasks:
     - name: Apply banner only on flagged hosts
-      cisco.ios.ios_banner:
-        banner: motd
-        text: "Managed by Ansible - CCIE Automation lab"
-        state: present
+      ansible.netcommon.cli_config:
+        config: |
+          banner motd ^C
+          Managed by Ansible - CCIE Automation lab
+          ^C
       when: lab_role is defined and lab_role == "study"</code></pre>
   </div></details>
 </div>
@@ -428,7 +436,7 @@ vlans:
 </div>
 
 <footer>
-  Provider/module facts on this page were verified against the <code>cisco.ios</code> and <code>ansible.netcommon</code> collections' own GitHub source on 2026-09-09 (docs.ansible.com was rate-limiting live page loads at the time) — reverify with <code>ansible-doc &lt;fqcn&gt;</code> once you're on the actual CWS, since a collection's installed version can drift from what's documented online.
+  Module facts on this page were verified against the <code>ansible.netcommon</code> collection's own GitHub source on 2026-09-21, against the confirmed-installed version (8.4.0) from a live <code>ansible-galaxy collection list</code> on the candidate workstation. Task 1's reliance on <code>ansible.netcommon.default</code> as a cliconf fallback is the one fact in this workbook not yet confirmed against a live device — verify with <code>ansible-doc -t cliconf ansible.netcommon.default</code> before trusting it, and if it doesn't resolve or misbehaves against IOSv/IOSvL2, that's worth logging in <code>blueprint-tracker.md</code> as a gap in 2.7.d's CLI leg, the same way the missing <code>CiscoDevNet/iosxe</code> Terraform provider was logged for 2.8.
 </footer>
 
 </div>

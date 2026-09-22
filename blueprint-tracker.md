@@ -58,6 +58,7 @@ Ansible/Netmiko (Paramiko-based) need the equivalent handled separately — `~/.
 - [ ] 2.5 [Build] Create a NETCONF filter using XPath
 - [ ] 2.6 [Build] Configure devices via NETCONF/RESTCONF using YANG analysis tools, driven by a source of truth
 - [ ] 2.7 [Build] Create/use an Ansible role to manage infrastructure
+  - **Collection correction (2026-09-21):** the v1.1 Equipment and Software List names only `cisco.aci 2.12.0` under Ansible Core 2.19.3 — no `cisco.ios`. Confirmed live via `ansible-galaxy collection list` on the CWS: only `ansible.netcommon 8.4.0`, `ansible.utils 6.0.1`, `cisco.aci 2.12.0` are installed. Workbook reworked to drive IOSv/IOSvL2/Cat8000V CLI tasks through `ansible.netcommon.cli_command`/`cli_config` with `ansible_network_os: ansible.netcommon.default` (no vendor cliconf available) instead of `cisco.ios` resource modules. The NETCONF/HTTPAPI legs of 2.7.d were already collection-agnostic and are unaffected. **Unverified:** whether `ansible.netcommon.default` cliconf actually works cleanly against IOSv/IOSvL2 in practice — check this first during the actual study session.
   - [ ] 2.7.a Loop control
   - [ ] 2.7.b Conditionals
   - [ ] 2.7.c Variables and templating
