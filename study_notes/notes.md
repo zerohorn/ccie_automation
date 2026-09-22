@@ -4,6 +4,22 @@
 https://spacelift.io/blog/ansible-cheat-sheet
 https://github.com/eon01/AnsibleCheatSheet
 
+### Installed Ansible Collections
+```
+(main) expert@expert-cws:~/ccie_automation/output/2-7-ansible$ ansible-galaxy collection list
+
+# /opt/uv/tools/ansible-core/lib/python3.13/site-packages/ansible/_internal/ansible_collections
+Collection           Version
+-------------------- -------
+ansible._protomatter 2.19.3 
+
+# /usr/share/ansible/collections/ansible_collections
+Collection           Version
+-------------------- -------
+ansible.netcommon    8.4.0  
+ansible.utils        6.0.1  
+cisco.aci            2.12.0 
+```
 
 ## 2.8 Terraform IOS-XE
 ### How to enable netconf on IOS-XE

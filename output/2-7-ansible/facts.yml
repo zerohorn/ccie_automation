@@ -1,0 +1,10 @@
+---
+- name: Facts Playbook
+  hosts: cli_devices
+  gather_facts: false
+
+  tasks:
+    - name: Gather all legacy facts
+      cisco.ios.ios_facts:
+        gather_subset: all
+      register: facts_out
