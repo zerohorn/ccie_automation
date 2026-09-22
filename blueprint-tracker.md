@@ -168,11 +168,12 @@ ships a public private key/token — do not reuse it).
 |---|---|---|---|
 | HashiCorp Vault 1.20 | `lab_infra/vault/` | 5.4 | ✅ Running on HORNLAB01 |
 | Telegraf + InfluxDB + Grafana | `lab_infra/telemetry_tig/` | 3.4, 3.5 | ✅ Running on HORNLAB01 (Grafana bind-mount permission gotcha hit and documented — see stack README) |
-| GitLab CE | `lab_infra/gitlab/` | 1.3, 1.4 | ✅ Running on HORNLAB01 |
+| GitLab CE | `lab_infra/gitlab/` | 1.3, 1.4 | ✅ Running on HORNLAB01, Runner registered (legacy `--registration-token` flow — this instance still serves it despite the deprecation banner; see `lab_infra/gitlab/README.md`) |
 
-Not yet done: Vault init/unseal workflow exercised, Cat8000V telemetry
-dial-out pointed at the TIG stack, GitLab Runner registered. Containers being
-"Up" isn't the same as the domain being covered — see next steps below.
+Not yet done: Cat8000V telemetry dial-out pointed at the TIG stack, a real
+`.gitlab-ci.yml` test pipeline run against the new runner. Containers being
+"Up" and a runner showing "Online" isn't the same as the domain being
+covered — see next steps below.
 
 Still fully unbuilt: Cisco NSO (2.9 — no instance anywhere, own learning
 curve, don't defer to the last month), Kubernetes (4.3 — no cluster; k3s/kind

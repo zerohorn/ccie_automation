@@ -35,20 +35,25 @@ so log in and change it promptly.
 ## Registering a GitLab Runner (domain 1.3/1.4)
 
 `docker-compose.yml` includes a `gitlab-runner` service on the same Docker
-network as `gitlab`, so it reaches it internally at `http://gitlab:8929/` —
-no host IP/port juggling needed. GitLab 16+ retired the old shared
-registration-token flow, so you get a per-runner authentication token from
-the UI first.
+network as `gitlab`, so it reaches it internally.
 
-### 1. Get a runner authentication token
+**Correction from an earlier version of this doc:** I initially wrote this
+assuming GitLab 16+ had fully retired the shared registration-token flow in
+favor of per-runner `glrt-` authentication tokens. That's what GitLab
+announced, but on this instance (17.5.2-ce.0) the legacy flow is still
+served — deprecated (there's a warning banner) but functional — and the
+`glrt-` auth-token path's own runner-detail page didn't even load correctly
+here. **Use the registration-token flow below; it's the one confirmed
+working.**
 
-In the GitLab web UI:
-- **Admin Area → CI/CD → Runners → "New instance runner"** (covers every
-  project), or **a specific project → Settings → CI/CD → Runners → "New
-  project runner"** if you only want it scoped to one repo.
-- Pick platform "Linux", add a tag if you want (e.g. `hornlab01`), create it.
-- Copy the authentication token shown (starts with `glrt-`) — it's only
-  displayed once.
+### 1. Get the registration token
+
+In the GitLab web UI: **Admin Area → CI/CD → Runners → the "⋮" menu (or an
+existing runner row) → "Install a runner"**. It shows a deprecation banner
+but still gives you a ready-made command block containing `--url` and
+`--registration-token <token>` — copy the token value from there (don't
+retype it by hand; a hand-typed token is an easy way to introduce a typo or,
+if composed in a rich-text editor, get smart-quoted into garbage).
 
 **Version note:** the runner image is pinned to `GITLAB_RUNNER_VERSION` (default
 `v17.5.0`, matching the GitLab server's `17.5.2-ce.0`) instead of `latest`.
@@ -74,16 +79,29 @@ docker compose up -d gitlab-runner
 
 docker exec -it gitlab-runner gitlab-runner register \
   --non-interactive \
-  --url "http://gitlab:8929/" \
-  --token "<glrt-your-token>" \
+  --url "http://gitlab.hornlab.local:8929/" \
+  --registration-token "<token-from-the-install-a-runner-modal>" \
   --executor "docker" \
   --docker-image "docker:24.0.5" \
   --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" \
   --description "hornlab01-runner"
 ```
 
+Two easy-to-hit mistakes here, both from lived experience getting this
+working:
+- `docker exec -it gitlab-runner gitlab-runner register ...` needs
+  `gitlab-runner` **twice** — once as the container name, once as the binary
+  to run inside it. Drop the second one and you get `exec: "register":
+  executable file not found`.
+- Use straight quotes (`"`) around the token, not curly/smart quotes — some
+  editors auto-convert `"` to `“`/`”`, which the shell won't parse as a
+  quote character, corrupting the token.
+
 Confirm it shows up: Admin Area → CI/CD → Runners (or the project's Runners
-page) should list it as online.
+page) should list it as online. This flow creates a **new** runner entry —
+if you'd already created one via "New instance runner" (the `glrt-` flow)
+and it's stuck showing "Never contacted," delete that stale one with the
+red ✕ once the new one is confirmed online.
 
 ### 3. Security note on `/var/run/docker.sock`
 
