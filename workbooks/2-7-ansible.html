@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2.7 Ansible Workbook — IOSv/IOSvL2 + Cat8000V</title>
+<title>2.7 Ansible Workbook — Cisco APIC (ACI)</title>
 <style>
   :root {
     --bg: #0f1115;
@@ -124,301 +124,257 @@
 <header>
   <h1>Lab Workbook — 2.7 Create/Use an Ansible Role to Manage Infrastructure</h1>
   <div class="meta">
-    <strong>Target:</strong> IOSv/IOSvL2 + Cat8000V, three connection plugins (<code>network_cli</code>, <code>netconf</code>, <code>httpapi</code>) &nbsp;·&nbsp;
+    <strong>Target:</strong> Cisco APIC via <code>cisco.aci</code> collection (HTTPAPI/REST) &nbsp;·&nbsp;
     <strong>Weight:</strong> 2.7 is one of nine sub-items inside 2.0 IaC (30% of the exam)
   </div>
 </header>
 
 <div class="note warn">
-  <strong>Revision note (2026-09-21):</strong> the v1.1 Equipment and Software List names only <code>cisco.aci 2.12.0</code> under Ansible Core 2.19.3 — no <code>cisco.ios</code>. Confirmed live against a candidate workstation via <code>ansible-galaxy collection list</code>: installed collections are <code>ansible.netcommon 8.4.0</code>, <code>ansible.utils 6.0.1</code>, and <code>cisco.aci 2.12.0</code> only. <code>cisco.ios</code> is absent, which also means there's no IOS <em>cliconf</em> plugin — <code>network_cli</code> against IOSv/IOSvL2/Cat8000V can't use platform-aware prompt handling and falls back to <code>ansible.netcommon</code>'s generic <code>default</code> cliconf/terminal plugins. An earlier draft of this workbook assumed <code>cisco.ios</code> modules (<code>ios_facts</code>, <code>ios_vlans</code>, <code>ios_banner</code>) were available; they are not. This version drives all IOS-family CLI work through <code>ansible.netcommon.cli_command</code>/<code>cli_config</code> instead, and keeps the NETCONF/HTTPAPI legs unchanged since those never depended on <code>cisco.ios</code> in the first place. <strong>Verify the <code>default</code> cliconf actually resolves on your CWS</strong> with <code>ansible-doc -t cliconf ansible.netcommon.default</code> before trusting Task 1 below — if it doesn't, <code>network_cli</code>'s CLI leg of 2.7.d may not be exercisable against IOS at all with only what's installed, which would itself be worth logging as a blueprint-tracker gap.
+  <strong>Revision note (2026-09-24):</strong> the v1.1 Equipment and Software List names only <code>cisco.aci 2.12.0</code> under Ansible Core 2.19.3 — no <code>cisco.ios</code>. Confirmed live via <code>ansible-galaxy collection list</code> on the candidate workstation: installed collections are exactly <code>ansible.netcommon 8.4.0</code>, <code>ansible.utils 6.0.1</code>, and <code>cisco.aci 2.12.0</code>. An earlier draft of this workbook targeted IOSv/IOSvL2/Cat8000V with <code>cisco.ios</code> modules; that collection isn't installed, so this version retargets the whole workbook to APIC/ACI — the same pivot already applied to <code>2-8-terraform.html</code> for the same equipment-list reason. The object model below (tenant → application profile → EPGs → contract) intentionally mirrors that Terraform workbook's, so the two are worth comparing side by side.
 </div>
 
 <div class="note">
   No official per-task timing is published for the CCIE Automation lab — treat any time box here as a study discipline, not an exam-accurate simulation.
-  <strong>Suggested time box: 75 min</strong> (three connection plugins in one workbook — longer than a single-platform topic). If you're stuck past it, open the hint before the solution — retrieval practice is the point.
+  <strong>Suggested time box: 60 min.</strong> If you're stuck past it, open the hint before the solution — retrieval practice is the point.
 </div>
 
 <div class="note docs">
   <strong>Official docs (for study use only — not available during the exam):</strong>
-  <a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/index.html" target="_blank" rel="noopener">ansible.netcommon collection</a> ·
-  <a href="https://docs.ansible.com/ansible/latest/collections/ansible/utils/index.html" target="_blank" rel="noopener">ansible.utils collection</a> ·
+  <a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/index.html" target="_blank" rel="noopener">cisco.aci collection</a> ·
+  <a href="https://github.com/CiscoDevNet/ansible-aci" target="_blank" rel="noopener">collection source (GitHub)</a> ·
   <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops</a> ·
   <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_conditionals.html" target="_blank" rel="noopener">Conditionals</a>.
-  <code>docs.ansible.com</code> was rate-limiting live fetches while this workbook was built, so plugin/module existence was verified against each collection's GitHub source rather than every doc page loading successfully — if a link below 404s, run <code>ansible-doc &lt;fqcn&gt;</code> on the CWS instead, which is authoritative for your exact installed version anyway.
+  Module/parameter names below were checked against the collection's own module docs, not a live APIC — <code>ansible-doc cisco.aci.&lt;module&gt;</code> on the CWS is authoritative for your exact installed 2.12.0 build if anything here disagrees.
 </div>
 
 <h2><span class="num">Prereq</span>Before Task 1</h2>
 <div class="task-block checklist">
-  <label><input type="checkbox"> IOSv/IOSvL2 SSH reachable (KEX workaround from <code>blueprint-tracker.md</code> already applied client-side)</label>
-  <label><input type="checkbox"> Cat8000V reachable on SSH, NETCONF (830), and RESTCONF (443) — all three already confirmed in Phase 0</label>
-  <label><input type="checkbox"> <code>ansible --version</code> shows Core 2.19.3; confirm with <code>ansible-galaxy collection list</code> — expect exactly <code>ansible.netcommon 8.4.0</code>, <code>ansible.utils 6.0.1</code>, <code>cisco.aci 2.12.0</code>. <strong>No <code>cisco.ios</code>.</strong> Don't assume otherwise — the equipment list only names <code>cisco.aci</code> explicitly, and this has been confirmed live.</label>
-  <label><input type="checkbox"> <code>ansible-doc -t cliconf ansible.netcommon.default</code> resolves — this is the fallback cliconf Task 1's <code>network_cli</code> connection depends on in the absence of <code>cisco.ios</code></label>
-  <label><input type="checkbox"> Inventory drafted with three groups: <code>cli_devices</code>, <code>netconf_devices</code>, <code>httpapi_devices</code></label>
+  <label><input type="checkbox"> A reachable APIC (real hardware, ACI Simulator, or a DevNet sandbox — <code>blueprint-tracker.md</code> currently shows the local ACI Simulator deferred pending your RAM upgrade, so line up an interim target, e.g. a reservable sandbox at <code>developer.cisco.com/site/sandbox</code>, before starting)</label>
+  <label><input type="checkbox"> APIC GUI/API reachable over HTTPS from the CWS — <code>curl -k -X POST https://&lt;apic&gt;/api/aaaLogin.json -d '{"aaaUser":{"attributes":{"name":"admin","pwd":"..."}}}'</code> returns a token, not a connection error</label>
+  <label><input type="checkbox"> <code>ansible --version</code> shows Core 2.19.3; confirm with <code>ansible-galaxy collection list</code> — expect exactly <code>ansible.netcommon 8.4.0</code>, <code>ansible.utils 6.0.1</code>, <code>cisco.aci 2.12.0</code>. No <code>cisco.ios</code>.</label>
   <label><input type="checkbox"> Credentials plan decided — <code>ansible-vault</code> or gitignored <code>group_vars/*/vault.yml</code></label>
+  <label><input type="checkbox"> Working in a dedicated lab tenant (not <code>common</code>/<code>infra</code>) so apply/teardown cycles can't touch shared fabric objects</label>
 </div>
 
 <!-- TASK 1 -->
-<h2><span class="num">1</span>network_cli connection + facts <small style="color:var(--muted)">(2.7.d — CLI leg)</small></h2>
+<h2><span class="num">1</span>HTTPAPI connection + facts <small style="color:var(--muted)">(2.7.d)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Build a <code>cli_devices</code> inventory group for IOSv/IOSvL2 using the <code>network_cli</code> connection plugin. With no <code>cisco.ios</code> collection installed, there's no IOS-specific cliconf — fall back to <code>ansible_network_os: ansible.netcommon.default</code>, the generic cliconf/terminal plugin. Then run a "facts" play using <code>ansible.netcommon.cli_command</code> to issue <code>show version</code> and pull the IOS version out of the raw text with a Jinja2 filter — this proves connectivity/auth before you configure anything.</p>
-  <h3>Reference (verify locally — this is the part most likely to need adjustment)</h3>
+  <p>Build an <code>apic_devices</code> inventory group using the <code>httpapi</code> connection plugin with <code>cisco.aci.aci</code> as the network OS. Then run a query-only play with <code>cisco.aci.aci_tenant</code> against the built-in <code>common</code> tenant — this proves connectivity/auth before you provision anything, without risking any object that matters.</p>
+  <h3>Reference</h3>
   <ul>
-    <li>Connection vars: <code>ansible_connection: ansible.netcommon.network_cli</code>, <code>ansible_network_os: ansible.netcommon.default</code></li>
-    <li><code>ansible.netcommon.cli_command</code>: runs one CLI command over an existing <code>network_cli</code> connection, returns raw text in <code>stdout</code> — no vendor-specific parsing, since that's what a platform collection (<code>cisco.ios</code>) would normally supply and isn't installed here</li>
-    <li>The generic cliconf handles basic <code>&gt;</code>/<code>#</code> prompts and paging reasonably for IOS-like CLIs, but doesn't know IOS-specific quirks (e.g. <code>enable</code> secret handling, config-mode prompt variants) the way <code>cisco.ios</code>'s cliconf would — if a command hangs or mis-detects the prompt, that's the likely cause</li>
+    <li>Connection vars: <code>ansible_connection: httpapi</code>, <code>ansible_network_os: cisco.aci.aci</code>, <code>ansible_httpapi_use_ssl: true</code>, <code>ansible_httpapi_validate_certs: false</code></li>
+    <li><code>cisco.aci.aci_tenant</code>: <code>tenant</code> (name), <code>description</code>, <code>state</code> (<code>present</code>/<code>absent</code>/<code>query</code>) — <code>state: query</code> with no other filters just reads back the object</li>
   </ul>
   <h3>Docs</h3>
   <ul class="docs">
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/network_cli_connection.html" target="_blank" rel="noopener"><code>ansible.netcommon.network_cli</code></a></li>
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/cli_command_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.cli_command</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/aci_tenant_module.html" target="_blank" rel="noopener"><code>cisco.aci.aci_tenant</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/index.html#modules" target="_blank" rel="noopener">cisco.aci module index</a></li>
   </ul>
   <h3>Verification</h3>
   <pre><code>ansible-playbook -i inventory.yml facts.yml</code></pre>
-  <p>Registered output should show a version string matching the device's actual IOS version, extracted from raw <code>show version</code> text.</p>
+  <p>Registered output should show <code>common</code>'s DN (<code>uni/tn-common</code>) under <code>current</code>, not a connection/auth error.</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p>Without <code>cisco.ios</code>, there's no fully-qualified vendor <code>ansible_network_os</code> to set — <code>ansible.netcommon.default</code> is the actual value, not a placeholder.</p>
-    <p><code>cli_command</code>'s output lands in <code>stdout</code> as one big string; pull the version line with a regex filter, e.g. <code>| regex_search('Version ([0-9.]+)', '\1')</code>, rather than expecting structured facts.</p>
-    <p>Put connection vars once under <code>group_vars/cli_devices.yml</code> rather than repeating per host.</p>
+    <p>Unlike <code>network_cli</code>, <code>httpapi</code> needs no per-platform cliconf — <code>cisco.aci.aci</code> is a complete, self-contained network OS value for this connection type, which is exactly why HTTPAPI is the one connection-plugin leg of 2.7.d this equipment list can actually exercise.</p>
+    <p>Put connection vars once under <code>group_vars/apic_devices.yml</code> rather than repeating per host.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
 <pre><code># inventory.yml
 all:
   children:
-    cli_devices:
+    apic_devices:
       hosts:
-        iosv-1:
-          ansible_host: 10.0.0.11
-        iosvl2-1:
-          ansible_host: 10.0.0.12
+        apic1:
+          ansible_host: 10.0.0.31
       vars:
-        ansible_connection: ansible.netcommon.network_cli
-        ansible_network_os: ansible.netcommon.default
-        ansible_user: "{{ vault_ios_user }}"
-        ansible_password: "{{ vault_ios_password }}"
+        ansible_connection: httpapi
+        ansible_network_os: cisco.aci.aci
+        ansible_httpapi_use_ssl: true
+        ansible_httpapi_validate_certs: false
+        ansible_user: "{{ vault_apic_user }}"
+        ansible_password: "{{ vault_apic_password }}"
 
 # facts.yml
-- name: Gather IOS facts via generic CLI command
-  hosts: cli_devices
+- name: Query the built-in common tenant
+  hosts: apic_devices
   gather_facts: false
   tasks:
-    - name: Run show version
-      ansible.netcommon.cli_command:
-        command: show version
-      register: show_version_out
+    - name: Read common tenant
+      cisco.aci.aci_tenant:
+        tenant: common
+        state: query
+      register: common_out
 
-    - name: Extract IOS version
-      set_fact:
-        ios_version: "{{ show_version_out.stdout | regex_search('Version ([0-9.()A-Za-z]+)', '\\1') | first }}"
-
-    - name: Show version
+    - name: Show tenant DN
       debug:
-        var: ios_version</code></pre>
+        var: common_out.current[0].fvTenant.attributes.dn</code></pre>
   </div></details>
 </div>
 
 <!-- TASK 2 -->
-<h2><span class="num">2</span>NETCONF connection plugin <small style="color:var(--muted)">(2.7.d — NETCONF leg)</small></h2>
+<h2><span class="num">2</span>Variables &amp; templating <small style="color:var(--muted)">(2.7.c)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Add a <code>netconf_devices</code> group for Cat8000V using the generic <code>netconf</code> connection plugin, then use <code>ansible.netcommon.netconf_get</code> with a subtree filter to read its running config — the same NETCONF agent you already validated in Phase 0, just driven through Ansible instead of a raw NETCONF client.</p>
-  <h3>Reference (verified against collection source)</h3>
+  <p>Externalize APIC connection vars (mark credentials sensitive via vault), plus a variable representing a <em>set</em> of EPGs you'll provision in Task 3 — a map keyed by tier name, each value at least a display name and a description.</p>
+  <h3>Reference</h3>
   <ul>
-    <li>Connection var: <code>ansible_connection: ansible.netcommon.netconf</code> (port defaults to 830; no platform-specific <code>ansible_network_os</code> needed — this module is platform-agnostic)</li>
-    <li><code>ansible.netcommon.netconf_get</code>: takes <code>source</code> (<code>running</code>/<code>candidate</code>/<code>startup</code>) and a raw XML <code>filter</code>, returns the matching subtree</li>
+    <li><code>cisco.aci.aci_epg</code> (used in Task 3) takes <code>epg</code> (name) and <code>description</code> as plain strings — no special typing constraint on your variable's shape</li>
   </ul>
   <h3>Docs</h3>
   <ul class="docs">
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/netconf_connection.html" target="_blank" rel="noopener"><code>ansible.netcommon.netconf</code> connection</a></li>
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/netconf_get_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.netconf_get</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Variables</a> ·
+        <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_templating.html" target="_blank" rel="noopener">Templating (Jinja2)</a> ·
+        <a href="https://docs.ansible.com/ansible/latest/vault_guide/index.html" target="_blank" rel="noopener">ansible-vault</a></li>
   </ul>
   <h3>Verification</h3>
-  <pre><code>ansible-playbook -i inventory.yml netconf_facts.yml</code></pre>
-  <p>Output should show raw XML for the requested container, not an error about the connection type.</p>
+  <pre><code>ansible-inventory -i inventory.yml --host apic1</code></pre>
+  <p>Should resolve <code>vault_apic_user</code>/<code>vault_apic_password</code> without prompting for a missing variable, and print your EPG map.</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p>The <code>filter</code> argument is a subtree filter matching a YANG container — same concept as the XPath filters from 2.5, just wrapped as a plain string here instead of built with a NETCONF client library.</p>
+    <p>A map like <code>epgs: { web: { name: WEB, description: "web tier" }, app: {...}, db: {...} }</code> sets up Task 3's <code>loop</code> and its Jinja2 templating (e.g. <code>{{ item.value.name | upper }}</code>) in one shot.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
-<pre><code># add to inventory.yml
-    netconf_devices:
-      hosts:
-        cat8000v-1:
-          ansible_host: 10.0.0.21
-      vars:
-        ansible_connection: ansible.netcommon.netconf
-        ansible_user: "{{ vault_xe_user }}"
-        ansible_password: "{{ vault_xe_password }}"
+<pre><code># group_vars/apic_devices/vars.yml
+lab_tenant_name: CCIE_LAB
+app_profile_name: STUDY_AP
 
-# netconf_facts.yml
-- name: Read Cat8000V native config via NETCONF
-  hosts: netconf_devices
-  gather_facts: false
-  tasks:
-    - name: Get native config subtree
-      ansible.netcommon.netconf_get:
-        source: running
-        filter: |
-          <filter>
-            <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"/>
-          </filter>
-      register: netconf_out
+epgs:
+  web: { name: web, description: "Web tier EPG" }
+  app: { name: app, description: "App tier EPG" }
+  db:  { name: db,  description: "DB tier EPG" }
 
-    - name: Show result
-      debug:
-        var: netconf_out.output</code></pre>
+# group_vars/apic_devices/vault.yml (ansible-vault encrypted)
+vault_apic_user: admin
+vault_apic_password: "..."</code></pre>
   </div></details>
 </div>
 
 <!-- TASK 3 -->
-<h2><span class="num">3</span>HTTPAPI/RESTCONF connection plugin <small style="color:var(--muted)">(2.7.d — HTTPAPI leg)</small></h2>
+<h2><span class="num">3</span>Provisioning + loop control <small style="color:var(--muted)">(2.7.a)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Add an <code>httpapi_devices</code> group for the same Cat8000V using the <code>httpapi</code> connection plugin backed by the generic <code>restconf</code> httpapi implementation, then use <code>ansible.netcommon.restconf_get</code> to fetch the same data as Task 2, this time as RESTCONF JSON.</p>
-  <h3>Reference (verified against collection source)</h3>
+  <p>Provision one <code>cisco.aci.aci_tenant</code>, one <code>cisco.aci.aci_ap</code> (application profile) underneath it, and one <code>cisco.aci.aci_epg</code> per entry in your Task 2 map — driven by Ansible's own <code>loop</code> keyword, not a pre-expanded list of tasks.</p>
+  <h3>Reference</h3>
   <ul>
-    <li>Connection vars: <code>ansible_connection: ansible.netcommon.httpapi</code>, <code>ansible_network_os: ansible.netcommon.restconf</code></li>
-    <li><code>ansible.netcommon.restconf_get</code>: takes a <code>path</code> (RESTCONF resource URI relative to <code>/restconf/data/</code>) and a <code>content</code> type</li>
+    <li><code>cisco.aci.aci_tenant</code>: <code>tenant</code> (name), <code>description</code>, <code>state</code></li>
+    <li><code>cisco.aci.aci_ap</code>: <code>tenant</code>, <code>ap</code> (name), <code>description</code>, <code>state</code></li>
+    <li><code>cisco.aci.aci_epg</code>: <code>tenant</code>, <code>ap</code>, <code>epg</code> (name), <code>description</code>, <code>state</code></li>
   </ul>
   <h3>Docs</h3>
   <ul class="docs">
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/httpapi_connection.html" target="_blank" rel="noopener"><code>ansible.netcommon.httpapi</code> connection</a></li>
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/restconf_httpapi.html" target="_blank" rel="noopener"><code>ansible.netcommon.restconf</code> httpapi plugin</a></li>
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/restconf_get_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.restconf_get</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/aci_tenant_module.html" target="_blank" rel="noopener"><code>aci_tenant</code></a> ·
+        <a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/aci_ap_module.html" target="_blank" rel="noopener"><code>aci_ap</code></a> ·
+        <a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/aci_epg_module.html" target="_blank" rel="noopener"><code>aci_epg</code></a></li>
+    <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops</a></li>
   </ul>
   <h3>Verification</h3>
-  <pre><code>ansible-playbook -i inventory.yml restconf_facts.yml</code></pre>
-  <p>Output should be JSON describing the same underlying config Task 2 returned as XML.</p>
+  <pre><code>ansible-playbook -i inventory.yml provision.yml</code></pre>
+  <p>Then on the APIC GUI: <em>Tenants → CCIE_LAB → Application Profiles → STUDY_AP → Application EPGs</em> should list all three EPGs. Re-run the playbook — it should report no changes (idempotent).</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p><code>path</code> is the same resource identifier you already used with <code>curl</code> against Cat8000V's RESTCONF endpoint in Phase 0 — just without the <code>/restconf/data/</code> prefix, which the plugin adds for you.</p>
+    <p><code>loop: "{{ epgs | dict2items }}"</code>, addressing the current item as <code>item.value.name</code>/<code>item.value.description</code>; add <code>loop_control: { label: "{{ item.key }}" }</code> so playbook output shows tier names instead of full dicts.</p>
+    <p>Build the EPG's live description with a Jinja2 filter, e.g. <code>{{ item.value.description | upper }}</code>, to hit 2.7.c's templating angle in the same task.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
-<pre><code># add to inventory.yml
-    httpapi_devices:
-      hosts:
-        cat8000v-1:
-          ansible_host: 10.0.0.21
-      vars:
-        ansible_connection: ansible.netcommon.httpapi
-        ansible_network_os: ansible.netcommon.restconf
-        ansible_httpapi_use_ssl: true
-        ansible_httpapi_validate_certs: false
-        ansible_user: "{{ vault_xe_user }}"
-        ansible_password: "{{ vault_xe_password }}"
-
-# restconf_facts.yml
-- name: Read Cat8000V native config via RESTCONF
-  hosts: httpapi_devices
+<pre><code>- name: Provision ACI tenant, AP, and EPGs
+  hosts: apic_devices
   gather_facts: false
   tasks:
-    - name: Get native config resource
-      ansible.netcommon.restconf_get:
-        path: /Cisco-IOS-XE-native:native
-        content: config
-      register: restconf_out
+    - name: Create tenant
+      cisco.aci.aci_tenant:
+        tenant: "{{ lab_tenant_name }}"
+        description: "CCIE Automation study tenant - safe to destroy/recreate"
+        state: present
 
-    - name: Show result
-      debug:
-        var: restconf_out.response</code></pre>
-  </div></details>
-</div>
+    - name: Create application profile
+      cisco.aci.aci_ap:
+        tenant: "{{ lab_tenant_name }}"
+        ap: "{{ app_profile_name }}"
+        state: present
 
-<!-- TASK 4 -->
-<h2><span class="num">4</span>Variables, templating &amp; loop control <small style="color:var(--muted)">(2.7.a, 2.7.c)</small></h2>
-<div class="task-block">
-  <h3>Requirement</h3>
-  <p>Define a variable representing a <em>set</em> of VLANs (map or list, your choice), then provision them on <code>cli_devices</code> by pushing raw config lines with <code>ansible.netcommon.cli_config</code> — no <code>cisco.ios.ios_vlans</code> resource module is installed, so the config text itself has to be built. Drive the provisioning with Ansible's own <code>loop</code> keyword (not a single multi-line config block) and build at least one field with Jinja2 templating.</p>
-  <h3>Reference (verified against collection source)</h3>
-  <ul>
-    <li><code>ansible.netcommon.cli_config</code>: takes <code>config</code> (a string or list of config-mode lines), diffs it against running config, and pushes only what's missing — idempotent like a resource module, just without structured state tracking</li>
-  </ul>
-  <h3>Docs</h3>
-  <ul class="docs">
-    <li><a href="https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/cli_config_module.html" target="_blank" rel="noopener"><code>ansible.netcommon.cli_config</code></a></li>
-    <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops</a> ·
-        <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Variables</a> ·
-        <a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_templating.html" target="_blank" rel="noopener">Templating (Jinja2)</a></li>
-  </ul>
-  <h3>Verification</h3>
-  <pre><code>ansible-playbook -i inventory.yml vlans.yml</code></pre>
-  <p>Follow with an <code>ansible.netcommon.cli_command</code> task running <code>show vlan brief</code> to confirm each VLAN landed with the expected id/name.</p>
-
-  <details class="hint"><summary>Hint</summary><div class="content">
-    <p><code>cli_config</code> takes one block of config text per call — to exercise the <em>loop</em> keyword tested by 2.7.a, call it once per dict entry with <code>loop: "{{ vlans | dict2items }}"</code> rather than building one big multi-VLAN block up front.</p>
-    <p>Build the name field with a Jinja2 filter (e.g. <code>{{ item.value.name | upper }}</code>) to hit 2.7.c's templating angle in the same task.</p>
-  </div></details>
-
-  <details class="solution"><summary>Solution</summary><div class="content">
-<pre><code># group_vars/cli_devices.yml
-vlans:
-  students: { id: 100, name: students }
-  staff:    { id: 200, name: staff }
-  mgmt:     { id: 999, name: mgmt }
-
-# vlans.yml
-- name: Provision VLANs via loop + templating
-  hosts: cli_devices
-  gather_facts: false
-  tasks:
-    - name: Create one VLAN per loop iteration
-      ansible.netcommon.cli_config:
-        config: |
-          vlan {{ item.value.id }}
-           name {{ item.value.name | upper }}_VLAN
-      loop: "{{ vlans | dict2items }}"
+    - name: Create one EPG per loop iteration
+      cisco.aci.aci_epg:
+        tenant: "{{ lab_tenant_name }}"
+        ap: "{{ app_profile_name }}"
+        epg: "{{ item.value.name }}"
+        description: "{{ item.value.description | upper }}"
+        state: present
+      loop: "{{ epgs | dict2items }}"
       loop_control:
         label: "{{ item.key }}"</code></pre>
   </div></details>
 </div>
 
-<!-- TASK 5 -->
-<h2><span class="num">5</span>Conditionals <small style="color:var(--muted)">(2.7.b)</small></h2>
+<!-- TASK 4 -->
+<h2><span class="num">4</span>Conditionals <small style="color:var(--muted)">(2.7.b)</small></h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Add a task that only runs on a subset of your inventory — e.g. apply a config change only when a host-level variable flags it as eligible, or only for hosts in a specific group. Run the play against the full inventory and confirm the task is skipped where the condition is false.</p>
-  <h3>Reference (verified against docs)</h3>
+  <p>Create a <code>cisco.aci.aci_contract</code> under your tenant, then bind two EPGs to it via <code>cisco.aci.aci_epg_to_contract</code> — but only when a variable flags the environment as ready for east-west traffic. Run the play with the flag both unset and set, and confirm the binding tasks are skipped/applied accordingly.</p>
+  <h3>Reference</h3>
   <ul>
+    <li><code>cisco.aci.aci_contract</code>: <code>tenant</code>, <code>contract</code> (name), <code>scope</code>, <code>state</code></li>
+    <li><code>cisco.aci.aci_epg_to_contract</code>: <code>tenant</code>, <code>ap</code>, <code>epg</code>, <code>contract</code>, <code>contract_type</code> (<code>provider</code>/<code>consumer</code>), <code>state</code></li>
     <li><code>when</code> evaluates a Jinja2 expression without the surrounding <code>{{ }}</code></li>
-    <li>Group membership is checkable via <code>inventory_hostname in groups['cli_devices']</code></li>
   </ul>
   <h3>Docs</h3>
   <ul class="docs">
+    <li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/aci_contract_module.html" target="_blank" rel="noopener"><code>aci_contract</code></a> ·
+        <a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/aci_epg_to_contract_module.html" target="_blank" rel="noopener"><code>aci_epg_to_contract</code></a></li>
     <li><a href="https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_conditionals.html" target="_blank" rel="noopener">Conditionals</a></li>
   </ul>
   <h3>Verification</h3>
-  <pre><code>ansible-playbook -i inventory.yml vlans_conditional.yml -vv</code></pre>
-  <p>Verbose output should show <code>skipping: [host]</code> for hosts that don't meet the condition, and normal execution for the rest.</p>
+  <pre><code>ansible-playbook -i inventory.yml contract.yml -e enable_contracts=false -vv
+ansible-playbook -i inventory.yml contract.yml -e enable_contracts=true -vv</code></pre>
+  <p>First run should show <code>skipping</code> on both binding tasks; second should apply them and show up under <em>web EPG → Contracts</em> and <em>app EPG → Contracts</em> on the APIC GUI, one as provider and one as consumer.</p>
 
   <details class="hint"><summary>Hint</summary><div class="content">
-    <p>A host var like <code>lab_role: study</code> set on only one host in <code>cli_devices</code>, checked with <code>when: lab_role is defined and lab_role == "study"</code>, is the simplest way to produce a real skip/apply contrast without touching group membership logic.</p>
+    <p><code>when: enable_contracts | default(false) | bool</code> guards both binding tasks — the contract object itself can still always be created, only the EPG bindings are conditional.</p>
   </div></details>
 
   <details class="solution"><summary>Solution</summary><div class="content">
-<pre><code>- name: Conditionally set a banner
-  hosts: cli_devices
+<pre><code>- name: Conditionally bind a web-to-app contract
+  hosts: apic_devices
   gather_facts: false
   tasks:
-    - name: Apply banner only on flagged hosts
-      ansible.netcommon.cli_config:
-        config: |
-          banner motd ^C
-          Managed by Ansible - CCIE Automation lab
-          ^C
-      when: lab_role is defined and lab_role == "study"</code></pre>
+    - name: Create contract
+      cisco.aci.aci_contract:
+        tenant: "{{ lab_tenant_name }}"
+        contract: WEB_TO_APP
+        scope: tenant
+        state: present
+
+    - name: Bind web EPG as provider
+      cisco.aci.aci_epg_to_contract:
+        tenant: "{{ lab_tenant_name }}"
+        ap: "{{ app_profile_name }}"
+        epg: "{{ epgs.web.name }}"
+        contract: WEB_TO_APP
+        contract_type: provider
+        state: present
+      when: enable_contracts | default(false) | bool
+
+    - name: Bind app EPG as consumer
+      cisco.aci.aci_epg_to_contract:
+        tenant: "{{ lab_tenant_name }}"
+        ap: "{{ app_profile_name }}"
+        epg: "{{ epgs.app.name }}"
+        contract: WEB_TO_APP
+        contract_type: consumer
+        state: present
+      when: enable_contracts | default(false) | bool</code></pre>
   </div></details>
 </div>
 
-<!-- TASK 6 -->
-<h2><span class="num">6</span>Stretch — package as a role</h2>
+<!-- TASK 5 -->
+<h2><span class="num">5</span>Stretch — package as a role</h2>
 <div class="task-block">
   <h3>Requirement</h3>
-  <p>Convert Tasks 1–5 into a proper Ansible role — <code>roles/ios_baseline/{tasks,defaults,vars}/main.yml</code> — parameterized via role defaults (VLAN map, banner text, connection type per group), invoked from a single top-level playbook covering all three inventory groups. This is the literal wording of 2.7 ("create/use an Ansible role to manage infrastructure"), so it's worth doing for real rather than skipping to the next topic.</p>
-  <pre><code>ansible-galaxy init roles/ios_baseline</code></pre>
+  <p>Convert Tasks 1–4 into a proper Ansible role — <code>roles/aci_baseline/{tasks,defaults,vars}/main.yml</code> — parameterized via role defaults (tenant name, AP name, EPG map, contract-enable flag), invoked from a single top-level playbook. This is the literal wording of 2.7 ("create/use an Ansible role to manage infrastructure"), so it's worth doing for real rather than skipping to the next topic.</p>
+  <pre><code>ansible-galaxy init roles/aci_baseline</code></pre>
   <p style="color:var(--muted);">No solution provided — structuring a role from scratch, including deciding what belongs in <code>defaults</code> vs. <code>vars</code>, is the actual skill being tested.</p>
   <h3>Docs</h3>
   <ul class="docs">
@@ -436,7 +392,7 @@ vlans:
 </div>
 
 <footer>
-  Module facts on this page were verified against the <code>ansible.netcommon</code> collection's own GitHub source on 2026-09-21, against the confirmed-installed version (8.4.0) from a live <code>ansible-galaxy collection list</code> on the candidate workstation. Task 1's reliance on <code>ansible.netcommon.default</code> as a cliconf fallback is the one fact in this workbook not yet confirmed against a live device — verify with <code>ansible-doc -t cliconf ansible.netcommon.default</code> before trusting it, and if it doesn't resolve or misbehaves against IOSv/IOSvL2, that's worth logging in <code>blueprint-tracker.md</code> as a gap in 2.7.d's CLI leg, the same way the missing <code>CiscoDevNet/iosxe</code> Terraform provider was logged for 2.8.
+  Module/parameter facts on this page were checked against the <code>cisco.aci</code> collection's own module docs on 2026-09-24, against the confirmed-installed version (2.12.0) from a live <code>ansible-galaxy collection list</code> on the candidate workstation — not yet against a live APIC. Reverify with <code>ansible-doc cisco.aci.&lt;module&gt;</code> once you have real or simulated APIC access, since docs and an installed collection version can drift.
 </footer>
 
 </div>
