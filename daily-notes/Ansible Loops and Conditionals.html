@@ -1,0 +1,455 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ansible Loops and Conditionals</title>
+<style>
+/* Layout: single 860px reading column, sticky mini-TOC, cards only for header, drill and callouts. */
+:root{
+  --bg:#f5f7f8; --panel:#ffffff; --fg:#17232b; --muted:#56666f; --line:#d3dce1;
+  --accent:#0b6e8e; --accent-soft:#dcedf3; --warn:#9a5b00; --warn-soft:#fbeed7;
+  --ok:#1b7a43; --ok-soft:#dff2e6; --code-bg:#eaeff2; --hi:#c4472b;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a20; --panel:#16252d; --fg:#e4edf1; --muted:#9fb1ba; --line:#2b3f4a;
+  --accent:#5cc0e0; --accent-soft:#17384560; --warn:#f0b35a; --warn-soft:#3a2c12;
+  --ok:#62d08c; --ok-soft:#14352295; --code-bg:#0b141a; --hi:#ff8a6e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a20; --panel:#16252d; --fg:#e4edf1; --muted:#9fb1ba; --line:#2b3f4a;
+  --accent:#5cc0e0; --accent-soft:#17384560; --warn:#f0b35a; --warn-soft:#3a2c12;
+  --ok:#62d08c; --ok-soft:#14352295; --code-bg:#0b141a; --hi:#ff8a6e; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:0 64px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 0;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none;white-space:nowrap}
+nav.toc a:hover{text-decoration:underline}
+header.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:20px;margin-block:20px}
+header.card .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:28px;line-height:1.2;margin:6px 0 10px;text-wrap:balance}
+h2{font-size:22px;margin:40px 0 8px;text-wrap:balance;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font-size:17px;margin:24px 0 4px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+p{margin:8px 0}
+ul,ol{padding-left:22px;margin:8px 0}
+li{margin:4px 0}
+code{font-family:var(--mono);font-size:.9em;background:var(--code-bg);padding:1px 5px;border-radius:3px}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:12px;overflow-x:auto;font-size:13px;line-height:1.5;margin:10px 0}
+pre code{background:none;padding:0}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+figure{margin:16px 0}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+.svgwrap{overflow-x:auto}
+.layer{border-left:3px solid var(--accent);padding-left:12px;margin:14px 0}
+.layer .tag{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.callout{background:var(--warn-soft);border:1px solid var(--warn);border-radius:4px;padding:10px 14px;margin:14px 0;font-size:15px}
+.callout b.k{color:var(--warn)}
+details{border:1px solid var(--line);border-radius:4px;padding:8px 12px;margin:8px 0;background:var(--panel)}
+summary{cursor:pointer;color:var(--accent);font-weight:600}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:0 6px;border-radius:3px;background:var(--ok-soft);color:var(--ok);margin-right:6px;white-space:nowrap}
+.drill{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 16px 12px}
+.refs li{margin:10px 0}
+.refs .sub{color:var(--muted);font-size:14px;display:block}
+.small{font-size:13px;color:var(--muted)}
+footer{margin-top:40px;border-top:1px solid var(--line);padding-top:12px;font-size:14px}
+/* svg classes */
+.s-box{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.s-hi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.s-warn{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.5}
+.s-t{fill:var(--fg);font-family:var(--font);font-size:12px}
+.s-tm{fill:var(--muted);font-family:var(--font);font-size:11px}
+.s-tb{fill:var(--fg);font-family:var(--font);font-size:12px;font-weight:700}
+.s-l{stroke:var(--muted);stroke-width:1.5;fill:none}
+.s-la{stroke:var(--accent);stroke-width:2;fill:none}
+.s-ah{fill:var(--muted)}
+.s-ahA{fill:var(--accent)}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <a href="#snap">Snapshot</a><a href="#fits">Fits</a><a href="#depth">Fundamentals to exam</a><a href="#anatomy">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<header class="card">
+  <div class="eyebrow">Wednesday 2026-09-30 · Unit 3 of 49</div>
+  <h1>Ansible loop control and conditionals</h1>
+  <div class="meta">
+    <span><b>Blueprint</b> 2.7.a Loop control · 2.7.b Conditionals</span>
+    <span><b>Domain</b> 2.0 Infrastructure as Code, 30%</span>
+    <span><b>Tier</b> 3 (proficiency check)</span>
+    <span><b>Read</b> about 18 min</span>
+    <span><b>Pins</b> Ansible Core 2.19 · cisco.aci 2.12 · netcommon 8.4</span>
+  </div>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+  <li><code>loop</code> turns one task into N iterations. Each iteration is a separate module call with its own <code>item</code>, and a <code>when</code> on that task is evaluated once per item.</li>
+  <li><code>register</code> on a looped task does not hold one result. It holds a dict with a <code>results</code> list, one entry per item. Most "attribute not found" errors in loops are this.</li>
+  <li><code>loop_control</code> is the exam toolbox: <code>label</code>, <code>loop_var</code>, <code>index_var</code>, <code>pause</code>, <code>extended</code>, <code>break_when</code> (2.18+, so present in 2.19).</li>
+  <li><code>when</code> is a raw Jinja expression with no braces. It must produce a real boolean in 2.19; a quoted expression is a string and now errors.</li>
+  <li><code>import_*</code> copies the condition onto every task at parse time. <code>include_*</code> gates only the include itself, decided at run time.</li>
+  <li>Your lab has no <code>cisco.ios</code>. Loop drills go against <code>cisco.aci</code> modules (APIC) and <code>ansible.netcommon</code> RESTCONF modules (Cat8000V).</li>
+</ul>
+
+<h2 id="fits">Where this fits</h2>
+<figure>
+  <div class="svgwrap">
+  <svg viewBox="0 0 820 300" role="img" aria-label="2.7 Ansible role splits into loop control, conditionals, variables and connection plugins; loops and conditionals execute inside a task that calls a module on a target device">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><polygon class="s-ah" points="0,0 10,5 0,10"/></marker>
+      <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><polygon class="s-ahA" points="0,0 10,5 0,10"/></marker>
+    </defs>
+    <text class="s-tm" x="10" y="18">BLUEPRINT NEIGHBORS (domain 2.0)</text>
+    <rect class="s-box" x="10" y="26" width="120" height="44" rx="4"/><text class="s-tb" x="70" y="53" text-anchor="middle">2.7 Ansible role</text>
+    <rect class="s-hi" x="170" y="26" width="120" height="44" rx="4"/><text class="s-tb" x="230" y="53" text-anchor="middle">2.7.a Loops</text>
+    <rect class="s-hi" x="300" y="26" width="120" height="44" rx="4"/><text class="s-tb" x="360" y="53" text-anchor="middle">2.7.b Conditionals</text>
+    <rect class="s-box" x="430" y="26" width="120" height="44" rx="4"/><text class="s-t" x="490" y="53" text-anchor="middle">2.7.c Vars/templates</text>
+    <rect class="s-box" x="560" y="26" width="120" height="44" rx="4"/><text class="s-t" x="620" y="53" text-anchor="middle">2.7.d Connections</text>
+    <rect class="s-box" x="690" y="26" width="120" height="44" rx="4"/><text class="s-t" x="750" y="53" text-anchor="middle">2.8 Terraform (same</text><text class="s-tm" x="750" y="66" text-anchor="middle">ACI object model)</text>
+    <line class="s-l" x1="130" y1="48" x2="168" y2="48" marker-end="url(#ar)"/>
+    <text class="s-tm" x="10" y="118">TOOL CHAIN</text>
+    <rect class="s-box" x="10" y="128" width="110" height="50" rx="4"/><text class="s-t" x="65" y="150" text-anchor="middle">Inventory /</text><text class="s-t" x="65" y="165" text-anchor="middle">group_vars</text>
+    <rect class="s-box" x="150" y="128" width="110" height="50" rx="4"/><text class="s-t" x="205" y="157" text-anchor="middle">Playbook</text>
+    <rect class="s-box" x="290" y="128" width="110" height="50" rx="4"/><text class="s-t" x="345" y="157" text-anchor="middle">Role tasks/</text>
+    <rect class="s-hi" x="430" y="128" width="140" height="50" rx="4"/><text class="s-tb" x="500" y="150" text-anchor="middle">Task</text><text class="s-tm" x="500" y="165" text-anchor="middle">loop + when + register</text>
+    <rect class="s-box" x="600" y="128" width="100" height="50" rx="4"/><text class="s-t" x="650" y="150" text-anchor="middle">Module</text><text class="s-tm" x="650" y="165" text-anchor="middle">aci_tenant, ...</text>
+    <rect class="s-box" x="730" y="128" width="80" height="50" rx="4"/><text class="s-t" x="770" y="150" text-anchor="middle">APIC /</text><text class="s-t" x="770" y="165" text-anchor="middle">Cat8000V</text>
+    <line class="s-l" x1="120" y1="153" x2="148" y2="153" marker-end="url(#ar)"/>
+    <line class="s-l" x1="260" y1="153" x2="288" y2="153" marker-end="url(#ar)"/>
+    <line class="s-l" x1="400" y1="153" x2="428" y2="153" marker-end="url(#ar)"/>
+    <line class="s-la" x1="570" y1="153" x2="598" y2="153" marker-end="url(#arA)"/>
+    <line class="s-l" x1="700" y1="153" x2="728" y2="153" marker-end="url(#ar)"/>
+    <text class="s-tm" x="584" y="122" text-anchor="middle">once per item</text>
+    <rect class="s-warn" x="10" y="215" width="800" height="70" rx="4"/>
+    <text class="s-tb" x="24" y="238">Lab constraint</text>
+    <text class="s-t" x="24" y="258">Candidate Workstation has ansible.netcommon 8.4.0 and cisco.aci 2.12.0 only. No cisco.ios.</text>
+    <text class="s-t" x="24" y="275">Use cisco.aci (APIC) or netcommon restconf/netconf/cli modules (Cat8000V) for practice.</text>
+  </svg>
+  </div>
+  <figcaption>Loops and conditionals live at the task level; they do not change which module or connection runs.</figcaption>
+</figure>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+
+<div class="layer">
+  <div class="tag">L1 · Concept</div>
+  <p>A playbook task normally runs once per host. Two keywords change that. <code>loop</code> makes the task run once per list element on each host. <code>when</code> decides, per host (and per item if there is a loop), whether the task runs or is skipped. You already know the shape from Terraform: <code>for_each</code> is the loop, <code>count = cond ? 1 : 0</code> is the conditional. The Ansible difference is that skipping and looping are runtime decisions made task by task, and their results are recorded in a registered variable you inspect later.</p>
+  <p><code>loop</code> arrived in Ansible 2.5 as the simpler replacement for the family of <code>with_*</code> keywords. Both still work, but you cannot put <code>loop</code> and a <code>with_*</code> on one task. For the exam, write <code>loop</code>. Recognise <code>with_items</code>, <code>with_dict</code>, <code>with_sequence</code> when you read older code and know their equivalents: <code>with_items</code> becomes <code>loop: "{{ items | flatten(levels=1) }}"</code>, <code>with_dict</code> becomes <code>| dict2items</code>, <code>with_sequence</code> becomes <code>range(...) | list</code>.</p>
+</div>
+
+<div class="layer">
+  <div class="tag">L2 · Mechanics</div>
+  <p>Read the flow below once and the rest of the page is detail. The loop expands first, then the condition is checked for each item, then a module call happens or a skip is recorded, and everything lands in <code>results</code>.</p>
+</div>
+
+<figure>
+  <div class="svgwrap">
+  <svg viewBox="0 0 820 330" role="img" aria-label="Per-item flow of a looped task: template loop item, evaluate when, run module or skip, append to results, check break_when, then register holds results list">
+    <defs>
+      <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><polygon class="s-ah" points="0,0 10,5 0,10"/></marker>
+      <marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><polygon class="s-ahA" points="0,0 10,5 0,10"/></marker>
+    </defs>
+    <rect class="s-box" x="10" y="20" width="130" height="56" rx="4"/><text class="s-tb" x="75" y="44" text-anchor="middle">loop list</text><text class="s-tm" x="75" y="60" text-anchor="middle">"{{ tenants }}"</text>
+    <rect class="s-box" x="180" y="20" width="140" height="56" rx="4"/><text class="s-tb" x="250" y="44" text-anchor="middle">set item</text><text class="s-tm" x="250" y="60" text-anchor="middle">(or loop_var)</text>
+    <rect class="s-hi" x="360" y="20" width="140" height="56" rx="4"/><text class="s-tb" x="430" y="44" text-anchor="middle">evaluate when</text><text class="s-tm" x="430" y="60" text-anchor="middle">can read item</text>
+    <rect class="s-box" x="540" y="6" width="130" height="36" rx="4"/><text class="s-t" x="605" y="29" text-anchor="middle">true: run module</text>
+    <rect class="s-box" x="540" y="54" width="130" height="36" rx="4"/><text class="s-t" x="605" y="77" text-anchor="middle">false: skipped</text>
+    <rect class="s-box" x="700" y="20" width="110" height="56" rx="4"/><text class="s-tb" x="755" y="44" text-anchor="middle">append to</text><text class="s-tm" x="755" y="60" text-anchor="middle">results[ ]</text>
+    <line class="s-l" x1="140" y1="48" x2="178" y2="48" marker-end="url(#b1)"/>
+    <line class="s-l" x1="320" y1="48" x2="358" y2="48" marker-end="url(#b1)"/>
+    <line class="s-l" x1="500" y1="38" x2="538" y2="26" marker-end="url(#b1)"/>
+    <line class="s-l" x1="500" y1="58" x2="538" y2="70" marker-end="url(#b1)"/>
+    <line class="s-l" x1="670" y1="24" x2="698" y2="38" marker-end="url(#b1)"/>
+    <line class="s-l" x1="670" y1="72" x2="698" y2="58" marker-end="url(#b1)"/>
+    <path class="s-la" d="M755 76 V120 H250 V78" marker-end="url(#b2)"/>
+    <text class="s-tm" x="500" y="114" text-anchor="middle">next item (after pause seconds, if loop_control.pause is set)</text>
+    <rect class="s-warn" x="360" y="140" width="220" height="48" rx="4"/><text class="s-tb" x="470" y="160" text-anchor="middle">break_when true?</text><text class="s-tm" x="470" y="176" text-anchor="middle">stop after this item (2.18+)</text>
+    <path class="s-l" d="M755 120 V164 H582" marker-end="url(#b1)"/>
+    <rect class="s-hi" x="10" y="220" width="800" height="100" rx="4"/>
+    <text class="s-tb" x="24" y="244">After the last item, register holds:</text>
+    <text class="s-t" x="24" y="266" style="font-family:var(--mono)">r = { results: [ {item: ..., changed: ..., skipped: ..., ...}, ... ], changed: ..., failed: ..., skipped: ... }</text>
+    <text class="s-tm" x="24" y="288">Top-level skipped is true only if every iteration was skipped. Read per-item state from r.results, not from r itself.</text>
+    <text class="s-tm" x="24" y="306">until is a different loop: it retries the same task (default 3 retries, 5 s delay) until its condition passes.</text>
+  </svg>
+  </div>
+  <figcaption>Loop expansion, per-item <code>when</code>, and how <code>register</code> collects results.</figcaption>
+</figure>
+
+<h3>The loop_control options</h3>
+<div class="tw"><table>
+<tr><th>Option</th><th>What it does</th><th>When you reach for it</th></tr>
+<tr><td><code>label</code></td><td>Limits what the console prints for each item.</td><td>Items are big dicts or contain credentials. Print <code>{{ item.name }}</code> only.</td></tr>
+<tr><td><code>loop_var</code></td><td>Renames <code>item</code>.</td><td>Any nested loop, and any include or role that itself loops.</td></tr>
+<tr><td><code>index_var</code></td><td>Exposes a zero-based index under your name.</td><td>Numbering VLANs, sequence numbers, ACL lines.</td></tr>
+<tr><td><code>pause</code></td><td>Waits N seconds between iterations.</td><td>Rate-limited APIs, or letting a device settle.</td></tr>
+<tr><td><code>extended</code></td><td>Adds <code>ansible_loop.index</code>, <code>.first</code>, <code>.last</code>, <code>.length</code>, <code>.previtem</code>, <code>.nextitem</code>, <code>.allitems</code>. <code>extended_allitems: false</code> drops the memory-heavy one.</td><td>Special handling of the first or last item.</td></tr>
+<tr><td><code>break_when</code></td><td>Ends the loop when a Jinja expression is true. Documented as new in 2.18.</td><td>Stop at the first failure or first match.</td></tr>
+</table></div>
+
+<h3>Three loop styles compared</h3>
+<div class="tw"><table>
+<tr><th></th><th><code>loop</code></th><th><code>with_*</code></th><th><code>until</code></th></tr>
+<tr><td>Iterates over</td><td>A list (use filters to reshape)</td><td>A list, dict, sequence, etc., via a lookup</td><td>Nothing; retries one call</td></tr>
+<tr><td>Status</td><td>Recommended since 2.5</td><td>Legacy, still supported</td><td>Separate keyword, works with <code>retries</code> and <code>delay</code></td></tr>
+<tr><td>Result variable</td><td><code>register</code> gives <code>results</code></td><td>Same</td><td>Registered value is the last attempt, plus attempt count</td></tr>
+<tr><td>Typical use</td><td>Create N objects</td><td>Reading old roles</td><td>Wait for a device or API to be ready</td></tr>
+</table></div>
+
+<h3>Conditionals: where the expression is evaluated</h3>
+<p><code>when</code> is a Jinja2 expression written without <code>{{ }}</code>. A list of conditions is an implicit AND. Useful tests inside <code>when</code>: <code>is defined</code> / <code>is undefined</code>, <code>is match</code> (anchored at the start), <code>is search</code> (anywhere), <code>is regex</code>, <code>is subset</code>, <code>is version('x','&gt;=')</code>, <code>is truthy</code> / <code>is falsy</code>, and the task-result tests <code>is failed</code>, <code>is changed</code>, <code>is skipped</code>, <code>is succeeded</code>. There is also <code>is contains</code>, mainly for use with <code>select</code> and <code>selectattr</code>.</p>
+<p>Combined with a loop, the condition runs separately per item, so <code>when: item.state | default('present') == 'present'</code> can skip some items and process others in one task. Combined with a block, the condition is inherited by every task in the block.</p>
+
+<figure>
+  <div class="svgwrap">
+  <svg viewBox="0 0 820 250" role="img" aria-label="import_tasks is resolved at parse time and copies the when condition onto each task; include_tasks is resolved at run time and gates only the include statement">
+    <defs><marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><polygon class="s-ah" points="0,0 10,5 0,10"/></marker></defs>
+    <text class="s-tb" x="10" y="20">import_tasks + when: x is not defined  (static)</text>
+    <rect class="s-box" x="10" y="30" width="120" height="40" rx="4"/><text class="s-t" x="70" y="55" text-anchor="middle">parse time: inline</text>
+    <rect class="s-hi" x="170" y="30" width="150" height="40" rx="4"/><text class="s-t" x="245" y="47" text-anchor="middle">task A: when x undef</text><text class="s-tm" x="245" y="62" text-anchor="middle">may define x</text>
+    <rect class="s-warn" x="350" y="30" width="150" height="40" rx="4"/><text class="s-t" x="425" y="47" text-anchor="middle">task B: when x undef</text><text class="s-tm" x="425" y="62" text-anchor="middle">now skipped</text>
+    <rect class="s-warn" x="530" y="30" width="150" height="40" rx="4"/><text class="s-t" x="605" y="47" text-anchor="middle">task C: when x undef</text><text class="s-tm" x="605" y="62" text-anchor="middle">now skipped</text>
+    <line class="s-l" x1="130" y1="50" x2="168" y2="50" marker-end="url(#c1)"/><line class="s-l" x1="320" y1="50" x2="348" y2="50" marker-end="url(#c1)"/><line class="s-l" x1="500" y1="50" x2="528" y2="50" marker-end="url(#c1)"/>
+    <text class="s-tm" x="10" y="92">Every task carries the condition and evaluates it separately.</text>
+    <text class="s-tb" x="10" y="140">include_tasks + when: x is not defined  (dynamic)</text>
+    <rect class="s-hi" x="10" y="150" width="200" height="40" rx="4"/><text class="s-t" x="110" y="167" text-anchor="middle">run time: evaluate when</text><text class="s-tm" x="110" y="182" text-anchor="middle">once, on the include</text>
+    <rect class="s-box" x="250" y="150" width="120" height="40" rx="4"/><text class="s-t" x="310" y="175" text-anchor="middle">task A runs</text>
+    <rect class="s-box" x="400" y="150" width="120" height="40" rx="4"/><text class="s-t" x="460" y="175" text-anchor="middle">task B runs</text>
+    <rect class="s-box" x="550" y="150" width="120" height="40" rx="4"/><text class="s-t" x="610" y="175" text-anchor="middle">task C runs</text>
+    <line class="s-l" x1="210" y1="170" x2="248" y2="170" marker-end="url(#c1)"/><line class="s-l" x1="370" y1="170" x2="398" y2="170" marker-end="url(#c1)"/><line class="s-l" x1="520" y1="170" x2="548" y2="170" marker-end="url(#c1)"/>
+    <text class="s-tm" x="10" y="212">Once the include passes, the inner tasks run unconditionally (their own when still applies).</text>
+    <text class="s-tm" x="10" y="232">Roles behave the same way: roles: and import_role are static; include_role is dynamic.</text>
+  </svg>
+  </div>
+  <figcaption>Same <code>when</code>, different scope. This trips people when an early task changes the variable being tested.</figcaption>
+</figure>
+
+<div class="tw"><table>
+<tr><th>Construct</th><th>Resolved</th><th><code>when</code> applies to</th></tr>
+<tr><td><code>roles:</code> at play level</td><td>Parse time (treated as static imports)</td><td>Every task in the role</td></tr>
+<tr><td><code>import_role</code>, <code>import_tasks</code></td><td>Parse time</td><td>Every task inside, each evaluated separately</td></tr>
+<tr><td><code>include_role</code>, <code>include_tasks</code></td><td>Run time</td><td>The include statement only</td></tr>
+</table></div>
+
+<div class="layer">
+  <div class="tag">L3 · Exam detail</div>
+  <p><b>Ansible Core 2.19 changed conditional evaluation.</b> The porting guide states that conditionals must now produce a boolean. A bare string or a non-empty list that used to be treated as truthy now raises "Conditionals must have a boolean result". The fix is an explicit comparison such as <code>inventory_hostname | length &gt; 0</code>. The classic self-inflicted case is wrapping the whole expression in quotes inside <code>when</code> or <code>assert.that</code>; the expression becomes a string. The temporary escape hatch is the <code>ALLOW_BROKEN_CONDITIONALS</code> setting, which downgrades errors to warnings. Do not rely on it.</p>
+  <p><b>Other 2.19 traps that show up in loops.</b> <code>range()</code> can no longer be returned from a template directly, so <code>loop: "{{ range(0, 5) }}"</code> fails and <code>| list</code> fixes it. Omit placeholders no longer leak from loop items into the task, so write <code>item.descr | default(omit)</code> where you want an optional module argument. Undefined-variable detection is stricter: a <code>failed_when</code> that reads <code>result.exists</code> on a <code>stat</code> result must read <code>result.stat.exists</code>. Integer properties like <code>started</code> and <code>finished</code> on <code>async_status</code> results cannot be used as booleans; use <code>is finished</code>. Native Jinja mode is now always on, so a list passed through <code>replace</code> becomes a string; use <code>map('replace', ...)</code>.</p>
+  <p><b>Version drift in the docs.</b> The Ansible docs "latest" pages describe a release newer than 2.19 and mention register projections (<code>_task.result</code>) as new in 2.21. Ignore those. <code>break_when</code> (2.18) is fair game. The module pages show cisco.aci 2.13.0 and netcommon 8.6.2, while the workstation has 2.12.0 and 8.4.0; parameter names used below are stable across those, but run <code>ansible-doc</code> on the workstation before trusting any detail.</p>
+  <p><b>Loops with roles.</b> A role that loops internally and is itself called in a loop will collide on <code>item</code>. Ansible detects a loop variable that is already in use and fails the task. Give the outer loop a <code>loop_var</code>. Put loops on <code>include_role</code> (dynamic). Combining <code>loop</code> with <code>import_role</code> is not something to depend on; treat it as unsupported ⚠ (the docs summary I fetched was inconsistent on this, test it).</p>
+  <p><b>Network-specific wrinkle.</b> Network modules run on the control node, and connection is chosen per host with <code>ansible_connection</code> and <code>ansible_network_os</code>. For the Cat8000V, <code>restconf_get</code> needs <code>ansible_connection: ansible.netcommon.httpapi</code> and <code>ansible_network_os: ansible.netcommon.restconf</code>. The <code>cisco.aci</code> modules take <code>host</code>, <code>username</code>, <code>password</code> directly and are run with <code>delegate_to: localhost</code>, so a loop over tenants is a loop on the control node, not per network device. That is why 2.7.d (connection plugins) is a separate blueprint line.</p>
+</div>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Short patterns pinned to Core 2.19 and cisco.aci 2.12. These show shape, not the drill solution.</p>
+
+<h3>1. Loop with a clean console and a registered result</h3>
+<pre><code>- name: Tenants from data
+  cisco.aci.aci_tenant:
+    host: "{{ apic_host }}"
+    username: "{{ apic_user }}"
+    password: "{{ apic_pass }}"
+    validate_certs: false
+    tenant: "{{ item.name }}"
+    description: "{{ item.descr | default(omit) }}"
+    state: "{{ item.state | default('present') }}"
+  delegate_to: localhost
+  loop: "{{ tenants }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: tenant_out</code></pre>
+<p class="small"><code>tenant</code>, <code>description</code>, <code>state</code> (<code>present</code>, <code>absent</code>, <code>query</code>), <code>validate_certs</code> are documented parameters of <code>cisco.aci.aci_tenant</code>.</p>
+
+<h3>2. Second loop over the registered results</h3>
+<pre><code>- name: Say what changed
+  ansible.builtin.debug:
+    msg: "{{ item.item.name }} was changed"
+  loop: "{{ tenant_out.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: item is changed</code></pre>
+<p class="small">Each results entry carries the original loop element under <code>item</code>, hence <code>item.item</code>. ⚠ unverified: the <code>item.item</code> nesting is standard behavior but not on the pages I fetched; confirm with <code>-v</code>.</p>
+
+<h3>3. Retry with until, then a conditional on the outcome</h3>
+<pre><code>- name: Wait for RESTCONF on Cat8000V
+  ansible.netcommon.restconf_get:
+    path: /data/Cisco-IOS-XE-native:native/hostname
+  register: r
+  until: r is not failed
+  retries: 5
+  delay: 10</code></pre>
+<p class="small">⚠ unverified: the module's own doc example uses a <code>/config/</code> prefix in <code>path</code>. Check what prefix the netcommon RESTCONF plugin expects on 17.16 before relying on <code>/data/</code>. Defaults if you omit them: retries 3, delay 5.</p>
+
+<h3>4. Early exit and position awareness</h3>
+<pre><code>loop: "{{ vlans }}"
+loop_control:
+  extended: true
+  index_var: n
+  break_when: item.vlan_id | int &gt; 4000
+when: not ansible_loop.last</code></pre>
+<p class="small">Illustrative fragment, not a full task. <code>ansible_loop.last</code> needs <code>extended: true</code>. The <code>int</code> filter use is ⚠ unverified for your data types.</p>
+
+<h3>5. Import versus include for a gated file</h3>
+<pre><code>- include_tasks: tenants.yml
+  when: apic_host is defined       # evaluated once
+
+- import_tasks: tenants.yml
+  when: apic_host is defined       # copied to every task inside</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>"Conditional result was ... Conditionals must have a boolean result"</td><td>2.19 strict booleans. Non-boolean value, or the whole expression is quoted so it is a string.</td><td>Rerun with <code>-vv</code>; read the expression Ansible prints.</td><td>Remove the quotes; write an explicit comparison such as <code>x | length &gt; 0</code>.</td></tr>
+<tr><td>Next task fails with an undefined attribute such as <code>stdout</code> or <code>current</code> on the registered variable</td><td>The registering task had a loop, so the data is under <code>results</code>.</td><td><code>- debug: var=tenant_out</code> and look for the <code>results</code> list.</td><td>Loop over <code>tenant_out.results</code> and use <code>item.current</code>, or use <code>json_query</code>/<code>map</code> to reshape.</td></tr>
+<tr><td>Task fails because a loop variable is already in use</td><td>Nested loop via <code>include_tasks</code> or <code>include_role</code>; both levels use <code>item</code>.</td><td>Find the outer loop in the include chain (<code>-vv</code> shows it).</td><td>Set <code>loop_control.loop_var: outer</code> on the outer loop and reference <code>outer</code> inside.</td></tr>
+<tr><td>Tasks in an imported file skip midway; a gate variable was meant to be tested once</td><td><code>import_tasks</code> puts the <code>when</code> on every task; an early task set the variable.</td><td><code>-v</code> shows the skip reason per task ("Conditional result was False").</td><td>Use <code>include_tasks</code> to gate once, or test a variable no task changes.</td></tr>
+<tr><td><code>loop: "{{ range(0, 5) }}"</code> errors</td><td>2.19 always returns a range object, which cannot be returned from a template.</td><td>Error text mentions range; syntax check will not catch it, a run will.</td><td><code>loop: "{{ range(0, 5) | list }}"</code></td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+  <li><code>ansible-doc -l cisco.aci</code> lists modules in a collection; <code>ansible-doc -s cisco.aci.aci_tenant</code> prints a playbook snippet; <code>ansible-doc cisco.aci.aci_vrf</code> shows parameters, choices and return keys. It reads the DOCUMENTATION strings from the installed collection, so it matches what is on the box.</li>
+  <li><code>ansible-doc -t keyword loop_control</code> should give the keyword's help. ⚠ unverified that <code>loop_control</code> is in the keyword list on 2.19; try <code>ansible-doc -t keyword -l</code> first.</li>
+  <li><code>ansible-doc -t test -l</code> and <code>ansible-doc -t filter -l</code> list tests and filters. <code>-t connection -l</code> lists connection plugins (useful for 2.7.d).</li>
+  <li>Use <code>-j</code> for JSON output when you want to pipe to <code>jq</code>.</li>
+  <li>When a conditional errors under 2.19, run <code>ansible-playbook -vv</code> first. The message shows the value and its type.</li>
+  <li>Habit worth building: put <code>loop_control: label</code> on every loop in a lab task. It shortens output and makes idempotency checks readable.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 minutes)</h2>
+<div class="drill">
+<p><b>Target:</b> DevNet Sandbox APIC, with <code>cisco.aci</code> on the workstation. <b>Requirement:</b> from one data structure, create or remove tenants, create VRFs only under tenants that should exist, and print a line for any tenant not found on the APIC. One playbook, three loops, no repeated tasks per tenant.</p>
+<p><b>Data (<code>tenants.yml</code>):</b></p>
+<pre><code>tenants:
+  - { name: T_PROD, vrfs: [PROD_VRF1, PROD_VRF2] }
+  - { name: T_DEV,  vrfs: [DEV_VRF] }
+  - { name: T_OLD,  state: absent }</code></pre>
+<p><b>Rules:</b></p>
+<ul>
+  <li>Console output for each loop shows only the tenant name (or tenant/VRF).</li>
+  <li>The VRF task must not run for a tenant whose state is <code>absent</code>.</li>
+  <li>Last task loops over the query results and prints only for tenants with an empty <code>current</code>.</li>
+</ul>
+<p><b>Reference fields:</b> <code>cisco.aci.aci_tenant</code>: <code>tenant</code>, <code>state</code> (present/absent/query), returns <code>current</code>. <code>cisco.aci.aci_vrf</code>: <code>tenant</code>, <code>vrf</code>, <code>state</code>. Auth: <code>host</code>, <code>username</code>, <code>password</code>, <code>validate_certs</code>. Sandbox address and credentials change; take them from the sandbox page and pass them as extra vars.</p>
+<p><b>Verify:</b></p>
+<ul>
+  <li>First run shows changed for T_PROD, T_DEV and their VRFs; T_OLD is ok or changed depending on prior state.</li>
+  <li>Second run shows zero changed (idempotent).</li>
+  <li>Query loop prints a line for T_OLD only. ⚠ Assumes a query for a missing tenant returns an empty <code>current</code>; test in lab.</li>
+  <li>Cross-check in the APIC GUI under Tenants.</li>
+</ul>
+<details><summary>Hint</summary>
+<ul>
+  <li>The VRF loop needs a parent and a child in one loop. Look at the <code>subelements</code> filter on the loops page's filter list. Parent is <code>item.0</code>, child is <code>item.1</code>.</li>
+  <li>T_OLD has no <code>vrfs</code> key. The filter has an option to tolerate that (⚠ <code>skip_missing=True</code>, check with <code>ansible-doc -t filter -l</code> then <code>ansible-doc -t filter subelements</code>).</li>
+  <li>Use <code>default('present')</code> when reading <code>state</code>.</li>
+</ul></details>
+<details><summary>Solution</summary>
+<pre><code>---
+- hosts: localhost
+  gather_facts: false
+  vars_files: [tenants.yml]
+  tasks:
+    - name: Tenants
+      cisco.aci.aci_tenant:
+        host: "{{ apic_host }}"
+        username: "{{ apic_user }}"
+        password: "{{ apic_pass }}"
+        validate_certs: false
+        tenant: "{{ item.name }}"
+        state: "{{ item.state | default('present') }}"
+      loop: "{{ tenants }}"
+      loop_control: { label: "{{ item.name }}" }
+
+    - name: VRFs
+      cisco.aci.aci_vrf:
+        host: "{{ apic_host }}"
+        username: "{{ apic_user }}"
+        password: "{{ apic_pass }}"
+        validate_certs: false
+        tenant: "{{ item.0.name }}"
+        vrf: "{{ item.1 }}"
+        state: present
+      loop: "{{ tenants | subelements('vrfs', skip_missing=True) }}"
+      loop_control: { label: "{{ item.0.name }}/{{ item.1 }}" }
+      when: item.0.state | default('present') == 'present'
+
+    - name: Query
+      cisco.aci.aci_tenant:
+        host: "{{ apic_host }}"
+        username: "{{ apic_user }}"
+        password: "{{ apic_pass }}"
+        validate_certs: false
+        tenant: "{{ item.name }}"
+        state: query
+      loop: "{{ tenants }}"
+      loop_control: { label: "{{ item.name }}" }
+      register: q
+
+    - name: Report missing
+      ansible.builtin.debug:
+        msg: "{{ item.item.name }} not on APIC"
+      loop: "{{ q.results }}"
+      loop_control: { label: "{{ item.item.name }}" }
+      when: item.current | length == 0</code></pre>
+<p class="small">Run: <code>ansible-playbook drill.yml -e apic_host=... -e apic_user=... -e apic_pass=...</code>. On the exam you would keep credentials out of the command line; this is a lab shortcut.</p>
+</details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p class="small">History has no entries 3 to 10 days old yet, so questions 5 and 6 are an early review of 2026-09-28.</p>
+<ol>
+  <li>A looped task is registered as <code>r</code>. The next task uses <code>when: r.stdout is search('x')</code> and fails with an undefined attribute. Why, and what structure fixes it?
+    <details><summary>Answer</summary>With a loop, <code>r</code> holds a <code>results</code> list, one entry per item. Loop over <code>r.results</code> and read <code>item.stdout</code>; top-level <code>skipped</code> is true only when all iterations were skipped.</details></li>
+  <li>In 2.19, what happens to <code>when: 'inventory_hostname | length &gt; 0'</code>, and how do you fix it?
+    <details><summary>Answer</summary>The quotes make it a string, so it is not a boolean and 2.19 errors ("Conditionals must have a boolean result"). Remove the quotes and keep an explicit comparison.</details></li>
+  <li>The first task in an imported file sets <code>x</code>; the import carries <code>when: x is not defined</code>. What happens to the remaining tasks, and what changes with <code>include_tasks</code>?
+    <details><summary>Answer</summary>Import copies the condition to each task and evaluates each separately, so later tasks skip once <code>x</code> exists. With include, the condition is checked once on the include; if it passes, inner tasks run.</details></li>
+  <li>Which three <code>loop_control</code> settings hide everything but a name from the console, avoid collision in a nested include, and stop the loop on a condition?
+    <details><summary>Answer</summary><code>label</code>, <code>loop_var</code>, <code>break_when</code> (new in 2.18).</details></li>
+  <li>(from 2026-09-28) What's the functional difference between a RESTCONF PATCH and a NETCONF edit-config against the candidate datastore, in terms of when the change takes effect?
+    <details><summary>Answer</summary>PATCH applies to the running configuration immediately. edit-config on candidate stages the change; nothing takes effect until a commit.</details></li>
+  <li>(from 2026-09-28) A YANG list node appears in a RESTCONF JSON body and in a NETCONF XML body. How does its shape differ?
+    <details><summary>Answer</summary>JSON puts list entries in an array under the list name (module-qualified at the top). XML repeats the list element once per entry inside the parent with the module namespace.</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<div class="refs">
+<h3>Cisco</h3>
+<ul>
+  <li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/cisco/aci/aci_tenant_module.html" target="_blank" rel="noopener">cisco.aci.aci_tenant module – Manage tenants (fv:Tenant)</a> · collection 2.13.0 (lab 2.12.0) · verified 2026-09-30<span class="sub">Best for: parameter names, <code>state: query</code>, <code>current</code> return key, See Also links.</span></li>
+  <li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/cisco/aci/aci_vrf_module.html" target="_blank" rel="noopener">cisco.aci.aci_vrf module – Manage contexts or VRFs (fv:Ctx)</a> · collection 2.13.0 · verified 2026-09-30<span class="sub">Best for: the second module in the drill (<code>tenant</code>, <code>vrf</code>, policy control options).</span></li>
+  <li><span class="badge">✅</span><a href="https://github.com/datacenter/Ansible-recipes-for-ACI" target="_blank" rel="noopener">Ansible recipes for ACI</a> · GitHub repo · verified 2026-09-30<span class="sub">Best for: ready-made ACI playbooks to read for loop patterns; it notes signature-based auth as an option for speed.</span></li>
+</ul>
+<h3>Standards</h3>
+<ul><li class="small">None apply to this unit.</li></ul>
+<h3>Third-party (Ansible project docs)</h3>
+<ul>
+  <li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops — Ansible Community Documentation</a> · latest (notes 2.18 break_when; pin 2.19) · verified 2026-09-30<span class="sub">Best for: every <code>loop_control</code> option and the nested loop rules.</span></li>
+  <li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_conditionals.html" target="_blank" rel="noopener">Conditionals — Ansible Community Documentation</a> · latest · verified 2026-09-30<span class="sub">Best for: import versus include scope, register-based conditionals, per-item <code>when</code>.</span></li>
+  <li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/porting_guides/porting_guide_core_2.19.html" target="_blank" rel="noopener">Ansible-core 2.19 Porting Guide — Ansible Community Documentation</a> · 2.19 · verified 2026-09-30<span class="sub">Best for: strict boolean conditionals, range, omit, undefined handling. Read the Broken Conditionals section first.</span></li>
+  <li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_reuse_roles.html" target="_blank" rel="noopener">Roles — Ansible Community Documentation</a> · latest · verified 2026-09-30<span class="sub">Best for: role layout and <code>when</code> with <code>include_role</code> versus <code>import_role</code>.</span></li>
+  <li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/cli/ansible-doc.html" target="_blank" rel="noopener">ansible-doc — Ansible Community Documentation</a> · latest · verified 2026-09-30<span class="sub">Best for: offline lookup flags (<code>-l</code>, <code>-t</code>, <code>-s</code>, <code>-j</code>).</span></li>
+</ul>
+<p class="small">Also verified and cited inline only: <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_tests.html" target="_blank" rel="noopener">Tests</a> <span class="badge">✅</span>, <a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/restconf_get_module.html" target="_blank" rel="noopener">ansible.netcommon.restconf_get module</a> <span class="badge">✅</span> (netcommon 8.6.2 documented; lab 8.4.0), <a href="https://docs.ansible.com/projects/ansible/latest/network/getting_started/network_differences.html" target="_blank" rel="noopener">How Network Automation is Different</a> <span class="badge">✅</span>. Not linked: the Cisco ACI Guide in the Ansible scenario guides (Search: "Cisco ACI Guide" Ansible scenario guide); its final URL could not be confirmed.</p>
+</div>
+
+<footer>
+  <p><b>Links: 11 ✅ · 0 🔎 · 2 removed</b></p>
+  <p><b>⚠ unverified claims:</b></p>
+  <ul>
+    <li><code>item.item</code> nesting in a looped register's results (anatomy 2).</li>
+    <li>RESTCONF <code>path</code> prefix for <code>restconf_get</code> on the Cat8000V (<code>/data/</code> versus the doc's <code>/config/</code>).</li>
+    <li><code>ansible-doc -t keyword loop_control</code> availability on 2.19.</li>
+    <li>Loop on <code>import_role</code> behavior; <code>subelements</code> <code>skip_missing</code> argument; empty <code>current</code> for a missing tenant; <code>int</code> filter use in the <code>break_when</code> fragment.</li>
+  </ul>
+  <p><b>Tomorrow:</b> Unit 4 of 49, 3.4 Model-driven telemetry design: dial-in (gNMI, NETCONF).</p>
+</footer>
+</div>
+
+</body></html>

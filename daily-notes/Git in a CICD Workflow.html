@@ -1,0 +1,363 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Git in a CI/CD Workflow</title>
+<style>
+/* Layout: single 860px reading column, sticky mini-TOC, cards only for header, drill, and SVG figures */
+:root{
+  --bg:#f6f7f9; --fg:#1b2430; --muted:#5a6675; --line:#d5dbe3; --card:#ffffff;
+  --accent:#0b6e8a; --accent-soft:#dcf0f5; --amber:#a35b00; --amber-soft:#fdeed6;
+  --ok:#1a7f4b; --ok-soft:#dff3e8; --bad:#b3261e; --bad-soft:#fbe4e2;
+  --code-bg:#eef1f5; --code-fg:#1b2430;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151c; --fg:#e3e8ee; --muted:#9aa7b6; --line:#2a3542; --card:#161e28;
+  --accent:#5cc4de; --accent-soft:#13323c; --amber:#f0b45a; --amber-soft:#3a2a10;
+  --ok:#5fd394; --ok-soft:#12301f; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0b1016; --code-fg:#e3e8ee; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0f151c; --fg:#e3e8ee; --muted:#9aa7b6; --line:#2a3542; --card:#161e28;
+  --accent:#5cc4de; --accent-soft:#13323c; --amber:#f0b45a; --amber-soft:#3a2a10;
+  --ok:#5fd394; --ok-soft:#12301f; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0b1016; --code-fg:#e3e8ee; color-scheme:dark;}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:16px 64px}
+h1,h2,h3{line-height:1.25;text-wrap:balance}
+h2{font-size:1.4rem;margin:2.2rem 0 .6rem;padding-top:.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.1rem;margin:1.4rem 0 .4rem}
+p{margin:.6rem 0}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:.25rem 1rem;flex-wrap:wrap;padding:.5rem 16px;font-size:.82rem}
+nav.toc a{text-decoration:none;color:var(--muted)}
+nav.toc a:hover{color:var(--accent)}
+.hdr{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin-top:16px}
+.hdr .id{font:600 .8rem var(--mono);color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
+.hdr h1{font-size:1.7rem;margin:.3rem 0 .8rem}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.5rem 1rem;font-size:.88rem;margin:0}
+.meta dt{color:var(--muted);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.meta dd{margin:0;font-variant-numeric:tabular-nums}
+ul{padding-left:1.2rem;margin:.5rem 0}
+li{margin:.3rem 0}
+.fig{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px;margin:1rem 0}
+.fig svg{width:100%;height:auto;display:block}
+.fig figcaption{font-size:.82rem;color:var(--muted);padding:6px 4px 0}
+.tw{overflow-x:auto;margin:1rem 0;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem}
+th,td{text-align:left;vertical-align:top;padding:.5rem .7rem;border-bottom:1px solid var(--line)}
+th{background:var(--accent-soft);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase}
+tr:last-child td{border-bottom:0}
+pre{background:var(--code-bg);color:var(--code-fg);border:1px solid var(--line);border-radius:6px;padding:.8rem;overflow-x:auto;font:.84rem/1.5 var(--mono);margin:.8rem 0}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:.05em .3em;border-radius:3px}
+pre code{background:none;padding:0;font-size:inherit}
+.layer{display:inline-block;font:700 .72rem var(--mono);background:var(--accent);color:var(--bg);padding:.1rem .45rem;border-radius:3px;margin-right:.4rem;letter-spacing:.05em}
+.note{background:var(--amber-soft);border-left:4px solid var(--amber);padding:.6rem .8rem;margin:1rem 0;border-radius:0 6px 6px 0;font-size:.92rem}
+.drill{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin:1rem 0}
+details{border:1px solid var(--line);border-radius:6px;padding:.5rem .8rem;margin:.6rem 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+.badge{font:700 .68rem var(--mono);padding:.08rem .4rem;border-radius:3px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
+.refs{list-style:none;padding:0}
+.refs li{border:1px solid var(--line);border-radius:6px;background:var(--card);padding:.6rem .8rem}
+.refs .sub{font-size:.82rem;color:var(--muted)}
+footer{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:1rem;font-size:.9rem}
+/* svg tokens */
+svg text{fill:var(--fg);font-family:var(--font);font-size:13px}
+svg .m{fill:var(--muted)}
+svg .box{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+svg .hi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+svg .am{fill:var(--amber-soft);stroke:var(--amber);stroke-width:1.5}
+svg .gd{fill:var(--ok-soft);stroke:var(--ok);stroke-width:1.5}
+svg .bd{fill:var(--bad-soft);stroke:var(--bad);stroke-width:1.5}
+svg .ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+svg .ac{stroke:var(--accent);stroke-width:2;fill:none}
+svg .dot{fill:var(--accent);stroke:var(--card);stroke-width:2}
+svg .dot2{fill:var(--amber);stroke:var(--card);stroke-width:2}
+svg .dot3{fill:var(--muted);stroke:var(--card);stroke-width:2}
+svg .bold{font-weight:700}
+svg .mono{font-family:var(--mono);font-size:12px}
+</style>
+
+<nav class="toc" aria-label="Contents">
+  <a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anatomy">Anatomy</a>
+  <a href="#breakfix">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<div class="wrap">
+
+<header class="hdr">
+  <div class="id">Tue 2026-09-29 · Blueprint 1.3 [Build]</div>
+  <h1>Use Git in a CI/CD development workflow</h1>
+  <dl class="meta">
+    <div><dt>Domain</dt><dd>1.0 Software Design, Development, and Deployment · 20%</dd></div>
+    <div><dt>Tier</dt><dd>2 (proficiency check)</dd></div>
+    <div><dt>Read time</dt><dd>~18 min + optional 10 min drill</dd></div>
+    <div><dt>Position</dt><dd>Unit 2 of 49</dd></div>
+  </dl>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+  <li>Git is the trigger. A push, a merge request (MR), or a tag creates a pipeline, and the pipeline definition lives in the repo as <code>.gitlab-ci.yml</code>.</li>
+  <li>One branch push can create more than one kind of pipeline: a branch pipeline, an MR pipeline, or a merged results pipeline. Which one you get depends on the <code>rules</code> you wrote.</li>
+  <li>The most common defect in this area is two pipelines per push. The standard fix is <code>workflow:rules</code> with <code>$CI_OPEN_MERGE_REQUESTS</code>.</li>
+  <li><code>$CI_COMMIT_BRANCH</code> is empty in MR pipelines. Jobs that read it silently misbehave when they move from a branch pipeline to an MR pipeline.</li>
+  <li>Merge and rebase produce the same final tree. They differ in history shape and in what they do to commits other people already have.</li>
+  <li>Protected branches decide who can push or merge, and they gate access to protected CI variables and runners.</li>
+  <li>The lab GitLab edition is unknown. Merged results pipelines need Premium or Ultimate, so do not build a solution that depends on them.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure class="fig">
+<svg viewBox="0 0 760 250" role="img" aria-label="Domain 1 neighbors and the Git to pipeline to deploy tool chain">
+  <text x="10" y="20" class="bold">Domain 1.0 neighbors</text>
+  <rect class="box" x="10" y="30" width="140" height="42" rx="5"/><text x="20" y="56">1.1 Design solution</text>
+  <rect class="box" x="160" y="30" width="150" height="42" rx="5"/><text x="170" y="56">1.2 Modify existing</text>
+  <rect class="hi" x="320" y="30" width="150" height="42" rx="5"/><text x="330" y="56" class="bold">1.3 Git in CI/CD</text>
+  <rect class="box" x="480" y="30" width="140" height="42" rx="5"/><text x="490" y="56">1.4 Troubleshoot</text>
+  <rect class="box" x="630" y="30" width="120" height="42" rx="5"/><text x="640" y="56">1.5 App perf</text>
+  <path class="ac" d="M395 72 V110"/>
+  <text x="10" y="128" class="bold">Tool chain (what 1.3 touches)</text>
+  <rect class="hi" x="10" y="140" width="120" height="50" rx="5"/><text x="20" y="162" class="bold">Git repo</text><text x="20" y="180" class="m">branches, tags</text>
+  <rect class="box" x="160" y="140" width="130" height="50" rx="5"/><text x="170" y="162" class="bold">Merge request</text><text x="170" y="180" class="m">review, gates</text>
+  <rect class="hi" x="320" y="140" width="130" height="50" rx="5"/><text x="330" y="162" class="bold">Pipeline</text><text x="330" y="180" class="m">.gitlab-ci.yml</text>
+  <rect class="box" x="480" y="140" width="120" height="50" rx="5"/><text x="490" y="162" class="bold">Runner</text><text x="490" y="180" class="m">executes jobs</text>
+  <rect class="box" x="630" y="140" width="120" height="50" rx="5"/><text x="640" y="162" class="bold">Target</text><text x="640" y="180" class="m">Ansible, TF, NSO</text>
+  <path class="ln" d="M130 165 H160 M290 165 H320 M450 165 H480 M600 165 H630"/>
+  <text x="10" y="222" class="m">Lab: GitLab, Vault and TIG run on HORNLAB01 per your tracker. Exam GitLab edition and runner setup are not confirmed.</text>
+</svg>
+<figcaption>1.4 (troubleshoot CI/CD) reuses everything here. Learn the pipeline types now and 1.4 mostly follows.</figcaption>
+</figure>
+
+<h2 id="layers">Fundamentals → exam depth</h2>
+
+<h3><span class="layer">L1</span>Concept</h3>
+<p>A Git repository is a graph of commits. A branch is a movable pointer to one commit. Merging joins two lines of work; rebasing replays one line onto another. All of that happens locally with no server involved, which is why the Pro Git chapter on <a href="https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows" target="_blank" rel="noopener">branching workflows</a> <span class="badge">✅</span> stresses that branches are cheap.</p>
+<p>CI/CD adds a server that watches the remote. Every relevant event (push, MR update, tag) creates a pipeline: an ordered set of jobs the runner executes. The pipeline is defined in YAML in the same repo, so the workflow itself is versioned and reviewed like code. For you that means a change to a playbook, a Terraform module, or an NSO package goes through the same gate as any other change.</p>
+<p>The standard flow that the blueprint verb "Use" implies is a topic branch per change, an MR into the default branch, a pipeline that must pass, then a merge that triggers the deploy pipeline. The Pro Git chapter calls the short-lived branch a topic branch and the stable one a long-running branch.</p>
+
+<figure class="fig">
+<svg viewBox="0 0 760 330" role="img" aria-label="Sequence: developer, GitLab, runner across a feature branch merge request lifecycle">
+  <g class="m">
+    <text x="60" y="20" class="bold">Developer</text><text x="330" y="20" class="bold">GitLab</text><text x="600" y="20" class="bold">Runner</text>
+  </g>
+  <path class="ln" d="M90 28 V320 M360 28 V320 M630 28 V320" stroke-dasharray="4 4"/>
+  <path class="ac" d="M90 55 H360"/><text x="100" y="49" class="mono">git push origin feature/vlan-add</text>
+  <path class="ln" d="M360 78 H630"/><text x="372" y="72" class="m">branch pipeline (if rules allow)</text>
+  <path class="ac" d="M90 108 H360"/><text x="100" y="102">open merge request</text>
+  <path class="ln" d="M360 131 H630"/><text x="372" y="125" class="m">MR pipeline, source = merge_request_event</text>
+  <path class="ln" d="M630 158 H360"/><text x="372" y="152" class="m">jobs pass / fail</text>
+  <path class="ac" d="M360 185 H90"/><text x="130" y="179">MR blocked until pipeline passes (if required)</text>
+  <path class="ac" d="M90 212 H360"/><text x="100" y="206" class="mono">fix, commit, push (new MR pipeline)</text>
+  <path class="ac" d="M90 239 H360"/><text x="100" y="233">merge (commit / semi-linear / fast-forward)</text>
+  <path class="ln" d="M360 266 H630"/><text x="372" y="260" class="m">default branch pipeline: deploy jobs</text>
+  <rect class="gd" x="380" y="285" width="240" height="28" rx="4"/><text x="392" y="304">change is live, tracked by commit SHA</text>
+</svg>
+<figcaption>Every arrow from GitLab to the runner is a pipeline. Which of them exist is decided entirely by your <code>rules</code>.</figcaption>
+</figure>
+
+<h3><span class="layer">L2</span>Mechanics</h3>
+<p><b>Pipeline types.</b> GitLab has three that matter here. A branch pipeline runs on a push. An <a href="https://docs.gitlab.com/ci/pipelines/merge_request_pipelines/" target="_blank" rel="noopener">MR pipeline</a> <span class="badge">✅</span> runs on the contents of the source branch only and ignores the target branch. A <a href="https://docs.gitlab.com/ci/pipelines/merged_results_pipelines/" target="_blank" rel="noopener">merged results pipeline</a> <span class="badge">✅</span> tests a temporary commit that combines source and target, so it catches integration failures before the merge.</p>
+
+<div class="tw"><table>
+<thead><tr><th>Type</th><th>Tests what</th><th>Trigger value of <code>CI_PIPELINE_SOURCE</code></th><th><code>CI_COMMIT_BRANCH</code></th><th>Needs</th></tr></thead>
+<tbody>
+<tr><td>Branch</td><td>Tip of the pushed branch</td><td><code>push</code></td><td>Set</td><td>Any tier</td></tr>
+<tr><td>Merge request</td><td>Source branch only</td><td><code>merge_request_event</code></td><td>Not set</td><td>Any tier; jobs need an MR rule</td></tr>
+<tr><td>Merged results</td><td>Temporary source + target merge</td><td><code>merge_request_event</code></td><td>Not set</td><td>Premium or Ultimate; Maintainer or Owner to enable</td></tr>
+</tbody></table></div>
+
+<p><b>Why duplicates happen.</b> If a job has no <code>rules</code>, or its rules match both <code>push</code> and <code>merge_request_event</code>, a push to a branch with an open MR creates two pipelines. The documented fix is a <a href="https://docs.gitlab.com/ci/yaml/workflow/" target="_blank" rel="noopener">workflow:rules</a> <span class="badge">✅</span> block evaluated before any job. <code>workflow</code> decides whether a pipeline exists at all, and <code>rules</code> inside a job decides whether that job exists in it.</p>
+
+<figure class="fig">
+<svg viewBox="0 0 760 270" role="img" aria-label="Decision flow of workflow:rules for branch versus merge request pipelines">
+  <rect class="box" x="10" y="100" width="130" height="50" rx="5"/><text x="20" y="122" class="bold">Git event</text><text x="20" y="140" class="m">push / MR update</text>
+  <path class="ln" d="M140 125 H175"/>
+  <rect class="hi" x="175" y="100" width="170" height="50" rx="5"/><text x="185" y="122" class="mono">rule 1: source ==</text><text x="185" y="140" class="mono">merge_request_event</text>
+  <path class="ac" d="M260 100 V60 H480"/><text x="270" y="54" class="m">match</text>
+  <rect class="gd" x="480" y="38" width="270" height="44" rx="5"/><text x="490" y="58" class="bold">Create MR pipeline</text><text x="490" y="74" class="m">first matching rule wins</text>
+  <path class="ln" d="M345 125 H380"/>
+  <rect class="am" x="380" y="100" width="190" height="50" rx="5"/><text x="390" y="122" class="mono">rule 2: CI_COMMIT_BRANCH</text><text x="390" y="140" class="mono">&amp;&amp; CI_OPEN_MERGE_REQUESTS</text>
+  <path class="ac" d="M475 150 V190 H580"/><text x="485" y="184" class="m">match: when: never</text>
+  <rect class="bd" x="580" y="168" width="170" height="44" rx="5"/><text x="590" y="188" class="bold">No branch pipeline</text><text x="590" y="204" class="m">MR pipeline covers it</text>
+  <path class="ln" d="M570 125 H600"/>
+  <rect class="hi" x="600" y="100" width="150" height="50" rx="5"/><text x="610" y="122" class="mono">rule 3: CI_COMMIT_</text><text x="610" y="140" class="mono">BRANCH</text>
+  <path class="ln" d="M675 150 V168" />
+  <text x="10" y="250" class="m">Rules are evaluated top to bottom. Rule 3 catches pushes to branches with no open MR (for example the default branch).</text>
+</svg>
+<figcaption>This is the documented pattern. The default-branch deploy pipeline still runs because rule 3 matches a plain push.</figcaption>
+</figure>
+
+<p><b>Merge or rebase.</b> Both integrate a branch. Merge does a three-way merge of two tips and the common ancestor and creates a merge commit when the branches diverged. Rebase replays your commits on the new base for a linear history, and a rebase followed by a merge gives a fast-forward. See <a href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging" target="_blank" rel="noopener">Basic Branching and Merging</a> <span class="badge">✅</span> and <a href="https://git-scm.com/book/en/v2/Git-Branching-Rebasing" target="_blank" rel="noopener">Rebasing</a> <span class="badge">✅</span>.</p>
+
+<figure class="fig">
+<svg viewBox="0 0 760 240" role="img" aria-label="History shape after merge commit versus after rebase and fast-forward">
+  <text x="10" y="20" class="bold">Merge commit (history shows the fork)</text>
+  <path class="ln" d="M30 60 H330 M110 60 L150 105 H250 L290 60"/>
+  <circle class="dot3" cx="30" cy="60" r="8"/><circle class="dot3" cx="110" cy="60" r="8"/><circle class="dot3" cx="210" cy="60" r="8"/>
+  <circle class="dot2" cx="150" cy="105" r="8"/><circle class="dot2" cx="250" cy="105" r="8"/><circle class="dot" cx="290" cy="60" r="9"/>
+  <text x="270" y="40" class="m">merge commit, 2 parents</text>
+  <text x="390" y="20" class="bold">Rebase, then fast-forward (linear)</text>
+  <path class="ln" d="M410 60 H730"/>
+  <circle class="dot3" cx="410" cy="60" r="8"/><circle class="dot3" cx="490" cy="60" r="8"/><circle class="dot3" cx="570" cy="60" r="8"/>
+  <circle class="dot2" cx="640" cy="60" r="8"/><circle class="dot2" cx="710" cy="60" r="8"/>
+  <text x="600" y="40" class="m">replayed commits, new SHAs</text>
+  <text x="10" y="170" class="m">Grey = target branch commits · Amber = your feature commits.</text>
+  <text x="10" y="192" class="bold">Consequence:</text>
+  <text x="110" y="192">rebased commits get new SHAs. If others already have the old ones, you create duplicates.</text>
+  <text x="10" y="214" class="m">Rule from Pro Git: rebase local work before pushing; do not rebase what you pushed.</text>
+</svg>
+<figcaption>Same final tree in both cases. Only the graph differs.</figcaption>
+</figure>
+
+<h3><span class="layer">L3</span>Exam detail</h3>
+<ul>
+  <li><b>Variables differ by pipeline type.</b> Per the <a href="https://docs.gitlab.com/ci/variables/predefined_variables/" target="_blank" rel="noopener">predefined variables reference</a> <span class="badge">✅</span>, <code>CI_COMMIT_BRANCH</code> is unavailable in MR and tag pipelines, while <code>CI_MERGE_REQUEST_IID</code>, <code>CI_MERGE_REQUEST_SOURCE_BRANCH_NAME</code> and <code>CI_MERGE_REQUEST_TARGET_BRANCH_NAME</code> exist only in MR pipelines. <code>CI_COMMIT_REF_NAME</code> works in both. <code>CI_DEFAULT_BRANCH</code> lets you write deploy rules without hard-coding <code>main</code>.</li>
+  <li><b>Merge methods.</b> GitLab offers three per project, documented under <a href="https://docs.gitlab.com/user/project/merge_requests/methods/" target="_blank" rel="noopener">Merge methods</a> <span class="badge">✅</span>: merge commit (the default, like <code>--no-ff</code>), merge commit with semi-linear history (merges only if a fast-forward is possible, so a stale branch needs a rebase), and fast-forward merge (no merge commits, only when the target has not diverged). Squash is a separate setting with four modes: do not allow, allow, encourage, require.</li>
+  <li><b>Protected branches</b> (<a href="https://docs.gitlab.com/user/project/repository/branches/protected/" target="_blank" rel="noopener">docs</a> <span class="badge">✅</span>). "Allowed to merge" and "Allowed to push and merge" are separate settings. The default branch is protected by default. Users get protected variables and protected runners only when they can update both source and target of a merge between protected branches.</li>
+  <li><b>Conflict resolution flow.</b> After a conflicted merge: <code>git status</code>, edit the marked files, <code>git add</code>, then <code>git commit</code>. In a rebase you resume with <code>git rebase --continue</code>, skip a patch with <code>--skip</code>, or bail out with <code>--abort</code> (<a href="https://git-scm.com/docs/git-rebase" target="_blank" rel="noopener">git-rebase docs</a> <span class="badge">✅</span>).</li>
+  <li><b>Job ordering.</b> Stages run in order by default. <a href="https://docs.gitlab.com/ci/yaml/needs/" target="_blank" rel="noopener">needs</a> <span class="badge">✅</span> makes jobs start when their dependencies finish, forming a DAG. Keyword inventory is in the <a href="https://docs.gitlab.com/ci/yaml/" target="_blank" rel="noopener">CI/CD YAML syntax reference</a> <span class="badge">✅</span>; <code>only</code>/<code>except</code> are deprecated, so use <code>rules</code>.</li>
+  <li><b>Merged results and conflicts.</b> If the target has conflicting changes, merged results pipelines cannot run and GitLab falls back to a normal MR pipeline. A passing pipeline in that state does not prove the merge is clean.</li>
+</ul>
+
+<div class="note"><b>Version drift.</b> The GitLab docs pages I fetched are the current docs (they show 19.x version notes); your pin is GitLab 18.4. Features I saw that are newer than 18.4: custom inputs for MR pipelines (18.11) and automatic rebase before merge going GA (19.x). Do not rely on them in the lab. Features at or below 18.4: merged results (17.9+), <code>CI_MERGE_REQUEST_DRAFT</code> (17.10), protected variable access rules (18.1).</div>
+
+<div class="note"><b>Push back.</b> Blueprint 1.3 is one line, so it is easy to over-study Git trivia. In a lab where you work against a running GitLab, the likely task shapes (consistent with "Use" under [Build]) are: fix a pipeline that fires twice or not at all, resolve a conflict and get an MR merged, or wire a job to the right branch condition. Spend time on those, not on Git plumbing.</div>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Pinned to the docs above. A working skeleton, not the drill solution: it shows the shape of workflow rules plus a job that only runs in MR pipelines.</p>
+<pre><code># .gitlab-ci.yml (skeleton; keywords confirmed in the YAML reference)
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+stages: [check, apply]
+
+check-job:
+  stage: check            # job-level "stage" not fetched this run: verify
+  script:
+    - echo "source=$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME target=$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"</code></pre>
+<p>The three <code>workflow:rules</code> lines and the MR job rule follow the documented examples. Conflict markers, from Pro Git, look like this. The block between <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> and <code>=======</code> is the current branch's version, and the block down to <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> is the incoming one.</p>
+<pre><code>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+vlan 110 name USERS
+=======
+vlan 110 name CORP-USERS
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/rename-vlan</code></pre>
+
+<h2 id="breakfix">Break/fix</h2>
+<div class="tw"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Two pipelines per push to a branch with an open MR</td><td>Jobs match both <code>push</code> and <code>merge_request_event</code>, or have no rules</td><td>Pipeline list: one labeled merge request, one branch; check <code>workflow</code> block</td><td>Add the <code>workflow:rules</code> switch with <code>$CI_OPEN_MERGE_REQUESTS</code> and <code>when: never</code></td></tr>
+<tr><td>MR shows no pipeline, or "Error occurred while trying to run a new pipeline"</td><td>No job or workflow rule matches <code>merge_request_event</code></td><td>Search the YAML for <code>merge_request_event</code></td><td>Add the rule, then push a commit or rebase. The Run pipeline button does not help here (<a href="https://docs.gitlab.com/ci/pipelines/mr_pipeline_troubleshooting/" target="_blank" rel="noopener">troubleshooting</a> <span class="badge">✅</span>)</td></tr>
+<tr><td>Job prints an empty branch name in an MR pipeline</td><td>It reads <code>$CI_COMMIT_BRANCH</code>, which is not set in MR pipelines</td><td><code>echo</code> both variables in <code>script</code></td><td>Use <code>$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME</code> or <code>$CI_COMMIT_REF_NAME</code></td></tr>
+<tr><td>"Merge blocked: pipeline must succeed"</td><td>MR, merged results, or train pipeline failed or was canceled</td><td>Open the latest pipeline on the MR</td><td>Retry failed jobs or push a fix</td></tr>
+<tr><td><code>git rebase</code> stops with conflicts</td><td>Your commit touches lines the target changed</td><td><code>git status</code> lists unmerged paths</td><td>Edit, <code>git add</code>, <code>git rebase --continue</code>; or <code>git rebase --abort</code> to return to start</td></tr>
+</tbody></table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+  <li>The GitLab docs may not be reachable in the exam. Memorize the four names that matter: <code>workflow:rules</code>, <code>rules:if</code>, <code>CI_PIPELINE_SOURCE</code>, <code>CI_OPEN_MERGE_REQUESTS</code>.</li>
+  <li>Use the pipeline editor or CI lint tool in GitLab to catch YAML errors before pushing. The troubleshooting page names both.</li>
+  <li>Offline Git help: <code>git rebase --help</code> and <code>git merge --help</code> should open the man pages ⚠ unverified — test on the workstation.</li>
+  <li>Add a throwaway <code>echo $CI_PIPELINE_SOURCE</code> job when unsure which pipeline type fired. It is the fastest diagnostic.</li>
+  <li>Keep a snippet of the three-rule workflow block in your notes and type it from memory until it takes under 30 seconds.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<div class="drill">
+<p><b>Target:</b> the GitLab instance in your lab (HORNLAB01 for your practice; exam instance unknown). A small repo with a text file <code>vlans.txt</code> is enough. No device needed.</p>
+<p><b>Requirement:</b></p>
+<ul>
+  <li>Create <code>.gitlab-ci.yml</code> with two jobs: <code>check-job</code> runs only in MR pipelines; <code>apply-job</code> runs only on pushes to the default branch.</li>
+  <li>Pushing a commit to a feature branch that has an open MR must produce exactly one pipeline.</li>
+  <li>Create a conflict on <code>vlans.txt</code> between the feature branch and the default branch, resolve it by rebasing the feature branch, and merge the MR.</li>
+</ul>
+<p><b>Reference names:</b> <code>workflow:rules</code>, <code>rules:if</code>, <code>$CI_PIPELINE_SOURCE</code>, <code>$CI_OPEN_MERGE_REQUESTS</code>, <code>$CI_COMMIT_BRANCH</code>, <code>$CI_DEFAULT_BRANCH</code>.</p>
+<p><b>Verify:</b></p>
+<ul>
+  <li>Pipeline list for the MR shows one pipeline per push, labeled merge request.</li>
+  <li><code>check-job</code> log prints both branch names; <code>apply-job</code> does not exist in the MR pipeline.</li>
+  <li>After the merge, the default branch shows a pipeline containing only <code>apply-job</code>.</li>
+</ul>
+<details><summary>Hint</summary>
+<p>Job rules: <code>$CI_PIPELINE_SOURCE == "merge_request_event"</code> for the check; <code>$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH</code> for the apply. Workflow: the three-rule block from the Anatomy section. Rebase flow: fetch, rebase onto the default branch, resolve, <code>git add</code>, <code>git rebase --continue</code>, then push the branch.</p></details>
+<details><summary>Solution</summary>
+<pre><code>workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH &amp;&amp; $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+stages: [check, apply]
+
+check-job:
+  stage: check
+  script:
+    - echo "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME into $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+apply-job:
+  stage: apply
+  script:
+    - echo "deploy from $CI_COMMIT_BRANCH"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH</code></pre>
+<p>Shell side: <code>git checkout feature</code>, <code>git rebase main</code>, edit <code>vlans.txt</code> at the markers, <code>git add vlans.txt</code>, <code>git rebase --continue</code>. Then push the branch. Because rebase rewrote the branch, the push may be rejected as non-fast-forward. A force push with lease is the usual answer ⚠ unverified — check the flag in <code>git push --help</code> in the lab. Only do this on a branch nobody else has pulled.</p>
+<p>If the default branch is not called <code>main</code>, substitute your name for it in the rebase command.</p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today.</b></p>
+<details><summary>1. A push to a branch with an open MR creates two pipelines. Give the fix and say what each line does.</summary>
+<p>Add a <code>workflow:rules</code> block: run when source is <code>merge_request_event</code>; skip (<code>when: never</code>) when there is a branch and <code>$CI_OPEN_MERGE_REQUESTS</code> is set; otherwise run when <code>$CI_COMMIT_BRANCH</code> is set. The first match wins, so branches with an MR get only the MR pipeline.</p></details>
+<details><summary>2. Why does a job that prints <code>$CI_COMMIT_BRANCH</code> show an empty value after you add MR rules?</summary>
+<p>That variable is not available in MR pipelines. Use the MR source-branch variable or <code>$CI_COMMIT_REF_NAME</code>.</p></details>
+<details><summary>3. Which GitLab merge method requires a rebase when the source branch is behind, and what does it guarantee?</summary>
+<p>Merge commit with semi-linear history. It merges only when a fast-forward is possible, so the target branch build outcome matches what was tested.</p></details>
+<details><summary>4. A merged results pipeline is expected but a plain MR pipeline runs. Name two possible reasons.</summary>
+<p>The source branch conflicts with the target (GitLab falls back), or the feature is unavailable: it needs Premium or Ultimate, a Maintainer or Owner to enable it, and a project hosted on GitLab.</p></details>
+
+<p><b>From history.</b> The history file has only one entry, from yesterday (1 day old), so no 3–10 day old entries exist yet. These two are an early spaced review instead.</p>
+<details><summary>5. (2026-09-28) In a RESTCONF URI, where does the module-qualified name (e.g. Cisco-IOS-XE-native:) appear, and why is repeating it on nested containers wrong?</summary>
+<p>It prefixes the first (top-level) data node after the data root. Child nodes from the same module inherit the namespace, so repeating it is incorrect; the prefix reappears only where the module changes. Answer carried from the earlier page; not re-verified today.</p></details>
+<details><summary>6. (2026-09-28) Why does IOSvL2 accepting <code>restconf</code> into its configuration not mean RESTCONF actually works there?</summary>
+<p>In this lab context IOSvL2 has no working RESTCONF. The command is accepted but there is no service behind it. Use Cat8000V for RESTCONF and NETCONF.</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<ul class="refs">
+<li><b>Third-party (official docs)</b></li>
+<li><a href="https://docs.gitlab.com/ci/pipelines/merge_request_pipelines/" target="_blank" rel="noopener">Merge request pipelines</a> <span class="badge">✅</span><div class="sub">Current docs (19.x notes shown; pin 18.4) · verified 2026-09-29 · Best for: the MR rule and how it differs from branch pipelines.</div></li>
+<li><a href="https://docs.gitlab.com/ci/yaml/workflow/" target="_blank" rel="noopener">workflow keyword</a> <span class="badge">✅</span><div class="sub">Current docs · verified 2026-09-29 · Best for: the duplicate-pipeline fix; memorize it.</div></li>
+<li><a href="https://docs.gitlab.com/ci/variables/predefined_variables/" target="_blank" rel="noopener">Predefined CI/CD variables reference</a> <span class="badge">✅</span><div class="sub">Current docs · verified 2026-09-29 · Best for: which variable exists in which pipeline type.</div></li>
+<li><a href="https://docs.gitlab.com/ci/pipelines/mr_pipeline_troubleshooting/" target="_blank" rel="noopener">Troubleshooting merge request pipelines</a> <span class="badge">✅</span><div class="sub">Current docs · verified 2026-09-29 · Best for: symptom-to-fix list; feeds unit 1.4.</div></li>
+<li><a href="https://docs.gitlab.com/ci/pipelines/merged_results_pipelines/" target="_blank" rel="noopener">Merged Results Pipelines</a> <span class="badge">✅</span><div class="sub">Current docs (17.9+) · verified 2026-09-29 · Best for: prerequisites and the conflict fallback.</div></li>
+<li><a href="https://docs.gitlab.com/user/project/merge_requests/methods/" target="_blank" rel="noopener">Merge methods</a> <span class="badge">✅</span><div class="sub">Current docs · verified 2026-09-29 · Best for: the three merge methods and squash options.</div></li>
+<li><a href="https://git-scm.com/book/en/v2/Git-Branching-Rebasing" target="_blank" rel="noopener">3.6 Git Branching - Rebasing</a> <span class="badge">✅</span><div class="sub">Pro Git v2 · verified 2026-09-29 · Best for: the rule on not rebasing pushed commits.</div></li>
+<li><a href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging" target="_blank" rel="noopener">Git - Basic Branching and Merging</a> <span class="badge">✅</span><div class="sub">Pro Git v2 · verified 2026-09-29 · Best for: conflict markers and the resolve sequence.</div></li>
+</ul>
+<p>No Cisco or standards links today: 1.3 is not a Cisco-owned topic, and no RFC applies.</p>
+
+<footer>
+<p><b>Links: 13 ✅ · 0 🔎 · 0 removed</b> (8 in Go deeper; the rest are inline: protected branches, needs, CI/CD YAML syntax reference, Branching Workflows, git-rebase).</p>
+<p><b>⚠ Unverified, test in lab:</b></p>
+<ul>
+  <li>Job-level <code>stage:</code> keyword (stages list itself was confirmed).</li>
+  <li><code>git rebase --help</code> / <code>git merge --help</code> opening offline help on the workstation.</li>
+  <li>Force push with lease after a rebase (flag not in any fetched page).</li>
+  <li>Exam-instance GitLab edition and runner setup.</li>
+  <li>Recall answer 5 (RESTCONF prefix rule) carried from the previous page.</li>
+</ul>
+<p><b>Tomorrow:</b> Unit 3, Tier 3, blueprint 2.7.a-b: Ansible role loop control and conditionals.</p>
+</footer>
+
+</div>
+
+</body></html>

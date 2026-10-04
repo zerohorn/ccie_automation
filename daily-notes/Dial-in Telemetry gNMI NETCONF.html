@@ -1,0 +1,249 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dial-in Telemetry gNMI NETCONF</title>
+<style>
+/* Layout: single reading column, sticky TOC strip, cards only for drill/answers. Tokens first. */
+:root{
+  --bg:#f6f7f9; --fg:#1b2430; --muted:#5a6676; --line:#d5dbe3; --panel:#ffffff;
+  --accent:#0b6e8a; --accent-soft:#dff0f5; --ok:#1c7a46; --warn:#9a5b00; --bad:#a8322d;
+  --code-bg:#eef1f5; --svg-a:#0b6e8a; --svg-b:#7a5ea8; --svg-c:#c0762b; --svg-fill:#e9f3f6;
+  --font-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171e; --fg:#e3e8ee; --muted:#9aa6b5; --line:#2c3541; --panel:#1a212b;
+  --accent:#5cc0dc; --accent-soft:#17323c; --ok:#5fcf92; --warn:#e0a24a; --bad:#ef7d77;
+  --code-bg:#0e1319; --svg-a:#5cc0dc; --svg-b:#b79be6; --svg-c:#e0a062; --svg-fill:#17323c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171e; --fg:#e3e8ee; --muted:#9aa6b5; --line:#2c3541; --panel:#1a212b;
+  --accent:#5cc0dc; --accent-soft:#17323c; --ok:#5fcf92; --warn:#e0a24a; --bad:#ef7d77;
+  --code-bg:#0e1319; --svg-a:#5cc0dc; --svg-b:#b79be6; --svg-c:#e0a062; --svg-fill:#17323c; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.6}
+.wrap{max-width:860px;margin-inline:auto;padding-inline:16px;padding-block:8px 48px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none}
+h1{font-size:1.7rem;line-height:1.2;margin:.4em 0 .3em;text-wrap:balance}
+h2{font-size:1.3rem;margin:1.8em 0 .5em;padding-bottom:.2em;border-bottom:1px solid var(--line);text-wrap:balance}
+h3{font-size:1.05rem;margin:1.3em 0 .3em}
+a{color:var(--accent)}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;font-size:14px}
+.meta b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tbl{overflow-x:auto;margin:.8em 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45;margin:.7em 0}
+code{font-family:var(--font-mono);font-size:.9em}
+p code,li code,td code{background:var(--code-bg);padding:1px 4px;border-radius:3px}
+svg{width:100%;height:auto;display:block;background:var(--panel);border:1px solid var(--line);border-radius:6px;margin:.8em 0}
+svg text{fill:var(--fg);font-family:var(--font-body)}
+svg .m{fill:var(--muted)}
+.bx{fill:var(--svg-fill);stroke:var(--svg-a);stroke-width:1.5}
+.bx2{fill:none;stroke:var(--svg-b);stroke-width:1.5}
+.bx3{fill:none;stroke:var(--svg-c);stroke-width:1.5}
+.ln{stroke:var(--svg-a);stroke-width:1.5;fill:none}
+.ln2{stroke:var(--svg-c);stroke-width:1.5;fill:none;stroke-dasharray:5 3}
+.dash{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+details{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:.5em 0}
+summary{cursor:pointer;font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:700;border-radius:3px;padding:0 6px;margin-right:6px;border:1px solid currentColor}
+.b-ok{color:var(--ok)} .b-warn{color:var(--warn)}
+.warn{color:var(--warn)}
+.refs li{margin:.6em 0}
+.small{font-size:13px;color:var(--muted)}
+ul{padding-left:1.2em}
+</style>
+<div class="wrap">
+<nav class="toc" style="margin-inline:-16px"><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+
+<header>
+<h1>Model-driven telemetry, dial-in: gNMI and NETCONF</h1>
+<div class="meta">
+<div><b>Date</b>2026-10-01 (Thu)</div>
+<div><b>Blueprint</b>3.4 Design a model-driven telemetry solution (dial-in portion)</div>
+<div><b>Domain</b>3.0 (weight: see blueprint, not fetched today)</div>
+<div><b>Tier</b>1 (gap)</div>
+<div><b>Read time</b>~18 min</div>
+<div><b>Unit</b>4 of 49</div>
+</div>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>Dial-in means the collector connects to the router and asks for data. The subscription lives and dies with that session.</li>
+<li>Two dial-in transports on IOS XE 17.5: NETCONF (<code>establish-subscription</code>, XML) and gNMI (<code>Subscribe</code>, JSON_IETF). Dial-out (gRPC, kvGPB) is tomorrow's cousin and is a different unit.</li>
+<li>Dial-in subscriptions are "dynamic": nothing appears in running-config, IDs are assigned by the router, and a reload or switchover wipes them.</li>
+<li>Two cadence choices: periodic (NETCONF period in centiseconds; gNMI SAMPLE with interval) or on-change. On-change has real restrictions on IOS XE.</li>
+<li>Design questions you must answer: who initiates, what survives a reload, how many subscriptions (limit 100), what the collector can parse, how it authenticates.</li>
+<li>NETCONF-YANG must be enabled for telemetry even if you only use gNMI.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 760 250" role="img" aria-label="Where 3.4 sits: YANG models feed telemetry design, which splits into dial-in and dial-out, then subscriptions in 3.5 and a collector.">
+<rect class="bx" x="10" y="20" width="150" height="60" rx="6"/><text x="85" y="46" text-anchor="middle" font-size="14">2.4 / 2.5 YANG</text><text x="85" y="66" text-anchor="middle" font-size="12" class="m">models, XPath filters</text>
+<rect class="bx" x="210" y="20" width="170" height="60" rx="6"/><text x="295" y="46" text-anchor="middle" font-size="14">3.4 Telemetry design</text><text x="295" y="66" text-anchor="middle" font-size="12" class="m">today: dial-in</text>
+<rect class="bx2" x="440" y="10" width="150" height="44" rx="6"/><text x="515" y="30" text-anchor="middle" font-size="13">NETCONF dial-in</text><text x="515" y="46" text-anchor="middle" font-size="11" class="m">XML</text>
+<rect class="bx2" x="440" y="66" width="150" height="44" rx="6"/><text x="515" y="86" text-anchor="middle" font-size="13">gNMI dial-in</text><text x="515" y="102" text-anchor="middle" font-size="11" class="m">JSON_IETF</text>
+<rect class="bx3" x="440" y="130" width="150" height="44" rx="6"/><text x="515" y="150" text-anchor="middle" font-size="13">gRPC dial-out</text><text x="515" y="166" text-anchor="middle" font-size="11" class="m">kvGPB (next unit)</text>
+<rect class="bx" x="620" y="40" width="130" height="60" rx="6"/><text x="685" y="66" text-anchor="middle" font-size="13">3.5 Build</text><text x="685" y="84" text-anchor="middle" font-size="11" class="m">subscriptions</text>
+<path class="ln" d="M160 50H210"/><path class="ln" d="M380 40L440 32"/><path class="ln" d="M380 55L440 88"/><path class="ln2" d="M380 70L440 150"/><path class="ln" d="M590 32L620 55"/><path class="ln" d="M590 88L620 75"/>
+<text x="10" y="215" font-size="12" class="m">Tool chain: Cat8000V publisher (pubd) &#8594; session (NETCONF 830 / gNMI) &#8594; collector (script, gnmic-style client).</text>
+<text x="10" y="235" font-size="12" class="m">Requires: NETCONF-YANG enabled, even for gNMI.</text>
+</svg>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+<h3>L1: the concept</h3>
+<p>You already know SNMP polling and syslog push. Model-driven telemetry replaces both with a subscription: you name a YANG path and a cadence, and the device streams matching data. The only question this unit adds is who opens the TCP connection. If the collector does, it is dial-in. The Cisco chapter calls these dynamic subscriptions: created by the subscriber over RPC, tied to the session, and invisible in running-config.</p>
+<p>Because the session carries the subscription, there is no persistence. If the router reloads or switches over, the collector must reconnect and subscribe again. The chapter says dynamic subscriptions need re-establishing after a stateful switchover. That is the main design cost of dial-in. The benefit is that the router needs no config per collector, and firewalls only need to allow inbound to the router.</p>
+
+<h3>L2: mechanics</h3>
+<p>NETCONF dial-in uses <code>&lt;establish-subscription&gt;</code> (RFC 8639 style) with stream <code>yang-push</code>, an XPath filter and either a period or a dampening period. The router replies <code>ok</code> and then pushes notifications on the same session. Cisco's chapter says establish and delete are the supported RPCs, and lists the <code>notification:1.1</code> capability as a prerequisite in the hello.</p>
+<svg viewBox="0 0 760 330" role="img" aria-label="Sequence: collector opens NETCONF session, exchanges hello, sends establish-subscription, router replies ok then pushes notifications until delete or session close.">
+<text x="110" y="24" text-anchor="middle" font-size="14" font-weight="700">Collector</text><text x="640" y="24" text-anchor="middle" font-size="14" font-weight="700">Cat8000V (pubd)</text>
+<path class="dash" d="M110 34V320"/><path class="dash" d="M640 34V320"/>
+<path class="ln" d="M110 62H636"/><text x="375" y="56" text-anchor="middle" font-size="12">1. SSH to 830, NETCONF hello (collector opens)</text>
+<path class="ln" d="M640 100H114"/><text x="375" y="94" text-anchor="middle" font-size="12">2. hello: notification:1.1 capability</text>
+<path class="ln" d="M110 140H636"/><text x="375" y="134" text-anchor="middle" font-size="12">3. establish-subscription (yang-push, xpath, period)</text>
+<path class="ln" d="M640 180H114"/><text x="375" y="174" text-anchor="middle" font-size="12">4. rpc-reply ok + subscription id (publisher-assigned)</text>
+<path class="ln2" d="M640 220H114"/><text x="375" y="214" text-anchor="middle" font-size="12">5. push-update (first one immediately, then every period)</text>
+<path class="ln2" d="M640 255H114"/><text x="375" y="249" text-anchor="middle" font-size="12">6. push-update ...</text>
+<path class="ln" d="M110 296H636"/><text x="375" y="290" text-anchor="middle" font-size="12">7. delete-subscription, or session closes: subscription gone</text>
+</svg>
+<p>gNMI dial-in is the same idea on gRPC. The client calls <code>Subscribe</code> with a <code>SubscriptionList</code>. The spec defines three modes: ONCE (send, then <code>sync_response</code>, then close), POLL (client asks for each round), and STREAM (long-lived). STREAM has three sub-modes. SAMPLE needs a sample interval in nanoseconds. ON_CHANGE sends on value change and can carry a heartbeat. TARGET_DEFINED lets the device pick per leaf, and it rejects a sample interval with InvalidArgument. Cisco's gNMI chapter only says Subscribe is supported and points to the telemetry chapter for detail, and that chapter lists gNMI as dial-in, yang-push, JSON_IETF.</p>
+<svg viewBox="0 0 760 260" role="img" aria-label="Decision flow for choosing cadence: stream or once, then sample, on-change or target-defined, with IOS XE on-change limits.">
+<rect class="bx" x="10" y="100" width="120" height="50" rx="6"/><text x="70" y="130" text-anchor="middle" font-size="13">What do you need?</text>
+<rect class="bx2" x="190" y="10" width="170" height="44" rx="6"/><text x="275" y="30" text-anchor="middle" font-size="13">One snapshot</text><text x="275" y="46" text-anchor="middle" font-size="11" class="m">gNMI ONCE</text>
+<rect class="bx2" x="190" y="108" width="170" height="44" rx="6"/><text x="275" y="128" text-anchor="middle" font-size="13">Counters / trends</text><text x="275" y="144" text-anchor="middle" font-size="11" class="m">SAMPLE / NETCONF period</text>
+<rect class="bx2" x="190" y="206" width="170" height="44" rx="6"/><text x="275" y="226" text-anchor="middle" font-size="13">State changes</text><text x="275" y="242" text-anchor="middle" font-size="11" class="m">ON_CHANGE / dampening 0</text>
+<rect class="bx3" x="430" y="196" width="320" height="60" rx="6"/><text x="590" y="216" text-anchor="middle" font-size="12">IOS XE limits: one object per XPath,</text><text x="590" y="232" text-anchor="middle" font-size="12">no automatic hierarchy, row-level resolution,</text><text x="590" y="248" text-anchor="middle" font-size="12">dampening-period must be 0</text>
+<rect class="bx3" x="430" y="98" width="320" height="64" rx="6"/><text x="590" y="118" text-anchor="middle" font-size="12">Period unit: centiseconds (1000 = 10 s)</text><text x="590" y="134" text-anchor="middle" font-size="12">minimum 100 = 1 s; first push is immediate;</text><text x="590" y="150" text-anchor="middle" font-size="12">empty updates still sent if no data</text>
+<path class="ln" d="M130 115L190 32"/><path class="ln" d="M130 125H190"/><path class="ln" d="M130 135L190 228"/><path class="ln2" d="M360 130H430"/><path class="ln2" d="M360 228H430"/>
+</svg>
+
+<h3>L3: exam detail</h3>
+<div class="tbl"><table>
+<tr><th>Item</th><th>NETCONF dial-in</th><th>gNMI dial-in</th><th>Configured (dial-out, for contrast)</th></tr>
+<tr><td>Who connects</td><td>Collector</td><td>Collector</td><td>Router</td></tr>
+<tr><td>Subscription type</td><td>Dynamic</td><td>Dynamic</td><td>Configured, in running-config</td></tr>
+<tr><td>Encoding (17.5 chapter)</td><td>XML</td><td>JSON_IETF</td><td>kvGPB</td></tr>
+<tr><td>Stream</td><td>yang-push, yang-notif-native</td><td>yang-push</td><td>yang-push, yang-notif-native</td></tr>
+<tr><td>Survives reload</td><td>No</td><td>No</td><td>Yes, reconnects</td></tr>
+<tr><td>Subscription ID</td><td>Assigned by router</td><td>Assigned by router</td><td>You choose</td></tr>
+<tr><td>Listener/port</td><td>NETCONF SSH (830)</td><td>gnxi: 50052 insecure, 9339 secure by default</td><td>Receiver ip/port you configure</td></tr>
+<tr><td>Union (|) in XPath</td><td>Supported</td><td>Not supported</td><td>n/a</td></tr>
+</table></div>
+<p>Other restrictions from the chapter that decide designs: no subtree filters, no wildcard or range values in the XPath, maximum 100 subscriptions, no subscription QoS, no data-access authorization check. Predicate syntax for keys is <code>[name="value"]</code>. gNMI path flavors matter for the collector: RFC 7951 style uses module-qualified names, OpenConfig style does not, and legacy uses the module prefix.</p>
+<p>The gNMI chapter's secure setup needs a trustpoint, <code>gnxi secure-server</code>, and optionally <code>gnxi secure-client-auth</code>. Credentials are passed as RPC metadata. Config changes made by gNMI Set persist across restart. Version note: the chapter is 17.5 and says gNMI 0.4.0; the lab runs 17.16, so confirm defaults on the box.</p>
+
+<h2 id="anat">Anatomy</h2>
+<p>All snippets are from the 17.5 telemetry and gNMI chapters. They are shapes, not your drill answer.</p>
+<pre><code>! gNMI server on the router (insecure, defaults 50052)
+gnxi
+gnxi server
+! secure variant
+gnxi
+gnxi secure-trustpoint &lt;tp&gt;
+gnxi secure-server
+gnxi secure-client-auth      ! optional, checks client cert
+gnxi secure-port 9339
+show gnxi state</code></pre>
+<pre><code>&lt;!-- NETCONF periodic dynamic subscription: period is centiseconds --&gt;
+&lt;establish-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications"
+    xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push"&gt;
+  &lt;stream&gt;yp:yang-push&lt;/stream&gt;
+  &lt;yp:xpath-filter&gt;/mdt-oper:mdt-oper-data/mdt-subscriptions&lt;/yp:xpath-filter&gt;
+  &lt;yp:period&gt;1000&lt;/yp:period&gt;
+&lt;/establish-subscription&gt;
+
+&lt;!-- on-change: swap period for dampening-period 0 --&gt;
+&lt;yp:dampening-period&gt;0&lt;/yp:dampening-period&gt;</code></pre>
+<pre><code>show telemetry ietf subscription all
+show telemetry ietf subscription &lt;id&gt; detail
+clear telemetry ietf subscription &lt;id&gt;      ! kills a dynamic one</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tbl"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>establish-subscription returns error-no-such-option</td><td>Stream, filter or on-change shape the box does not support</td><td>Read the rpc-error; <code>show telemetry ietf subscription all</code></td><td>Use yang-push; point XPath at one object; dampening 0 for on-change</td></tr>
+<tr><td>error-insufficient-resources</td><td>Too many subscriptions, payload too large or period too small</td><td><code>show telemetry ietf subscription all</code> count (limit 100)</td><td>Delete unused ones, narrow the XPath, raise the period</td></tr>
+<tr><td>No telemetry at all, even though gNMI works for Get</td><td>NETCONF-YANG not enabled or <code>pubd</code> not running</td><td>Check hello for notification:1.1; <code>show platform software yang-management process</code> <span class="warn">(unverified, test in lab)</span></td><td>Enable <code>netconf-yang</code></td></tr>
+<tr><td>Collector stops after router reload</td><td>Dynamic subscriptions are not persisted</td><td><code>show telemetry ietf subscription all</code> shows none</td><td>Collector reconnect-and-resubscribe logic; or use a configured subscription</td></tr>
+<tr><td>gNMI connection refused or TLS failure</td><td>Server not enabled, wrong port, bad trustpoint or client cert</td><td><code>show gnxi state</code></td><td>Enable gnxi, align port (50052 vs 9339), fix trustpoint</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>On the router: <code>show gnxi state</code>, <code>show telemetry ietf subscription all</code>, and <code>?</code> under <code>gnxi</code> and <code>telemetry ietf subscription</code> are quickest.</li>
+<li>Find paths offline with <code>pyang -f tree</code> against the Cisco-IOS-XE oper models you downloaded in unit 2.4. <span class="warn">⚠ unverified: whether the model files are on the workstation.</span></li>
+<li>XPath for dynamic subscriptions uses module prefix form (<code>cdp-ios-xe-oper:cdp-neighbor-details/...</code>); the gNMI client wants path elements instead. Keep one cheat line for each.</li>
+<li>A gNMI client such as gnmic has <code>--mode</code>, <code>--stream-mode</code>, <code>--sample-interval</code>, <code>--heartbeat-interval</code>. <span class="warn">⚠ unverified: gnmic availability on the Candidate Workstation.</span></li>
+<li>Python 3.13 on the workstation: check <code>python -c "import ncclient"</code> before relying on it. <span class="warn">⚠ unverified.</span></li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div style="background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 14px 10px">
+<p><b>Target:</b> Cat8000V (17.5-era syntax; lab runs 17.16).</p>
+<p><b>Requirement:</b> Open a NETCONF session and create two dynamic subscriptions: one periodic every 30 seconds on memory statistics, one on-change on CDP neighbors. Prove both exist on the router, then remove the periodic one without touching the other.</p>
+<p><b>Reference:</b> stream <code>yang-push</code>; <code>xpath-filter</code>; <code>period</code> (centiseconds); <code>dampening-period</code>; XPath <code>/memory-ios-xe-oper:memory-statistics/memory-statistic</code> and <code>/cdp-ios-xe-oper:cdp-neighbor-details/cdp-neighbor-detail</code> (both appear in the 17.5 chapter).</p>
+<p><b>Verify:</b> <code>show telemetry ietf subscription all</code> lists two; detail shows type and filter; the first periodic update arrives immediately.</p>
+<details><summary>Hint</summary><p>30 seconds is 3000 centiseconds. On-change uses dampening 0 and no period. Dynamic subscriptions die with the session, so keep the session open while you verify. Deleting by ID is a CLI <code>clear</code>, or <code>delete-subscription</code> in the session that owns it.</p></details>
+<details><summary>Solution</summary>
+<pre><code>&lt;establish-subscription xmlns="urn:ietf:params:xml:ns:yang:ietf-event-notifications"
+    xmlns:yp="urn:ietf:params:xml:ns:yang:ietf-yang-push"&gt;
+  &lt;stream&gt;yp:yang-push&lt;/stream&gt;
+  &lt;yp:xpath-filter&gt;/memory-ios-xe-oper:memory-statistics/memory-statistic&lt;/yp:xpath-filter&gt;
+  &lt;yp:period&gt;3000&lt;/yp:period&gt;
+&lt;/establish-subscription&gt;
+&lt;!-- second RPC --&gt;
+&lt;establish-subscription ...same namespaces...&gt;
+  &lt;stream&gt;yp:yang-push&lt;/stream&gt;
+  &lt;yp:xpath-filter&gt;/cdp-ios-xe-oper:cdp-neighbor-details/cdp-neighbor-detail&lt;/yp:xpath-filter&gt;
+  &lt;yp:dampening-period&gt;0&lt;/yp:dampening-period&gt;
+&lt;/establish-subscription&gt;</code></pre>
+<p>Then <code>clear telemetry ietf subscription &lt;id&gt;</code> for the periodic ID. <span class="warn">⚠ unverified on 17.16: namespace prefixes and whether the CDP path works on Cat8000V; test in lab.</span></p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today's topic</b></p>
+<ol>
+<li>Why does a NETCONF dial-in subscription disappear after a switchover, and where would you see (or not see) it in the router config?
+<details><summary>Answer</summary><p>It is dynamic: created by RPC, bound to the session, assigned an ID by the router, not in running-config, not persisted. Re-establish after reload or switchover.</p></details></li>
+<li>You send an on-change subscription with <code>dampening-period</code> 60 and an XPath at a container holding many rows. Name two reasons it fails or misbehaves on IOS XE 17.5.
+<details><summary>Answer</summary><p>Dampening must be 0, and the XPath should select a single object; automatic hierarchy is not supported for on-change, and change resolution is a row.</p></details></li>
+<li>In gNMI, which stream sub-mode rejects a sample interval, and what does it do per leaf?
+<details><summary>Answer</summary><p>TARGET_DEFINED returns InvalidArgument if a sample interval is set; the target picks ON_CHANGE for events and SAMPLE for counters.</p></details></li>
+<li>Give the default insecure and secure gnxi ports and the command that shows server state.
+<details><summary>Answer</summary><p>50052 insecure, 9339 secure (per the 17.5 chapter); <code>show gnxi state</code>.</p></details></li>
+</ol>
+<p><b>From history (2026-09-28)</b></p>
+<ol start="5">
+<li>In a RESTCONF URI, where does the module-qualified name (e.g. Cisco-IOS-XE-native:) appear, and why is repeating it on nested containers wrong?
+<details><summary>Answer</summary><p>Only on the first (top-level) node of the data resource path after the root; children inherit the module namespace, so repeating it is only for a node from a different module.</p></details></li>
+<li>A YANG list node appears in a RESTCONF JSON body and in a NETCONF XML body. How does its shape differ between the two encodings?
+<details><summary>Answer</summary><p>JSON: an array of objects under the list name. XML: repeated sibling elements, one per entry, in the module namespace.</p></details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><span class="badge b-ok">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry</a> · IOS XE 17.5 · verified 2026-10-01. Best for: dynamic vs configured, restrictions, XML examples, show commands.</li>
+<li><span class="badge b-ok">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnmi.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - gNMI Protocol</a> · IOS XE 17.5 · verified 2026-10-01. Best for: gnxi CLI, ports, trustpoint, path origins.</li>
+<li><span class="badge b-ok">✅</span><a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a> · tested on 17.3.3 (older than the pin) · verified 2026-10-01. Best for: dynamic subscription worked example and verification commands.</li>
+<li><span class="badge b-ok">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x</a> · IOS XE 17.5 · verified 2026-10-01. Best for: book TOC.</li>
+</ul>
+<h3>Standards</h3>
+<ul class="refs">
+<li><span class="badge b-ok">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641: Subscription to YANG Notifications for Datastore Updates</a> · verified 2026-10-01. Best for: period, anchor-time, dampening-period, sync-on-start.</li>
+<li><span class="badge b-ok">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8639" target="_blank" rel="noopener">RFC 8639</a> (Subscription to YANG Notifications) · verified 2026-10-01. Best for: dynamic vs configured model.</li>
+<li><span class="badge b-ok">✅</span><a href="https://www.rfc-editor.org/rfc/rfc5277" target="_blank" rel="noopener">RFC 5277: NETCONF Event Notifications</a> · verified 2026-10-01. Best for: the older create-subscription model and session binding.</li>
+<li><span class="badge b-ok">✅</span><a href="https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md" target="_blank" rel="noopener">gNMI specification (OpenConfig reference)</a> · spec text, version not stated on fetch · verified 2026-10-01. Best for: section 3.5 Subscribe modes.</li>
+</ul>
+
+<footer>
+<h2>Footer</h2>
+<p><b>Links:</b> 8 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims:</b> gnmic and ncclient presence on the workstation; <code>pyang</code> model files on the workstation; the platform-software YANG status command; 17.16 behavior and defaults for gnxi ports and CDP on-change on Cat8000V; the exact namespace prefixes in the drill solution. The Cisco gNMI chapter's encoding restriction text was ambiguous on fetch, so JSON_IETF is taken from the telemetry chapter table.</p>
+<p><b>Tomorrow:</b> Friday weekly review (this week: 2.4, 1.3, 2.7.a-b, 3.4 dial-in), then Monday unit 5: 2.3 REST and GraphQL.</p>
+</footer>
+</div>
+
+</body></html>

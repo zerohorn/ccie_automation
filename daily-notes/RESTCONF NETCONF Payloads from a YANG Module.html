@@ -1,0 +1,542 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.4 — RESTCONF/NETCONF Payloads from a YANG Module</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --text: #1b1f24;
+    --muted: #5b6470;
+    --border: #dfe3e8;
+    --accent: #0060a8;
+    --accent-soft: #e6f0fa;
+    --good: #1a7d3f;
+    --good-soft: #e6f4ea;
+    --warn: #a15c00;
+    --warn-soft: #fbf0dc;
+    --bad: #b3261e;
+    --bad-soft: #fbe8e6;
+    --code-bg: #eef1f4;
+    --tier1: #b3261e;
+    --tier2: #a15c00;
+    --tier3: #3a5a8c;
+    --netconf: #6a3fa0;
+    --restconf: #0060a8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171a;
+      --card: #1c2126;
+      --text: #e7eaee;
+      --muted: #9aa4b0;
+      --border: #333a42;
+      --accent: #6bb3f0;
+      --accent-soft: #1c2c3a;
+      --good: #57c785;
+      --good-soft: #14261b;
+      --warn: #e0ac4a;
+      --warn-soft: #2b2313;
+      --bad: #f0817a;
+      --bad-soft: #2b1917;
+      --code-bg: #10131a;
+      --tier1: #f0817a;
+      --tier2: #e0ac4a;
+      --tier3: #8fb2e0;
+      --netconf: #b596e0;
+      --restconf: #6bb3f0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171a;
+    --card: #1c2126;
+    --text: #e7eaee;
+    --muted: #9aa4b0;
+    --border: #333a42;
+    --accent: #6bb3f0;
+    --accent-soft: #1c2c3a;
+    --good: #57c785;
+    --good-soft: #14261b;
+    --warn: #e0ac4a;
+    --warn-soft: #2b2313;
+    --bad: #f0817a;
+    --bad-soft: #2b1917;
+    --code-bg: #10131a;
+    --tier1: #f0817a;
+    --tier2: #e0ac4a;
+    --tier3: #8fb2e0;
+    --netconf: #b596e0;
+    --restconf: #6bb3f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 16px 16px 64px;
+  }
+  h1, h2, h3 { line-height: 1.25; }
+  h2 {
+    margin-top: 2.2em;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.3em;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .toc {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    margin: 0 -16px 12px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .toc-inner {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .toc a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.78rem;
+    padding: 5px 9px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--card);
+    flex: 0 0 auto;
+  }
+  .toc a:hover { color: var(--accent); border-color: var(--accent); }
+  .header-card { display: grid; gap: 6px; }
+  .header-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .pill {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .pill.tier1 { background: var(--bad-soft); color: var(--tier1); }
+  .pill.tier2 { background: var(--warn-soft); color: var(--tier2); }
+  .pill.tier3 { background: var(--accent-soft); color: var(--tier3); }
+  .header-title { font-size: 1.5rem; font-weight: 700; margin: 4px 0 0; }
+  .header-meta { color: var(--muted); font-size: 0.88rem; }
+  ul.snapshot { padding-left: 1.3em; margin: 0.6em 0; }
+  ul.snapshot li { margin-bottom: 0.45em; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.86rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--accent-soft); color: var(--text); }
+  .table-wrap { overflow-x: auto; margin: 1em 0; }
+  code, pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.84rem;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    overflow-x: auto;
+  }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre code { background: none; padding: 0; }
+  .annot {
+    font-size: 0.78rem;
+    color: var(--muted);
+    border-left: 3px solid var(--accent);
+    padding-left: 10px;
+    margin: 6px 0 14px;
+  }
+  .callout {
+    border-left: 4px solid var(--warn);
+    background: var(--warn-soft);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    margin: 1em 0;
+  }
+  .callout.bad { border-left-color: var(--bad); background: var(--bad-soft); }
+  .callout.good { border-left-color: var(--good); background: var(--good-soft); }
+  svg { width: 100%; height: auto; display: block; }
+  .svg-wrap { margin: 1.2em 0; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
+  .svg-cap { font-size: 0.78rem; color: var(--muted); text-align: center; margin-top: 4px; }
+  details {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    background: var(--card);
+  }
+  summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  .drill-field { margin: 1.4em 0; }
+  .drill-field h4 { margin-bottom: 0.3em; }
+  .link-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .badge-verified { background: var(--good-soft); color: var(--good); }
+  .badge-indexed { background: var(--warn-soft); color: var(--warn); }
+  .go-deeper-group h4 { margin-top: 1.2em; margin-bottom: 0.4em; color: var(--muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+  .go-deeper-item { margin-bottom: 0.9em; font-size: 0.92rem; }
+  .go-deeper-item .meta { display: block; font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  footer { margin-top: 2.5em; padding-top: 1em; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--muted); }
+  a { color: var(--accent); }
+  .stack-tag { font-size: 0.72rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+
+<nav class="toc">
+  <div class="toc-inner">
+    <a href="#snapshot">Snapshot</a>
+    <a href="#fits">Where it fits</a>
+    <a href="#fundamentals">Fundamentals→exam</a>
+    <a href="#anatomy">Anatomy</a>
+    <a href="#breakfix">Break/fix</a>
+    <a href="#speed">Speed notes</a>
+    <a href="#drill">Micro-drill</a>
+    <a href="#recall">Recall check</a>
+    <a href="#deeper">Go deeper</a>
+  </div>
+</nav>
+
+<section class="card header-card">
+  <div class="header-row">
+    <span class="pill tier1">Tier 1 — gap</span>
+    <span class="pill">Domain 2.0 Infrastructure as Code — 30%</span>
+    <span class="pill">Unit 1 of 49</span>
+  </div>
+  <div class="header-title">2.4 — Create a RESTCONF or NETCONF payload from a YANG module; interpret the response</div>
+  <div class="header-meta">2026-09-28 (Monday) · Estimated read: 18 min</div>
+</section>
+
+<h2 id="snapshot">Mental snapshot</h2>
+<ul class="snapshot">
+  <li>YANG defines the <strong>schema</strong> (containers, leaves, lists). RESTCONF and NETCONF are two different <strong>wire protocols</strong> that carry data conforming to that same schema — the exam tests whether you can go from a YANG tree to a correct payload in either.</li>
+  <li>RESTCONF payload = JSON or XML shaped exactly like the YANG hierarchy, addressed by a URI path that mirrors the schema path (RFC 8040 §3.5.3).</li>
+  <li>NETCONF payload = XML wrapped in <code>&lt;rpc&gt;</code> operation envelopes (<code>get-config</code>, <code>edit-config</code>, …), always scoped to an explicit datastore — <code>running</code> or <code>candidate</code> (RFC 6241 §4).</li>
+  <li>On IOS XE, <strong>Cisco-IOS-XE-native</strong> is the "entire CLI as YANG" umbrella model. Most RESTCONF/NETCONF payloads you'll write against IOS XE traverse it.</li>
+  <li>Both protocols return errors as structured data, not free text: RESTCONF gives an HTTP status + a <code>yang-data</code> error body; NETCONF gives an <code>&lt;rpc-error&gt;</code> element. Interpreting a response is a parsing exercise, not a grep exercise.</li>
+  <li><strong>Lab reality check:</strong> Cat8000V is the only device in the lab with a working NETCONF/RESTCONF agent. IOSvL2 accepts <code>restconf</code> into its running-config (shared classic-IOS parser) but every endpoint 404s — confirmed by direct test, not assumed from IOL-L2 behavior.</li>
+  <li>This unit is the foundation for 2.5 (XPath filters) and 2.6 (source-of-truth-driven config) — both assume you can already build and read a raw payload.</li>
+</ul>
+
+<h2 id="fits">Where this fits</h2>
+<div class="svg-wrap">
+<svg viewBox="0 0 800 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram showing 2.4 positioned between YANG schema and downstream blueprint units 2.5, 2.6, and 3.1">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="var(--muted)"></path>
+    </marker>
+  </defs>
+  <style>
+    .node { fill: var(--card); stroke: var(--border); stroke-width: 1.5; rx: 8; }
+    .node-txt { fill: var(--text); font-size: 13px; font-family: inherit; text-anchor: middle; }
+    .node-sub { fill: var(--muted); font-size: 10.5px; font-family: inherit; text-anchor: middle; }
+    .edge { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .focus { stroke: var(--accent); stroke-width: 2.5; }
+    .focus-txt { fill: var(--accent); font-weight: 700; }
+    .grp-label { fill: var(--muted); font-size: 10.5px; font-family: inherit; text-transform: uppercase; letter-spacing: 0.04em; }
+  </style>
+
+  <rect x="20" y="20" width="200" height="60" class="node"></rect>
+  <text x="120" y="45" class="node-txt">YANG module</text>
+  <text x="120" y="62" class="node-sub">Cisco-IOS-XE-native (RFC 7950)</text>
+
+  <path class="edge" d="M220,50 L300,50 L300,90"></path>
+  <path class="edge" d="M220,50 L500,50 L500,90"></path>
+
+  <rect x="230" y="90" width="140" height="60" class="node focus" fill="var(--accent-soft)"></rect>
+  <text x="300" y="112" class="node-txt focus-txt">2.4 RESTCONF</text>
+  <text x="300" y="129" class="node-sub">JSON/XML body + URI</text>
+
+  <rect x="430" y="90" width="140" height="60" class="node focus" fill="var(--accent-soft)"></rect>
+  <text x="500" y="112" class="node-txt focus-txt">2.4 NETCONF</text>
+  <text x="500" y="129" class="node-sub">rpc/edit-config XML</text>
+
+  <path class="edge" d="M300,150 L300,190"></path>
+  <path class="edge" d="M500,150 L500,190"></path>
+  <path class="edge" d="M300,150 L400,190"></path>
+  <path class="edge" d="M500,150 L400,190"></path>
+
+  <rect x="330" y="190" width="140" height="50" class="node"></rect>
+  <text x="400" y="211" class="node-txt">Device datastore</text>
+  <text x="400" y="227" class="node-sub">running / candidate</text>
+
+  <path class="edge" d="M300,150 L150,270"></path>
+  <rect x="60" y="270" width="180" height="50" class="node"></rect>
+  <text x="150" y="291" class="node-txt">2.5 XPath filters</text>
+  <text x="150" y="307" class="node-sub">NETCONF get-config &lt;filter&gt;</text>
+
+  <path class="edge" d="M500,150 L640,270"></path>
+  <rect x="550" y="270" width="200" height="50" class="node"></rect>
+  <text x="650" y="291" class="node-txt">2.6 SoT-driven config</text>
+  <text x="650" y="307" class="node-sub">YANG tools + source of truth</text>
+
+  <path class="edge" d="M400,240 L400,270"></path>
+  <rect x="290" y="270" width="220" height="50" class="node"></rect>
+  <text x="400" y="291" class="node-txt">3.1 Python API clients</text>
+  <text x="400" y="307" class="node-sub">requests / ncclient wrap this exact payload</text>
+
+  <text x="145" y="14" class="grp-label">Schema</text>
+  <text x="400" y="14" class="grp-label">Today's unit — two transports, one schema</text>
+</svg>
+</div>
+<p class="svg-cap">2.4 sits directly downstream of the YANG module and feeds both filtering (2.5) and source-of-truth automation (2.6). The same payload shape you build here is what a Python client (3.1) constructs programmatically instead of by hand.</p>
+
+<p>Model-driven telemetry (3.4/3.5) is a different read path entirely — it streams data out via gNMI or dial-out subscriptions instead of you polling with a request/response call. Don't conflate the two: 2.4 is pull, on demand, request/response; 3.4/3.5 is push, continuous, subscription-based. Same underlying YANG schema, different transport family.</p>
+
+<h2 id="fundamentals">Fundamentals → exam depth</h2>
+
+<h3>L1 — Concept</h3>
+<p>YANG (RFC 7950) is a modeling language, not a protocol. It defines <em>containers</em> (structural groupings, §7.5), <em>leaves</em> (single scalar values, §7.6), and <em>lists</em> (repeated, keyed entries, §7.8) — nothing more. A YANG module on its own moves no data anywhere. RESTCONF (RFC 8040) and NETCONF (RFC 6241) are the two protocols the exam expects you to speak against that schema: RESTCONF maps YANG onto HTTP methods and a JSON/XML body; NETCONF wraps YANG data inside XML RPC envelopes over an SSH subsystem. Same tree, two very different envelopes.</p>
+
+<h3>L2 — Mechanics</h3>
+<p>RESTCONF turns a YANG path into a URI. Cisco's RESTCONF chapter shows the pattern directly against Cisco-IOS-XE-native:</p>
+<pre><code>https://10.104.50.97/restconf/data/Cisco-IOS-XE-native:native/interface/GigabitEthernet=0%2F0%2F2</code></pre>
+<p class="annot">Module name only at the root (<code>Cisco-IOS-XE-native:</code>), then plain container/list names, then the list key after <code>=</code> — <code>0/0/2</code> is percent-encoded because <code>/</code> is the URI path separator.</p>
+<p>NETCONF instead opens an SSH session on <strong>port 830</strong> (configurable, per the Cisco guide), exchanges <code>&lt;hello&gt;</code> capabilities, then sends operations as <code>&lt;rpc&gt;</code> elements. The guide documents these operations: <code>get</code>, <code>get-config</code>, <code>edit-config</code>, <code>copy-config</code>, <code>lock</code>/<code>unlock</code>, <code>commit</code>, <code>discard</code>, <code>kill-session</code>, <code>validate</code>. Enabling it is one line:</p>
+<pre><code>Device(config)# netconf-yang
+Device(config)# netconf-yang feature candidate-datastore</code></pre>
+<p class="annot">The <code>candidate-datastore</code> feature turns on the two-stage <code>candidate</code> → <code>commit</code> workflow. Without it you're editing <code>running</code> directly — no rollback buffer.</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th></th><th>RESTCONF</th><th>NETCONF</th></tr></thead>
+<tbody>
+<tr><td>Transport</td><td>HTTPS</td><td>SSH subsystem, port <strong>830</strong></td></tr>
+<tr><td>Enable on IOS XE</td><td><code>restconf</code> + <code>ip http secure-server</code></td><td><code>netconf-yang</code></td></tr>
+<tr><td>Payload encoding</td><td>JSON or XML (<code>application/yang-data+json</code> / <code>+xml</code>)</td><td>XML only, inside <code>&lt;rpc&gt;</code></td></tr>
+<tr><td>Addressing</td><td>URI path mirrors the YANG tree</td><td>XML element nesting mirrors the YANG tree, under an operation like <code>&lt;edit-config&gt;</code></td></tr>
+<tr><td>Verbs / operations</td><td>GET, POST, PUT, PATCH, DELETE, HEAD</td><td><code>get</code>, <code>get-config</code>, <code>edit-config</code>, <code>copy-config</code>, <code>lock</code>, <code>commit</code>, <code>discard</code>, <code>validate</code></td></tr>
+<tr><td>Datastore model</td><td>Implicit — acts on running unless the server exposes others</td><td>Explicit target: <code>&lt;running/&gt;</code> or <code>&lt;candidate/&gt;</code></td></tr>
+<tr><td>Error shape</td><td>HTTP status code + <code>yang-data</code> error body</td><td><code>&lt;rpc-error&gt;</code> element inside the <code>&lt;rpc-reply&gt;</code></td></tr>
+<tr><td>Typical exam use</td><td>Single-shot read/write from a script or curl</td><td>Transactional multi-leaf change with lock/commit/rollback</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>L3 — Exam detail</h3>
+<p>Building a payload "from a YANG module" means: open the tree (mentally, or with <code>pyang -f tree</code> — see Speed notes), find the container/leaf/list path to the node you need, then reproduce that nesting in JSON or XML. Three traps show up constantly:</p>
+<div class="callout bad">
+<strong>Trap 1 — module-qualified name placement.</strong> The module prefix (<code>Cisco-IOS-XE-native:</code>) belongs only on the top-level resource in the RESTCONF URI/body. Repeating it on every nested container is a fabricated path that will 400.
+</div>
+<div class="callout bad">
+<strong>Trap 2 — NETCONF needs the outer datastore target.</strong> An <code>&lt;edit-config&gt;</code> without a correctly-namespaced <code>&lt;target&gt;&lt;running/&gt;&lt;/target&gt;</code> (or <code>&lt;candidate/&gt;</code> if that feature is enabled) is rejected before the schema is even checked.
+</div>
+<div class="callout bad">
+<strong>Trap 3 — list keys.</strong> A YANG <code>list</code> becomes a JSON array of objects in RESTCONF, but stays a repeated sibling element in XML/NETCONF — don't try to XML-ify a JSON array shape or vice versa.
+</div>
+
+<div class="svg-wrap">
+<svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sequence diagram comparing a RESTCONF PATCH request/response with a NETCONF edit-config/rpc-reply exchange">
+  <style>
+    .actor { fill: var(--card); stroke: var(--border); stroke-width: 1.5; }
+    .actor-txt { fill: var(--text); font-size: 12px; font-weight: 600; text-anchor: middle; font-family: inherit; }
+    .lifeline { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3,3; }
+    .msg { stroke-width: 1.5; fill: none; marker-end: url(#arrow2); }
+    .msg-restconf { stroke: var(--restconf); }
+    .msg-netconf { stroke: var(--netconf); }
+    .msg-txt { font-size: 10.5px; font-family: inherit; }
+    .msg-txt-restconf { fill: var(--restconf); }
+    .msg-txt-netconf { fill: var(--netconf); }
+  </style>
+  <defs>
+    <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="context-fill"></path>
+    </marker>
+  </defs>
+
+  <rect x="20" y="10" width="120" height="30" class="actor" rx="6"></rect>
+  <text x="80" y="30" class="actor-txt">Client</text>
+  <line x1="80" y1="40" x2="80" y2="250" class="lifeline"></line>
+
+  <rect x="330" y="10" width="140" height="30" class="actor" rx="6"></rect>
+  <text x="400" y="30" class="actor-txt">Cat8000V agent</text>
+  <line x1="400" y1="40" x2="400" y2="250" class="lifeline"></line>
+
+  <text x="80" y="65" class="msg-txt msg-txt-restconf">RESTCONF</text>
+  <path class="msg msg-restconf" d="M80,72 L400,72"></path>
+  <text x="90" y="68" class="msg-txt msg-txt-restconf"></text>
+  <text x="240" y="66" class="msg-txt msg-txt-restconf" text-anchor="middle">PATCH /restconf/data/...native + yang-data+json</text>
+  <path class="msg msg-restconf" d="M400,92 L80,92"></path>
+  <text x="240" y="88" class="msg-txt msg-txt-restconf" text-anchor="middle">HTTP/1.1 204 No Content (or 201 Created)</text>
+
+  <text x="80" y="130" class="msg-txt msg-txt-netconf">NETCONF</text>
+  <path class="msg msg-netconf" d="M80,137 L400,137"></path>
+  <text x="240" y="131" class="msg-txt msg-txt-netconf" text-anchor="middle">&lt;rpc&gt;&lt;edit-config&gt;&lt;target&gt;&lt;running/&gt; ...</text>
+  <path class="msg msg-netconf" d="M400,157 L80,157"></path>
+  <text x="240" y="153" class="msg-txt msg-txt-netconf" text-anchor="middle">&lt;rpc-reply&gt;&lt;ok/&gt;&lt;/rpc-reply&gt;</text>
+
+  <path class="msg msg-netconf" d="M80,190 L400,190"></path>
+  <text x="240" y="184" class="msg-txt msg-txt-netconf" text-anchor="middle">&lt;rpc&gt;&lt;commit/&gt;&lt;/rpc&gt; (candidate workflow only)</text>
+  <path class="msg msg-netconf" d="M400,210 L80,210"></path>
+  <text x="240" y="206" class="msg-txt msg-txt-netconf" text-anchor="middle">&lt;rpc-reply&gt;&lt;ok/&gt;&lt;/rpc-reply&gt;</text>
+
+  <text x="80" y="235" class="msg-txt" fill="var(--muted)">RESTCONF: one call, applied immediately. NETCONF+candidate: edit, then a separate commit.</text>
+</svg>
+</div>
+<p class="svg-cap">RESTCONF collapses "edit + apply" into a single HTTP call. NETCONF with the candidate datastore separates them — you can stage several edits, then commit (or discard) as one transaction.</p>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Two real, source-verified snippets. Neither is the drill below — they're worked references for the shape, not the answer.</p>
+
+<p><strong>RESTCONF — from the Cisco 17.5 guide's own POST example</strong> (creating a logging-monitor leaf, adapted to show annotation):</p>
+<pre><code>curl -X "POST" "https://10.85.116.30:443/restconf/data/Cisco-IOS-XE-native:native/logging/monitor" \
+  -H 'Content-Type: application/yang-data+json' \
+  -u 'admin:admin' -d '{"severity": "alerts"}'
+</code></pre>
+<p class="annot">URI: <code>.../native/logging/monitor</code> — <code>native</code> is the RESTCONF resource root (module-qualified once), <code>logging</code> and <code>monitor</code> are plain containers/leaves below it, no repeated prefix. Body key <code>severity</code> matches the YANG leaf name exactly. <code>-u admin:admin</code> is the doc's own demo credential — never reuse literally; the lab workstation has its own accounts.</p>
+
+<p><strong>NETCONF — from the Cisco 17.5 guide's own edit-config example</strong> (hostname change, annotated):</p>
+<pre><code>&lt;nc:edit-config&gt;
+  &lt;nc:target&gt;&lt;nc:running/&gt;&lt;/nc:target&gt;
+  &lt;nc:config&gt;
+    &lt;native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"&gt;
+      &lt;hostname&gt;new-ott-c9300-35&lt;/hostname&gt;
+    &lt;/native&gt;
+  &lt;/nc:config&gt;
+&lt;/nc:edit-config&gt;
+</code></pre>
+<p class="annot"><code>&lt;target&gt;&lt;running/&gt;</code> makes the datastore explicit (Trap 2, above). The <code>xmlns</code> on <code>&lt;native&gt;</code> is the module namespace — XML's equivalent of RESTCONF's <code>Cisco-IOS-XE-native:</code> prefix, declared once, inherited by children. Response for a clean apply is simply <code>&lt;rpc-reply&gt;&lt;ok/&gt;&lt;/rpc-reply&gt;</code> — no body means no error.</p>
+
+<h2 id="breakfix">Break/fix table</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Symptom</th><th>Likely cause</th><th>Verify with</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>RESTCONF call returns <code>404</code> on every path</td><td>Device has no working RESTCONF agent (e.g. IOSvL2 — accepted into config, no agent behind it)</td><td><code>curl -k -u admin:admin https://&lt;dev&gt;/restconf/data</code> from the workstation</td><td>Target Cat8000V instead — it's the only RESTCONF/NETCONF-capable device in this lab</td></tr>
+<tr><td>NETCONF SSH connect hangs, no <code>&lt;hello&gt;</code></td><td><code>netconf-yang</code> not configured, or subsystem still initializing</td><td>⚠ unverified — test in lab: <code>show netconf-yang status</code></td><td>Add <code>netconf-yang</code> under global config; allow ~30–60s for the subsystem to come up</td></tr>
+<tr><td>RESTCONF <code>400 Bad Request</code> on a PATCH</td><td>JSON nesting doesn't match the YANG container hierarchy (a leaf posted one level too shallow or deep)</td><td>⚠ unverified — test in lab: <code>pyang -f tree Cisco-IOS-XE-native.yang</code> against the target path</td><td>Re-nest the body to match the schema exactly — no flattening, no extra wrapper</td></tr>
+<tr><td>NETCONF <code>&lt;rpc-error&gt;</code> with <code>&lt;error-tag&gt;data-exists&lt;/error-tag&gt;</code></td><td><code>edit-config</code> used an implicit/explicit <code>create</code> operation against a list entry that's already present</td><td>Run a <code>&lt;get-config&gt;</code> first and inspect the existing entry</td><td>Use <code>merge</code> or <code>replace</code> instead of <code>create</code>, or delete the entry first</td></tr>
+<tr><td>RESTCONF <code>415 Unsupported Media Type</code></td><td><code>Content-Type</code> sent as plain <code>application/json</code> instead of the YANG-specific type</td><td><code>curl -v ...</code> and inspect the request headers actually sent</td><td>Set <code>Content-Type: application/yang-data+json</code> (or <code>+xml</code>) explicitly</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="speed">Speed notes — finding this fast, offline</h2>
+<ul>
+<li><code>pyang -f tree &lt;module&gt;.yang</code> — renders a YANG module as an indented tree so you can read container/leaf/list nesting directly instead of guessing it from memory. ⚠ unverified this run — confirm syntax and output format on the actual candidate workstation.</li>
+<li>On-box capability check: the Cisco 17.5 guide documents <code>restconf</code> / <code>ip http secure-server</code> and <code>netconf-yang</code> as the enabling commands — if a payload is being rejected, confirm these are actually configured before debugging the payload itself.</li>
+<li>Cisco's own vendor YANG modules live in <code>github.com/YangModels/yang</code> (source priority list) under a per-release vendor path — pull the exact <code>Cisco-IOS-XE-native</code> module for 17.5 rather than guessing leaf names from an older or newer release. (Not fetchable this run — GitHub blocked the directory listing via robots.txt; browse it directly in your own browser, not through this pipeline.)</li>
+<li><code>curl -k -u &lt;user&gt;:&lt;pass&gt; https://&lt;dev&gt;/restconf/data/Cisco-IOS-XE-native:native?depth=1</code> — a shallow GET is the fastest way to confirm a top-level container name before you build a full payload against it. ⚠ unverified this run — the <code>depth</code> query parameter is a general RESTCONF (RFC 8040) mechanism; confirm IOS XE honors it before relying on it live.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<p><strong>Requirement:</strong> On the Cat8000V, set the description of <code>Loopback100</code> to <code>ccie-auto-drill</code> two ways: once via a RESTCONF PATCH, once via a NETCONF <code>edit-config</code>. Then read it back and confirm both agree.</p>
+
+<div class="drill-field">
+<h4>Reference field names / paths</h4>
+<p>Target container family: <code>Cisco-IOS-XE-native:native/interface/Loopback</code>, list key <code>name</code> = <code>100</code>, leaf <code>description</code>. (Confirm the exact list-key leaf name against the module tree on your workstation before assuming — don't hardcode from this page.)</p>
+</div>
+<div class="drill-field">
+<h4>Verification steps</h4>
+<p>1) GET the same resource back over RESTCONF and confirm <code>description</code> reads <code>ccie-auto-drill</code>. 2) Run <code>show running-config interface Loopback100</code> over SSH and confirm the CLI shows the same description. 3) Repeat via a NETCONF <code>get-config</code> filtered to the same container.</p>
+</div>
+<div class="drill-field">
+<h4>Target lab device</h4>
+<p>Cat8000V only — this is the only device with a working RESTCONF/NETCONF agent in this lab build.</p>
+</div>
+
+<details>
+<summary>Hint</summary>
+<p>Build the RESTCONF PATCH body as nested JSON that mirrors <code>native → interface → Loopback[]</code> — the list entry needs its key (<code>name</code>) present in the body even though it's also in the URI. For NETCONF, wrap the same nesting inside <code>&lt;edit-config&gt;&lt;target&gt;&lt;running/&gt;&lt;/target&gt;&lt;config&gt;&lt;native xmlns="..."&gt;...&lt;/native&gt;&lt;/config&gt;&lt;/edit-config&gt;</code>.</p>
+</details>
+<details>
+<summary>Solution shape (not the literal answer)</summary>
+<p>RESTCONF: <code>PATCH /restconf/data/Cisco-IOS-XE-native:native/interface/Loopback=100</code> with a JSON body whose root key is the list entry object containing <code>name</code> and <code>description</code>. NETCONF: an <code>&lt;rpc&gt;</code> containing <code>&lt;edit-config&gt;</code>, target <code>running</code>, config payload nesting <code>native/interface/Loopback/name</code> + <code>description</code> as sibling XML elements. Both should return a clean success (RESTCONF <code>204</code>; NETCONF <code>&lt;ok/&gt;</code>) with no error body — if either returns an error element, that's Trap 1, 2, or 3 from the L3 section above, not a new problem.</p>
+</details>
+
+<h2 id="recall">Recall check</h2>
+<details><summary>1. Today — In a RESTCONF URI, where does the module-qualified name (e.g. <code>Cisco-IOS-XE-native:</code>) appear, and why is repeating it on nested containers wrong?</summary><p>Only on the top-level/root resource. Nested containers below it use plain names because the module namespace is already established by the root — repeating the prefix produces a path that doesn't exist in the schema, yielding a 400.</p></details>
+<details><summary>2. Today — What's the functional difference between issuing a RESTCONF PATCH versus a NETCONF <code>edit-config</code> against the candidate datastore, in terms of when the change takes effect?</summary><p>RESTCONF PATCH applies immediately as part of the single HTTP call. NETCONF against candidate stages the change; it isn't live until a separate <code>&lt;commit&gt;</code> RPC is sent (and can be reverted with <code>&lt;discard&gt;</code> before that).</p></details>
+<details><summary>3. Today — Why does IOSvL2 accepting <code>restconf</code> into its configuration not mean RESTCONF actually works there?</summary><p>IOSvL2 shares the classic-IOS CLI parser, which will accept the command syntactically, but there's no RESTCONF/YANG agent behind it on that platform — every endpoint returns 404 when actually tested. Config acceptance and functional support are two different things; verify by testing the API, not by checking whether the CLI took the command.</p></details>
+<details><summary>4. Today — A YANG <code>list</code> node appears in a RESTCONF JSON body and in a NETCONF XML body. How does its shape differ between the two encodings?</summary><p>In JSON/RESTCONF it becomes an array of objects under the list's name. In XML/NETCONF it becomes repeated sibling elements, each a full instance of the list's structure — there's no array container in XML.</p></details>
+
+<p style="color:var(--muted); font-size:0.85rem;">No history entries exist yet (this is the first logged unit), so there are no 3–10-day-old recall questions to include today. Future pages will draw two questions from here.</p>
+
+<h2 id="deeper">Go deeper</h2>
+
+<div class="go-deeper-group">
+<h4>Cisco</h4>
+<div class="go-deeper-item">
+<span class="link-badge badge-verified">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">RESTCONF Protocol — Programmability Configuration Guide, IOS XE Bengaluru 17.5.x</a>
+<span class="meta">Cisco · v17.5 · verified 2026-09-28 · best for: exact enable commands, URI/verb/content-type reference, the POST example used in Anatomy above.</span>
+</div>
+<div class="go-deeper-item">
+<span class="link-badge badge-verified">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">NETCONF Protocol — Programmability Configuration Guide, IOS XE Bengaluru 17.5.x</a>
+<span class="meta">Cisco · v17.5 · verified 2026-09-28 · best for: enable commands, operation list, the edit-config XML example used in Anatomy above.</span>
+</div>
+</div>
+
+<div class="go-deeper-group">
+<h4>Standards</h4>
+<div class="go-deeper-item">
+<span class="link-badge badge-verified">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8040" target="_blank" rel="noopener">RFC 8040 — RESTCONF Protocol</a>
+<span class="meta">IETF · verified 2026-09-28 · best for: §3.5.3 resource-identifier encoding — the formal rule behind the URI patterns above.</span>
+</div>
+<div class="go-deeper-item">
+<span class="link-badge badge-verified">✅</span><a href="https://www.rfc-editor.org/rfc/rfc6241" target="_blank" rel="noopener">RFC 6241 — Network Configuration Protocol (NETCONF)</a>
+<span class="meta">IETF · verified 2026-09-28 · best for: §4.1/§4.2 — the formal <code>&lt;rpc&gt;</code>/<code>&lt;rpc-reply&gt;</code> framing.</span>
+</div>
+<div class="go-deeper-item">
+<span class="link-badge badge-verified">✅</span><a href="https://www.rfc-editor.org/rfc/rfc7950" target="_blank" rel="noopener">RFC 7950 — The YANG 1.1 Data Modeling Language</a>
+<span class="meta">IETF · verified 2026-09-28 · best for: §7.5/§7.6/§7.8 — formal definitions of container/leaf/list, the building blocks every payload is made of.</span>
+</div>
+</div>
+
+<div class="go-deeper-group">
+<h4>Third-party</h4>
+<div class="go-deeper-item">
+Cisco-IOS-XE-native and other vendor YANG modules (Search: "YangModels yang GitHub repository vendor cisco xe")
+<span class="meta">Removed this run — GitHub directory listing blocked by robots.txt during verification; browse github.com/YangModels/yang directly.</span>
+</div>
+</div>
+
+<footer>
+<p><strong>Link audit:</strong> Links: 5 ✅ · 0 🔎 · 1 removed.</p>
+<p><strong>⚠ Unverified claims in this page</strong> (not sourced from a ✅ link fetched this run — test against the real lab before trusting): <code>show netconf-yang status</code> syntax; <code>pyang -f tree</code> exact output format; the RESTCONF <code>?depth=1</code> query parameter behavior on IOS XE; exact YANG list-key leaf name for <code>Loopback</code> interfaces (confirm from the module tree, not from this page).</p>
+<p><strong>Tomorrow:</strong> 1.3 — Use Git in a CI/CD development workflow (Tier 2).</p>
+</footer>
+
+</main>
+</body>
+</html>
+
+</body></html>

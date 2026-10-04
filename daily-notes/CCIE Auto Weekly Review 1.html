@@ -1,0 +1,214 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CCIE Auto Weekly Review 1</title>
+<style>
+:root{--bg:#fafaf8;--fg:#1d2327;--mut:#5b6670;--card:#fff;--bd:#d9dde0;--acc:#0b6e99;--acc2:#b4540a;--ok:#1b7f4b;--code:#f0f2f3;--warn:#fff4d6}
+@media (prefers-color-scheme:dark){:root{--bg:#15191c;--fg:#e4e8ea;--mut:#9aa6ae;--card:#1d2226;--bd:#333c42;--acc:#5cc0ea;--acc2:#f0a15c;--ok:#5cd18f;--code:#262d32;--warn:#3a3317}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 60px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 16px;z-index:5;font-size:13px;overflow-x:auto;white-space:nowrap}
+nav a{margin-right:12px;color:var(--acc);text-decoration:none}
+h1{font-size:1.6rem;margin:.3em 0}h2{font-size:1.25rem;margin-top:2em;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:1.05rem;margin-top:1.4em}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:14px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--mut);font-size:14px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--code)}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px;overflow-x:auto;font-size:13px}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+svg{width:100%;height:auto;display:block}
+.s-box{fill:var(--card);stroke:var(--bd);stroke-width:1.5}.s-a{fill:var(--card);stroke:var(--acc);stroke-width:2}.s-b{fill:var(--card);stroke:var(--acc2);stroke-width:2}
+.s-t{fill:var(--fg);font:13px system-ui,sans-serif}.s-m{fill:var(--mut);font:11px system-ui,sans-serif}.s-l{stroke:var(--mut);stroke-width:1.5;fill:none}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:6px 0;background:var(--card)}summary{cursor:pointer;color:var(--acc)}
+.badge{font-size:12px;border:1px solid var(--ok);color:var(--ok);border-radius:10px;padding:0 6px;margin-right:4px}
+.warn{background:var(--warn);border-radius:6px;padding:2px 6px;font-size:13px}
+ul.chk{list-style:none;padding-left:0}ul.chk li{margin:6px 0}
+</style>
+</head>
+<body>
+<nav><a href="#snap">Snapshot</a><a href="#map">Map</a><a href="#recall">Recall</a><a href="#drill">Integration drill</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a><a href="#foot">Footer</a></nav>
+<main>
+<h1>Weekly review 1: RESTCONF/NETCONF payloads, Git in CI/CD, Ansible loops/conditionals, MDT dial-in</h1>
+<div class="card meta"><span>Fri 2026-10-02</span><span>Review of units 1–4 of 49 (2.4, 1.3, 2.7.a-b, 3.4 dial-in)</span><span>Blueprint v1.1</span><span>~20 min read + drill</span></div>
+
+<h2 id="snap">What the week covered</h2>
+<ul>
+<li><b>2.4 (Tier 1):</b> YANG module → RESTCONF/NETCONF payload. Module-qualified name only at the first segment or where the namespace changes; lists are arrays in JSON, repeated elements in XML.</li>
+<li><b>1.3 (Tier 2):</b> Git in CI/CD. Branch pipelines vs merge request pipelines, <code>rules:</code>/<code>workflow:rules</code>, merge methods, merged results pipelines.</li>
+<li><b>2.7.a-b (Tier 3):</b> Ansible <code>loop</code>, <code>loop_control</code> (label, loop_var, break_when), registered loop results, <code>when</code>, import vs include conditionals.</li>
+<li><b>3.4 dial-in (Tier 1):</b> NETCONF dynamic subscriptions and gNMI Subscribe. Periodic vs on-change, no persistence across reload for dynamic subscriptions, gNMI ports 50052/9339 on the 17.5 guide.</li>
+<li>Common thread: a change gets <i>made</i> (RESTCONF/NETCONF), <i>driven</i> in bulk (Ansible loops), <i>gated</i> (Git/CI), and <i>observed</i> (telemetry). The integration drill below uses all four.</li>
+</ul>
+
+<h2 id="map">Where the week fits</h2>
+<svg viewBox="0 0 760 250" role="img" aria-label="Week topics in one automation chain">
+<rect class="s-b" x="10" y="20" width="150" height="70" rx="8"/><text class="s-t" x="22" y="48">1.3 Git + CI</text><text class="s-m" x="22" y="68">MR pipeline gate</text>
+<rect class="s-a" x="205" y="20" width="150" height="70" rx="8"/><text class="s-t" x="217" y="48">2.7 Ansible</text><text class="s-m" x="217" y="68">loop + when</text>
+<rect class="s-a" x="400" y="20" width="150" height="70" rx="8"/><text class="s-t" x="412" y="48">2.4 Payload</text><text class="s-m" x="412" y="68">RESTCONF / NETCONF</text>
+<rect class="s-box" x="595" y="20" width="150" height="70" rx="8"/><text class="s-t" x="607" y="48">Cat8000V</text><text class="s-m" x="607" y="68">IOS XE 17.16 lab</text>
+<path class="s-l" d="M160 55H205M355 55H400M550 55H595"/>
+<rect class="s-b" x="595" y="150" width="150" height="70" rx="8"/><text class="s-t" x="607" y="178">3.4 Telemetry</text><text class="s-m" x="607" y="198">dial-in: NETCONF/gNMI</text>
+<rect class="s-box" x="205" y="150" width="345" height="70" rx="8"/><text class="s-t" x="217" y="178">Verify: restconf_get, show telemetry ietf</text><text class="s-m" x="217" y="198">subscription, show gnxi state</text>
+<path class="s-l" d="M670 90V150M595 185H550"/>
+<text class="s-m" x="10" y="140">Change path (top) and observe path (bottom).</text>
+</svg>
+
+<h2 id="recall">Recall check (3 per topic, answers collapsed)</h2>
+<h3>2.4 RESTCONF/NETCONF payloads (Mon)</h3>
+<p>1. In a RESTCONF URI, where does the module-qualified name (e.g. <code>Cisco-IOS-XE-native:</code>) appear, and why is repeating it on nested containers wrong?</p>
+<details><summary>Answer</summary>Only on the first segment after <code>/restconf/data/</code>, and again on a child only if that child belongs to a different module/namespace (RFC 8040 naming rule). Same-module children are unqualified, so a repeated prefix is not the identifier the server expects and the request fails. The Cisco 17.5 page shows <code>Cisco-IOS-XE-native:native/interface/GigabitEthernet=0%2F0%2F2</code>: one prefix, list key after <code>=</code>, slash URL-encoded.</details>
+<p>2. RESTCONF PATCH vs NETCONF edit-config against the candidate: when does the change take effect?</p>
+<details><summary>Answer</summary>RESTCONF has no candidate step on IOS XE: the PATCH is applied to the running datastore as the call completes. NETCONF edit-config to candidate changes nothing live until a <code>commit</code>. The candidate datastore itself must be enabled on IOS XE (<code>netconf-yang feature candidate-datastore</code>, per the 17.5 NETCONF page).</details>
+<p>3. A YANG list in RESTCONF JSON vs NETCONF XML: how does its shape differ?</p>
+<details><summary>Answer</summary>JSON: one member named after the list whose value is an array of objects, each carrying the key leaf(s). XML: one repeated element per list entry, namespace declared via <code>xmlns</code> on the top element. JSON carries the module prefix on the member name; XML carries it as a namespace.</details>
+
+<h3>1.3 Git in CI/CD (Tue)</h3>
+<p>4. A push to a branch with an open MR creates two pipelines. What is the fix?</p>
+<details><summary>Answer</summary>A <code>workflow:rules</code> block: run on <code>$CI_PIPELINE_SOURCE == "merge_request_event"</code>; skip (<code>when: never</code>) when <code>$CI_COMMIT_BRANCH &amp;&amp; $CI_OPEN_MERGE_REQUESTS</code>; otherwise run when <code>$CI_COMMIT_BRANCH</code> is set. Branch pipeline suppressed, MR pipeline kept. <span class="warn">⚠ exact rule text is from the workflow docs verified 2026-09-29, not re-fetched today.</span></details>
+<p>5. After adding MR rules, a job printing <code>$CI_COMMIT_BRANCH</code> shows blank. Why?</p>
+<details><summary>Answer</summary>MR pipelines don't set <code>CI_COMMIT_BRANCH</code>; they set the MR variables such as <code>CI_MERGE_REQUEST_SOURCE_BRANCH_NAME</code>. Check the predefined variables reference.</details>
+<p>6. Which merge method forces a rebase when the source is behind, and what does it guarantee?</p>
+<details><summary>Answer</summary>Fast-forward merge: no merge commit, linear history, and the MR can only merge if it can fast-forward. (Semi-linear history also needs a fast-forwardable branch but still creates a merge commit.)</details>
+
+<h3>2.7.a-b Ansible loops and conditionals (Wed)</h3>
+<p>7. A looped task is registered as <code>r</code>. A later <code>when: r.stdout is search('x')</code> fails. Why?</p>
+<details><summary>Answer</summary>With a loop, the registered variable holds a <code>results</code> list (one entry per item, per the Loops page). <code>r.stdout</code> doesn't exist at the top level. Loop over <code>r.results</code> and test <code>item.stdout</code>, or filter with <code>selectattr</code>.</details>
+<p>8. Import with <code>when</code> vs include with <code>when</code>: what changes?</p>
+<details><summary>Answer</summary>Import: the condition is applied to every task in the imported file (static, evaluated per task, so a variable set by an early task can flip later tasks). Include: the condition gates only the include task itself. Both statements are on the Conditionals page.</details>
+<p>9. Which three <code>loop_control</code> settings: hide all but a name, avoid collision in a nested include, stop on a condition?</p>
+<details><summary>Answer</summary><code>label</code>, <code>loop_var</code>, <code>break_when</code>.</details>
+
+<h3>3.4 MDT dial-in (Thu)</h3>
+<p>10. Why does a NETCONF dial-in subscription disappear after a switchover, and where would you see it?</p>
+<details><summary>Answer</summary>Dynamic subscriptions are created by the subscriber over its session via RPC and aren't stored as configuration, so reload, switchover or session loss drops them. Visible with <code>show telemetry ietf subscription</code> while alive; never in running-config. The Cisco MDT chapter says dynamic subscriptions are created by the subscriber over the connection.</details>
+<p>11. Default insecure and secure gNMI ports on the 17.5 guide, and the state command?</p>
+<details><summary>Answer</summary>50052 insecure, 9339 secure; <code>show gnxi state</code>; change with <code>gnxi port</code> / <code>gnxi secure-port</code>. <span class="warn">⚠ lab runs 17.16; confirm defaults there.</span></details>
+<p>12. Periodic vs on-change in one line each?</p>
+<details><summary>Answer</summary>Periodic: update at each timer expiry regardless of change. On-change: update when the data changes (RFC 8641 covers both). On-change is supported only for some paths on IOS XE; a container holding many rows is a common failure. <span class="warn">⚠ per-platform support: check the model's on-change support in lab.</span></details>
+
+<h2 id="comp">Cross-topic comparison</h2>
+<div class="tw"><table>
+<tr><th>Concern</th><th>RESTCONF</th><th>NETCONF</th><th>Ansible (netcommon)</th><th>CI gate</th></tr>
+<tr><td>Transport</td><td>HTTPS</td><td>SSH 830</td><td>httpapi / netconf connection</td><td>runner</td></tr>
+<tr><td>Change takes effect</td><td>Immediately (running)</td><td>On commit if candidate</td><td>Per task, per loop item</td><td>On merge/deploy job</td></tr>
+<tr><td>List handling</td><td>JSON array, <code>=key</code> in URI</td><td>Repeated XML element</td><td><code>loop</code> over list</td><td>n/a</td></tr>
+<tr><td>Failure scope</td><td>One request</td><td>One RPC</td><td>One item (use <code>break_when</code>)</td><td>One job</td></tr>
+</table></div>
+
+<h2 id="drill">Integration drill (~20 min, 2.4 + 2.7 + 1.3 + 3.4)</h2>
+<div class="card">
+<p><b>Target:</b> Cat8000V (IOS XE 17.16). RESTCONF and NETCONF enabled. Workstation: ansible.netcommon 8.4.0. No cisco.ios collection.</p>
+<p><b>Requirement:</b></p>
+<ul>
+<li>Given a variable list of three loopbacks (number, IP, mask), create them on Cat8000V using RESTCONF PATCH inside one Ansible loop.</li>
+<li>Print only the loopback number per iteration (not the whole item).</li>
+<li>Stop the loop on the first failure.</li>
+<li>Read each loopback back with RESTCONF GET, and fail if the IP doesn't match.</li>
+<li>Write a GitLab CI job that runs the playbook with <code>--check</code> only in merge request pipelines, with no duplicate branch pipeline.</li>
+<li>Open a NETCONF dynamic subscription (on-change or periodic) to the interface path, change a loopback, and show the notification.</li>
+</ul>
+<p><b>Reference field names/paths</b> <span class="warn">⚠ unverified — confirm with <code>ansible-doc ansible.netcommon.restconf_config</code> and <code>pyang -f tree</code></span></p>
+<ul>
+<li>Modules: <code>ansible.netcommon.restconf_config</code> (path, content, method, format), <code>ansible.netcommon.restconf_get</code> (path, output).</li>
+<li>Path pattern: <code>/data/Cisco-IOS-XE-native:native/interface/Loopback=101</code> (list key after <code>=</code>, as the Cisco page shows for GigabitEthernet).</li>
+<li>Connection vars: <code>ansible_connection=ansible.netcommon.httpapi</code>, <code>ansible_network_os=ansible.netcommon.restconf</code>, <code>ansible_httpapi_use_ssl</code>.</li>
+<li>Loop: <code>loop_control: {label, loop_var, break_when}</code>.</li>
+</ul>
+<svg viewBox="0 0 760 210" role="img" aria-label="Drill flow">
+<rect class="s-box" x="10" y="20" width="120" height="50" rx="6"/><text class="s-t" x="22" y="50">MR opened</text>
+<rect class="s-b" x="170" y="20" width="150" height="50" rx="6"/><text class="s-t" x="182" y="50">CI: --check job</text>
+<rect class="s-a" x="360" y="20" width="170" height="50" rx="6"/><text class="s-t" x="372" y="50">loop: PATCH x3</text>
+<rect class="s-a" x="570" y="20" width="170" height="50" rx="6"/><text class="s-t" x="582" y="50">GET + assert IP</text>
+<path class="s-l" d="M130 45H170M320 45H360M530 45H570"/>
+<rect class="s-box" x="360" y="120" width="380" height="55" rx="6"/><text class="s-t" x="372" y="145">Second terminal: NETCONF subscription</text><text class="s-m" x="372" y="163">notification arrives when a loopback changes</text>
+<path class="s-l" d="M450 70V120"/>
+</svg>
+<details><summary>Hint</summary>Register the PATCH result, then in the GET task loop over the same list and use <code>assert</code> with <code>that</code> comparing the returned address to <code>item.ip</code>. For the CI job, combine a <code>workflow:rules</code> block with <code>$CI_PIPELINE_SOURCE == "merge_request_event"</code>. For the subscription, use any NETCONF client you have on the workstation <span class="warn">⚠ which client is installed is unverified</span> and the <code>establish-subscription</code> RPC from RFC 8639.</details>
+<details><summary>Solution sketch</summary>
+<pre><code># playbook (sketch, fields ⚠ verify with ansible-doc)
+- hosts: c8kv
+  gather_facts: false
+  vars:
+    lbs:
+      - {num: 101, ip: 10.99.1.1, mask: 255.255.255.255}
+      - {num: 102, ip: 10.99.1.2, mask: 255.255.255.255}
+      - {num: 103, ip: 10.99.1.3, mask: 255.255.255.255}
+  tasks:
+    - name: Create loopbacks
+      ansible.netcommon.restconf_config:
+        path: "/data/Cisco-IOS-XE-native:native/interface"
+        method: patch
+        format: json
+        content: |
+          {"Cisco-IOS-XE-native:interface": {"Loopback": [{"name": {{ item.num }},
+           "ip": {"address": {"primary": {"address": "{{ item.ip }}", "mask": "{{ item.mask }}"}}}}]}}
+      loop: "{{ lbs }}"
+      loop_control:
+        label: "Loopback{{ item.num }}"
+        break_when: r is failed
+      register: r
+
+    - name: Read back
+      ansible.netcommon.restconf_get:
+        path: "/data/Cisco-IOS-XE-native:native/interface/Loopback={{ item.num }}"
+        output: json
+      loop: "{{ lbs }}"
+      loop_control: {label: "Loopback{{ item.num }}"}
+      register: got
+
+# .gitlab-ci.yml (sketch)
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH &amp;&amp; $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+check:
+  script: ansible-playbook site.yml --check</code></pre>
+<p>Known soft spots: whether <code>break_when</code> can reference the loop's own register mid-loop (⚠ test it), whether RESTCONF PATCH with a list under the parent container returns 204 or needs the child URI (⚠ test it), and whether <code>--check</code> is honored by <code>restconf_config</code> (⚠ test it).</p></details>
+<p><b>Verification:</b> <code>show running-config interface Loopback101</code>; Ansible output shows only <code>Loopback101</code>-style labels; CI shows one pipeline per push, of type merge request.</p>
+</div>
+
+<h2 id="self">Self-assessment (mark <code>weak:</code> in topic-queue.md if you tick any "no")</h2>
+<ul class="chk">
+<li>☐ 2.4: I wrote a RESTCONF URI with a list key and a JSON body from <code>pyang -f tree</code> output without notes.</li>
+<li>☐ 2.4: I can say what RESTCONF does that NETCONF's candidate datastore does not.</li>
+<li>☐ 1.3: I can write the <code>workflow:rules</code> block from memory and explain each line.</li>
+<li>☐ 2.7: I can loop, register, and test <code>results</code> without a syntax error on the first try.</li>
+<li>☐ 2.7: I know when import vs include changes a <code>when</code>.</li>
+<li>☐ 3.4: I can create a NETCONF dial-in subscription and find it on the device.</li>
+<li>☐ 3.4: I can name the gNMI sub-modes and what each does per leaf.</li>
+</ul>
+
+<h2 id="deeper">Go deeper (best links of the week)</h2>
+<h3>Cisco</h3>
+<ul>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - RESTCONF Protocol</a>. IOS XE 17.5, verified 2026-10-02. Best for URI structure and methods.</li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">NETCONF Protocol (Programmability Configuration Guide, IOS XE Bengaluru 17.5.x)</a>. IOS XE 17.5, verified 2026-10-02. Best for candidate datastore and session commands.</li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry</a>. IOS XE 17.5.1, verified 2026-10-02. Best for dynamic vs configured subscriptions.</li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnmi.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - gNMI Protocol</a>. IOS XE 17.5 (gNMI 0.4.0), verified 2026-10-02. Best for ports and show gnxi state.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8040" target="_blank" rel="noopener">RFC 8040: RESTCONF Protocol</a>. Verified 2026-10-02. Best for the URI and naming rules.</li>
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641: Subscription to YANG Notifications for Datastore Updates</a>. Verified 2026-10-02. Best for periodic vs on-change semantics.</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/ci/pipelines/merge_request_pipelines/" target="_blank" rel="noopener">Merge request pipelines | GitLab Docs</a>. GitLab docs current (pin 18.4), verified 2026-10-02. Best for <code>merge_request_event</code> rules.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_loops.html" target="_blank" rel="noopener">Loops — Ansible Community Documentation</a>. Latest (pin core 2.19), verified 2026-10-02. Best for loop_control and registered results.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_conditionals.html" target="_blank" rel="noopener">Conditionals — Ansible Community Documentation</a>. Latest (pin core 2.19), verified 2026-10-02. Best for import vs include conditions.</li>
+</ul>
+
+<h2 id="foot">Footer</h2>
+<p><b>Links: 9 ✅ · 0 🔎 · 0 removed.</b></p>
+<p>⚠ Unverified claims: restconf_config/restconf_get parameter names; RESTCONF PATCH body shape and response for a list under its parent; <code>break_when</code> referencing the loop's own register; <code>--check</code> support in restconf_config; NETCONF client availability on the workstation; exact <code>workflow:rules</code> text (verified 2026-09-29, not today); on-change path support on 17.16; gNMI default ports on 17.16. Docs versions: Cisco pages 17.5, lab 17.16; Ansible and GitLab docs are newer than the version pins.</p>
+<p>Tomorrow: no page (weekend). Monday 2026-10-05: unit 5, 2.3 REST and GraphQL API consumption.</p>
+</main>
+</body>
+</html>
+
+</body></html>
