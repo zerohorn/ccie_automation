@@ -25,3 +25,7 @@ terraform.rc
 
 # Mac file
 .DS_Store
+
+#env
+.env
+lab_scripts/logs/
