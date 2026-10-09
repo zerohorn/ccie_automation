@@ -1,0 +1,276 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NETCONF XPath Filters</title>
+<style>
+/* Layout: single reading column, sticky TOC chips, SVG figures between layers. Palette: ink on cool paper, teal accent, amber for caveats. */
+:root{--bg:#f5f7f8;--fg:#17232b;--muted:#53636d;--line:#cdd7dc;--card:#ffffff;--code:#eaf0f2;--accent:#0a6c80;--accent-soft:#d5ebf0;--ok:#1d7a46;--warn:#9a5b00;--warn-soft:#fbeccd;--bad:#a8322d;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181d;--fg:#e3ebef;--muted:#9bb0ba;--line:#2b3b44;--card:#17232a;--code:#1d2c34;--accent:#5cc3d8;--accent-soft:#17383f;--ok:#62c48a;--warn:#e8b05a;--warn-soft:#3a2d12;--bad:#f08a84;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10181d;--fg:#e3ebef;--muted:#9bb0ba;--line:#2b3b44;--card:#17232a;--code:#1d2c34;--accent:#5cc3d8;--accent-soft:#17383f;--ok:#62c48a;--warn:#e8b05a;--warn-soft:#3a2d12;--bad:#f08a84;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.6;padding-inline:16px}
+.wrap{max-width:860px;margin-inline:auto;padding-block:16px 48px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:6px;overflow-x:auto;padding-block:8px;margin-inline:-16px;padding-inline:16px}
+nav.toc a{white-space:nowrap;font-size:13px;padding:3px 10px;border:1px solid var(--line);border-radius:99px;color:var(--fg);text-decoration:none}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--accent);outline:none;color:var(--accent)}
+h1{font-size:1.9rem;line-height:1.2;margin:12px 0 4px;text-wrap:balance}
+h2{font-size:1.3rem;margin:40px 0 8px;text-wrap:balance;scroll-margin-top:60px}
+h3{font-size:1.05rem;margin:24px 0 4px}
+p,li{max-width:70ch}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.meta div{background:var(--card);border:1px solid var(--line);padding:8px 12px;border-radius:6px}
+.meta b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.layer{border-left:3px solid var(--accent);padding-left:12px;margin:16px 0}
+.tag{font-family:var(--mono);font-size:12px;background:var(--accent-soft);color:var(--accent);padding:1px 7px;border-radius:4px;margin-right:6px}
+.warnbox{background:var(--warn-soft);border:1px solid var(--warn);border-radius:6px;padding:8px 12px;margin:12px 0;font-size:15px}
+.scroll{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;font-size:14px;width:100%;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--code);font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.5;margin:10px 0}
+code{font-family:var(--mono);font-size:.92em}
+p code,li code,td code{background:var(--code);padding:0 4px;border-radius:3px}
+pre code{background:none;padding:0}
+svg{width:100%;height:auto;display:block;margin:12px 0}
+svg text{font-family:var(--sans);font-size:13px;fill:var(--fg)}
+svg .m{fill:var(--muted);font-size:11px}
+svg .box{fill:var(--card);stroke:var(--line);stroke-width:1.3}
+svg .hi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+svg .wr{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.5}
+svg .ln{stroke:var(--muted);stroke-width:1.4;fill:none}
+svg .ac{stroke:var(--accent);stroke-width:1.8;fill:none}
+details{border:1px solid var(--line);border-radius:6px;padding:6px 12px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:var(--accent)}
+.badge{font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;background:var(--accent-soft);color:var(--ok);margin-right:6px;white-space:nowrap}
+ul.refs{padding-left:0;list-style:none}
+ul.refs li{border-bottom:1px solid var(--line);padding:8px 0}
+ul.refs small{display:block;color:var(--muted)}
+footer{margin-top:40px;border-top:1px solid var(--line);padding-top:12px;color:var(--muted);font-size:14px}
+</style>
+<div class="wrap">
+<nav class="toc" aria-label="Sections">
+<a href="#snap">Snapshot</a><a href="#fits">Fits</a><a href="#layers">Layers</a><a href="#anatomy">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<header>
+<h1>NETCONF XPath filters</h1>
+<div class="meta">
+<div><b>Date</b>Wed 2026-10-07</div>
+<div><b>Blueprint</b>2.5 Create a NETCONF filter using XPath</div>
+<div><b>Domain</b>2.0 Infrastructure as Code (30%)</div>
+<div><b>Tier / Unit</b>Tier 1 gap · Unit 7 of 49</div>
+<div><b>Read time</b>about 18 min</div>
+</div>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>A filter limits what <code>&lt;get&gt;</code> or <code>&lt;get-config&gt;</code> returns. Two flavors exist: subtree (default) and XPath (<code>type="xpath"</code> with a <code>select</code> attribute).</li>
+<li>XPath is optional. The server must advertise the <code>:xpath</code> capability in its hello, and many platforms do not. NX-OS 9.3 says it does not support it; check IOS XE on the Cat8000V before you rely on it.</li>
+<li>XPath 1.0 matches names in a namespace. An unprefixed name in XPath 1.0 means "no namespace", so a path copied from a YANG tree matches nothing until you bind a prefix.</li>
+<li>Selecting by key uses a predicate: <code>[name='1']</code>. That is the whole point of XPath over subtree: pick a row, not a branch.</li>
+<li>A filter that matches nothing is not an error. You get an empty <code>&lt;data/&gt;</code>. That makes silent namespace mistakes easy to miss.</li>
+<li>The same XPath idea reappears in telemetry as <code>filter xpath ...</code> (blueprint 3.5), with a different prefix convention and tighter restrictions.</li>
+<li>Exam task shape (consistent with the blueprint verb "Create"): given a YANG model and a device, build a working filter, send it, and show the response contains only what was asked.</li>
+</ul>
+
+<h2 id="fits">Where this fits</h2>
+<svg viewBox="0 0 760 250" role="img" aria-label="Chain from YANG module to XPath filter to config push to telemetry">
+<rect class="box" x="10" y="20" width="150" height="70" rx="6"/><text x="85" y="50" text-anchor="middle">2.4 payload</text><text class="m" x="85" y="70" text-anchor="middle">YANG → XML/JSON</text>
+<rect class="hi" x="210" y="20" width="160" height="70" rx="6"/><text x="290" y="50" text-anchor="middle" style="font-weight:700">2.5 XPath filter</text><text class="m" x="290" y="70" text-anchor="middle">read only what you need</text>
+<rect class="box" x="420" y="20" width="150" height="70" rx="6"/><text x="495" y="50" text-anchor="middle">2.6 configure</text><text class="m" x="495" y="70" text-anchor="middle">read-modify-verify, SoT</text>
+<rect class="box" x="610" y="20" width="140" height="70" rx="6"/><text x="680" y="50" text-anchor="middle">3.5 telemetry</text><text class="m" x="680" y="70" text-anchor="middle">xpath in subscriptions</text>
+<path class="ln" d="M160 55H210M370 55H420M570 55H610"/>
+<text class="m" x="10" y="130">Tool chain on the workstation</text>
+<rect class="box" x="10" y="140" width="110" height="44" rx="6"/><text x="65" y="167" text-anchor="middle">YANG file</text>
+<rect class="box" x="150" y="140" width="130" height="44" rx="6"/><text x="215" y="167" text-anchor="middle">XPath string</text>
+<rect class="box" x="310" y="140" width="150" height="44" rx="6"/><text x="385" y="167" text-anchor="middle">client (ncclient)</text>
+<rect class="box" x="490" y="140" width="120" height="44" rx="6"/><text x="550" y="167" text-anchor="middle">SSH :830</text>
+<rect class="hi" x="640" y="140" width="110" height="44" rx="6"/><text x="695" y="167" text-anchor="middle">Cat8000V</text>
+<path class="ln" d="M120 162H150M280 162H310M460 162H490M610 162H640"/>
+<text class="m" x="10" y="220">Ansible route: netconf_get with filter=... uses the same ncclient underneath (needs ncclient on the controller).</text>
+</svg>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+
+<h3>L1. Concept</h3>
+<div class="layer">
+<p>NETCONF returns the whole datastore unless you narrow it. Narrowing happens in the <code>&lt;filter&gt;</code> element inside <code>&lt;get&gt;</code> or <code>&lt;get-config&gt;</code>. RFC 6241 defines the default filter as subtree, and states that a peer supporting the <code>:xpath</code> capability may use <code>type="xpath"</code>, with the expression in the <code>select</code> attribute.</p>
+<p>Think of subtree as a template you fill in: you draw the shape of the data you want and the server returns whatever fits the shape. XPath is a query: you write an expression and the server returns the nodes it selects. If you have done XML work, XPath 1.0 is the same language you would use in XSLT. If you have not, you need four ideas: location steps (<code>/a/b</code>), predicates (<code>[name='1']</code>), wildcards (<code>*</code>), and namespaces.</p>
+</div>
+
+<h3>L2. Mechanics</h3>
+<div class="layer">
+<p>Subtree filtering has five node roles in RFC 6241 section 6.2: namespace selection, attribute match, containment node, selection node (an empty leaf, meaning "give me this leaf"), and content match node (a leaf with a value, meaning "only rows where this leaf equals this value"). Several content match nodes in the same set combine with AND. Unqualified elements act as wildcards across namespaces.</p>
+<p>XPath works differently. The expression is evaluated against the datastore and returns a node-set. Each step walks down the tree and each predicate keeps or drops candidates. For lists, the key predicate replaces the content match node. The tree you walk is the YANG data tree: for example a <code>list interface</code> with <code>key name</code> becomes <code>/interfaces/interface[name='GigabitEthernet1']</code>.</p>
+<p>The namespace is where people lose time. In XPath 1.0 a bare name tests "no namespace". YANG data is always in a module namespace. So a NETCONF client must declare a prefix in the XML (<code>xmlns:ios="..."</code>) and use <code>ios:</code> in every step. RFC 6241 section 8.9.1 governs how the server resolves prefixes for <code>&lt;get&gt;</code>, but that section was beyond what the fetch tool could read this run, so treat the exact resolution rule as ⚠ unverified and test it. What is verified: RFC 8641 (subscriptions) binds prefixes from the YANG module prefixes and namespaces the server implements, with no variables, and uses the datastore root as the context node. Cisco's telemetry CLI follows that style: <code>/memory-ios-xe-oper:memory-statistics/memory-statistic</code>, with the module name as the prefix and nothing declared.</p>
+</div>
+
+<svg viewBox="0 0 760 330" role="img" aria-label="Sequence: hello with capabilities, get with xpath filter, reply data">
+<text x="110" y="22" text-anchor="middle" style="font-weight:700">Client</text><text x="650" y="22" text-anchor="middle" style="font-weight:700">Cat8000V :830</text>
+<path class="ln" d="M110 32V320M650 32V320" stroke-dasharray="4 4"/>
+<path class="ac" d="M650 62H116"/><path class="ac" d="M126 56L116 62L126 68"/>
+<text x="380" y="52" text-anchor="middle">&lt;hello&gt; capabilities: base:1.0 / 1.1, candidate, xpath ?</text>
+<path class="ac" d="M110 100H644"/><path class="ac" d="M634 94L644 100L634 106"/>
+<text x="380" y="90" text-anchor="middle">&lt;hello&gt; client capabilities</text>
+<rect class="wr" x="170" y="120" width="420" height="34" rx="6"/><text x="380" y="142" text-anchor="middle">Client checks: xpath:1.0 URI present? If not, subtree only</text>
+<path class="ac" d="M110 190H644"/><path class="ac" d="M634 184L644 190L634 196"/>
+<text x="380" y="180" text-anchor="middle">&lt;get&gt;&lt;filter type="xpath" select="/ios:native/ios:interface/..."&gt;</text>
+<rect class="hi" x="480" y="205" width="260" height="34" rx="6"/><text x="610" y="227" text-anchor="middle">Server evaluates → node-set</text>
+<path class="ac" d="M650 270H116"/><path class="ac" d="M126 264L116 270L126 276"/>
+<text x="380" y="260" text-anchor="middle">&lt;rpc-reply&gt;&lt;data&gt; matched nodes &lt;/data&gt;</text>
+<text class="m" x="380" y="305" text-anchor="middle">No match: empty &lt;data/&gt;, still a success reply</text>
+</svg>
+
+<h3>L3. Exam detail</h3>
+<div class="layer">
+<p>Comparison of the filter options you can meet in this blueprint, with only claims that have a source this run:</p>
+</div>
+<div class="scroll"><table>
+<tr><th>Where</th><th>Subtree</th><th>XPath</th><th>Source</th></tr>
+<tr><td>RFC 6241 <code>&lt;get&gt;</code>/<code>&lt;get-config&gt;</code></td><td>Default (<code>type="subtree"</code>)</td><td>Optional, needs <code>:xpath</code> capability; expression in <code>select</code></td><td>RFC 6241 s6, s7.1</td></tr>
+<tr><td>NX-OS 9.3(x) NETCONF agent</td><td>Yes, examples given</td><td>Stated unsupported</td><td>NX-OS 9.3 guide</td></tr>
+<tr><td>IOS XE 17.5 NETCONF chapter</td><td>No filter examples in chapter</td><td>Not discussed in chapter</td><td>IOS XE 17.5 guide</td></tr>
+<tr><td>IOS XE 17.5 MDT subscriptions</td><td>Not supported (subscription turns invalid)</td><td><code>filter xpath /module:path</code>, exact keys only</td><td>IOS XE 17.5 MDT chapter</td></tr>
+<tr><td>RFC 8641 datastore subscriptions</td><td>Allowed (RFC 6241 s6 syntax)</td><td>XPath 1.0, root context, empty variables</td><td>RFC 8641 s3.6, s5</td></tr>
+<tr><td>Ansible <code>netconf_get</code></td><td>XML string with xmlns</td><td>Plain XPath string; needs server xpath capability</td><td>netconf_get docs</td></tr>
+</table></div>
+<div class="layer">
+<p>Restrictions the IOS XE 17.5 telemetry chapter spells out for subscription XPath: key names and values must be exact, with no ranges or wildcards; the union operator <code>|</code> works only with NETCONF transport, not gRPC; and for on-change with <code>yang-notif-native</code>, the path must name a whole YANG notification. Those are subscription rules. Whether a plain <code>&lt;get&gt;</code> on the Cat8000V accepts wildcards, unions or comparison predicates is ⚠ unverified: test it.</p>
+<p>A practical way to choose: use subtree when the target supports it and you want a branch; use XPath when you need a single list row by key, a value comparison, or a path you already have from a YANG tool. In exam terms, pick the one the device actually accepts, and prove the result is narrowed by comparing the response size or content against an unfiltered get.</p>
+</div>
+
+<svg viewBox="0 0 760 270" role="img" aria-label="Decision flow for choosing filter type and diagnosing an empty result">
+<rect class="box" x="10" y="10" width="190" height="46" rx="6"/><text x="105" y="38" text-anchor="middle">Need a filtered read</text>
+<path class="ln" d="M200 33H240"/>
+<rect class="wr" x="240" y="10" width="220" height="46" rx="6"/><text x="350" y="30" text-anchor="middle">xpath:1.0 in hello?</text><text class="m" x="350" y="47" text-anchor="middle">check, do not assume</text>
+<path class="ln" d="M350 56V90"/><text class="m" x="360" y="80">no</text>
+<rect class="box" x="240" y="90" width="220" height="46" rx="6"/><text x="350" y="118" text-anchor="middle">Use subtree filter</text>
+<path class="ln" d="M460 33H520"/><text class="m" x="480" y="26">yes</text>
+<rect class="hi" x="520" y="10" width="230" height="46" rx="6"/><text x="635" y="30" text-anchor="middle">Declare prefix on filter</text><text class="m" x="635" y="47" text-anchor="middle">xmlns:p="module namespace"</text>
+<path class="ln" d="M635 56V90"/>
+<rect class="hi" x="520" y="90" width="230" height="46" rx="6"/><text x="635" y="110" text-anchor="middle">Write steps with p:</text><text class="m" x="635" y="127" text-anchor="middle">p:native/p:interface[p:name='1']</text>
+<path class="ln" d="M635 136V170"/>
+<rect class="box" x="520" y="170" width="230" height="46" rx="6"/><text x="635" y="198" text-anchor="middle">Send, read reply</text>
+<path class="ln" d="M520 193H460"/>
+<rect class="wr" x="230" y="170" width="230" height="46" rx="6"/><text x="345" y="190" text-anchor="middle">Empty &lt;data/&gt;?</text><text class="m" x="345" y="207" text-anchor="middle">prefix, namespace, key quoting</text>
+<text class="m" x="10" y="250">Empty data is a success reply. Debug the filter, not the transport.</text>
+</svg>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Snippets are pinned to the versions named. They show the shape, not the drill answer.</p>
+
+<h3>NX-OS 9.3(x): subtree, as the guide shows it ✅</h3>
+<pre><code>&lt;rpc message-id="111" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"&gt;
+  &lt;get&gt;
+    &lt;filter&gt;
+      &lt;System xmlns="http://cisco.com/ns/yang/cisco-nx-os-device"&gt;
+        &lt;intf-items&gt;&lt;phys-items&gt;
+          &lt;PhysIf-list&gt;&lt;id&gt;eth1/54/1&lt;/id&gt;&lt;/PhysIf-list&gt;
+        &lt;/phys-items&gt;&lt;/intf-items&gt;
+      &lt;/System&gt;
+    &lt;/filter&gt;
+  &lt;/get&gt;
+&lt;/rpc&gt;</code></pre>
+<p><code>&lt;id&gt;</code> is a content match node: it picks one list row. The XPath equivalent would be a predicate, but the same guide says XPath is unsupported on this platform, so there is no XPath answer to give on N9Kv.</p>
+
+<h3>IOS XE: XPath filter on the wire ⚠ unverified — test in lab</h3>
+<pre><code>&lt;rpc message-id="1" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"&gt;
+  &lt;get-config&gt;
+    &lt;source&gt;&lt;running/&gt;&lt;/source&gt;
+    &lt;filter type="xpath"
+            xmlns:ios="http://cisco.com/ns/yang/Cisco-IOS-XE-native"
+            select="/ios:native/ios:interface/ios:GigabitEthernet[ios:name='1']"/&gt;
+  &lt;/get-config&gt;
+&lt;/rpc&gt;</code></pre>
+<p>Three things to check in the reply: it contains only interface 1, the leaves arrive in the native namespace, and nothing else from the running config came back. Whether this exact prefix declaration is how the Cat8000V resolves names is the open question above.</p>
+
+<h3>Telemetry subscription CLI, IOS XE 17.5 ✅</h3>
+<pre><code>Device(config-mdt-subs)# filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic</code></pre>
+<p>Module name as prefix, nothing declared. An extra slash after the colon produces an invalid subscription, per Cisco's YANG Suite telemetry article.</p>
+
+<h3>Ansible netconf_get with XPath ✅ (netcommon docs 8.6.2, lab 8.4.0)</h3>
+<pre><code>- ansible.netcommon.netconf_get:
+    filter: /netconf-state/schemas/schema
+    display: xml</code></pre>
+<p>That example reads the schema list from the NETCONF monitoring module. It works only if the server has the xpath capability. How to pass namespace bindings through this module is ⚠ unverified.</p>
+
+<h2 id="bf">Break/fix table</h2>
+<div class="scroll"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Reply is success with empty <code>&lt;data/&gt;</code></td><td>Unprefixed names in XPath 1.0, or wrong namespace URI</td><td>Run an unfiltered get on the same node and compare the xmlns on the element in the reply</td><td>Declare <code>xmlns:p</code> with the exact URI from the reply, prefix every step</td></tr>
+<tr><td>RPC error on the filter</td><td>Server lacks <code>:xpath</code> (NX-OS 9.3 states this)</td><td>Read the hello capabilities; on NX-OS the guide's limitations list</td><td>Switch to a subtree filter</td></tr>
+<tr><td>Rows come back that you did not select</td><td>Predicate on wrong node or unquoted value</td><td>Print the XPath string as sent; check quotes inside the XML attribute</td><td>Use single quotes inside a double-quoted <code>select</code> attribute</td></tr>
+<tr><td>Telemetry subscription shows invalid</td><td>Stray character in XPath, subtree used, or wildcard in a key</td><td><code>show telemetry ietf subscription all</code> (state field; ⚠ command from prior page, confirm on 17.16)</td><td>Fix the string; exact key values only; no subtree</td></tr>
+<tr><td>Same filter works over NETCONF, fails via gRPC dial-out</td><td>Union operator used; NETCONF-only per the 17.5 chapter</td><td>Check for <code>|</code> in the path</td><td>Split into one subscription per path</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>See the capability list first. A raw hello over SSH subsystem works from the workstation: <code>ssh -s -p 830 user@host netconf</code> ⚠ unverified on this lab; look for the xpath capability URI in the output.</li>
+<li>Get exact namespaces from the device, not memory: an unfiltered get on the node and read the <code>xmlns</code> attribute.</li>
+<li>Session state: <code>show netconf-yang sessions</code> and <code>show netconf-yang datastores</code> (both in the IOS XE 17.5 chapter).</li>
+<li>Pull the schema list from the device with the XPath shown in the netconf_get docs, then read a module: this is the offline-safe way to learn paths.</li>
+<li><code>ansible-doc ansible.netcommon.netconf_get</code> shows the filter parameter and examples without a browser.</li>
+<li><code>pyang -f tree module.yang</code> gives the key names for predicates; ⚠ confirm pyang and the YANG files exist on the workstation.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<p><b>Target:</b> Cat8000V only (IOS XE 17.16 in lab; guides are 17.5). IOSvL2 has no RESTCONF and IOSv is CLI only.</p>
+<p><b>Requirement:</b> Return the running configuration for GigabitEthernet1 and nothing else, once with a subtree filter and once with an XPath filter. Then subscribe to memory statistics with an XPath filter.</p>
+<p><b>Reference names (⚠ unverified until you read them off the device):</b> module <code>Cisco-IOS-XE-native</code>, path <code>native/interface/GigabitEthernet</code>, key <code>name</code>. Telemetry path: <code>/memory-ios-xe-oper:memory-statistics/memory-statistic</code>.</p>
+<p><b>Verification:</b></p>
+<ul>
+<li>The reply for each filter contains one <code>GigabitEthernet</code> element and no other interfaces.</li>
+<li>Both replies carry the same leaves.</li>
+<li>A deliberately wrong prefix returns empty <code>&lt;data/&gt;</code> and no error.</li>
+<li><code>show telemetry ietf subscription all</code> shows the subscription valid (⚠ confirm command output on 17.16).</li>
+</ul>
+<details><summary>Hint</summary><p>Do an unfiltered get-config of the interface node first and copy the namespace URI from the reply. If the XPath form returns nothing, check capabilities before you debug quoting.</p></details>
+<details><summary>Solution</summary><p>Subtree: a filter containing <code>native</code> (native namespace) → <code>interface</code> → <code>GigabitEthernet</code> → <code>name</code> with value 1. XPath: the anatomy snippet above with the prefix bound to the namespace you read from the device. If the device does not advertise xpath, record that fact and finish with the subtree form; it is a legitimate outcome. Subscription (IOS XE 17.5 syntax from the guide): create the subscription in config-mdt mode, set <code>filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic</code>, and add the stream, update policy, encoding, source VRF and receiver lines as in the 2026-10-06 page. ⚠ unverified on 17.16.</p></details>
+
+<h2 id="recall">Recall check</h2>
+<h3>Today</h3>
+<details><summary>1. An XPath filter returns success and empty data. List the two most likely causes and how you tell them apart.</summary><p>Namespace prefix missing or wrong URI, versus an expression that matches nothing (wrong key value or path). Run an unfiltered get on the node: if the element exists and you copy its xmlns and path exactly, a still-empty result points to the predicate, not the namespace.</p></details>
+<details><summary>2. Name two places in the guides where XPath is stated unsupported or restricted, and the restriction.</summary><p>NX-OS 9.3 NETCONF agent: XPath filtering unsupported, subtree only. IOS XE 17.5 telemetry: exact key names and values only, no wildcards or ranges; union only over NETCONF transport; subtree filters make a subscription invalid.</p></details>
+<details><summary>3. Which filter node role in a subtree filter corresponds to an XPath key predicate?</summary><p>The content match node (a leaf with a value). A selection node (empty leaf) corresponds to naming the leaf as the last step.</p></details>
+<details><summary>4. Where does the xpath capability show up and what do you do if it is absent?</summary><p>In the server hello capabilities. If absent, use a subtree filter; RFC 6241 allows XPath only when the peer supports the capability.</p></details>
+<h3>From history</h3>
+<details><summary>5. (2026-09-28) Why does IOSvL2 accepting <code>restconf</code> into its configuration not mean RESTCONF works there?</summary><p>The command is accepted but the YANG/RESTCONF agent is absent; the tracker notes 404 on every request. Test the endpoint, do not trust the CLI.</p></details>
+<details><summary>6. (2026-09-30) The first task in an imported file sets <code>x</code>; the import carries <code>when: x is not defined</code>. What happens to the remaining tasks, and what changes with <code>include_tasks</code>?</summary><p>With import, the condition is applied to each task, so after the first sets <code>x</code> the rest are skipped. With include_tasks the condition is evaluated once for the include, so all tasks run.</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry</a><small>IOS XE 17.5 · verified 2026-10-07 · best for: XPath syntax, restrictions, xpath-filter in the subscription RPC</small></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - NETCONF Protocol</a><small>IOS XE 17.5 · verified 2026-10-07 · best for: enabling NETCONF, show commands. It has no filter examples.</small></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_0100110.html" target="_blank" rel="noopener">NETCONF Agent (Cisco Nexus 9000 Series NX-OS Programmability Guide, Release 9.3(x))</a><small>NX-OS 9.3(x) · verified 2026-10-07 · best for: subtree examples and the "XPath unsupported" statement</small></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a><small>IOS XE 17.3.3 (older than pin) · verified 2026-10-07 · best for: getting the XPath and prefix of a node from YANG Suite</small></li>
+</ul>
+<h3>Standards</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc6241" target="_blank" rel="noopener">RFC 6241 Network Configuration Protocol (NETCONF)</a><small>RFC · verified 2026-10-07 · best for: subtree rules (s6) and the filter type attribute (s7.1). Section 8.9 not readable this run.</small></li>
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641 Subscription to YANG Notifications for Datastore Updates</a><small>RFC · verified 2026-10-07 · best for: XPath evaluation context for subscriptions (root context, empty variables)</small></li>
+</ul>
+<h3>Third-party</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_get_module.html" target="_blank" rel="noopener">ansible.netcommon.netconf_get module – Fetch configuration/state data from NETCONF enabled network devices</a><small>netcommon 8.6.2 docs (lab 8.4.0) · verified 2026-10-07 · best for: passing a subtree or XPath filter from a playbook</small></li>
+</ul>
+
+<footer>
+<p><b>Links: 7 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ unverified claims:</b></p>
+<ul>
+<li>Cat8000V hello advertises <code>urn:ietf:params:netconf:capability:xpath:1.0</code> on 17.16.</li>
+<li>Prefix declared on the <code>&lt;filter&gt;</code> element resolves names for <code>&lt;get&gt;</code> (RFC 6241 s8.9.1 not readable this run); whether the server also accepts module-name prefixes there.</li>
+<li><code>Cisco-IOS-XE-native</code> namespace URI and the native interface path and key name in the drill.</li>
+<li>Wildcards, unions and comparison predicates in a plain <code>&lt;get&gt;</code> on IOS XE.</li>
+<li><code>ssh -s -p 830 ... netconf</code> hello on the lab; pyang and YANG files on the workstation.</li>
+<li><code>show telemetry ietf subscription all</code> output wording on 17.16; netconf_get namespace passing.</li>
+<li>Version flag: IOS XE guides are 17.5 (lab 17.16); NX-OS guide 9.3(x) matches pin family; Cisco article 217427 tested on 17.3.3; netcommon docs 8.6.2 vs lab 8.4.0.</li>
+</ul>
+<p><b>Tomorrow:</b> Unit 8 of 49, 1.4 Troubleshoot CI/CD pipeline issues.</p>
+</footer>
+</div>
+
+</body></html>

@@ -1,0 +1,278 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>REST and GraphQL Consumption</title>
+<style>
+/* Layout: single column study page, sticky TOC strip, SVG figures, collapsed answers. */
+:root{--bg:#f6f7f9;--fg:#171b22;--mut:#566070;--card:#ffffff;--line:#d5dae2;--acc:#0a6e8a;--acc2:#b4531a;--code:#eceff4;--ok:#17703a;--warn:#9a6a00;--bad:#b3261e;--svgfill:#e4edf2;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--fg:#e4e8ee;--mut:#9aa5b4;--card:#1a1f26;--line:#2c333d;--acc:#4fc0dc;--acc2:#f0a06b;--code:#0d1014;--ok:#5fcf8a;--warn:#e8c25a;--bad:#ff8a80;--svgfill:#1f2a33;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111418;--fg:#e4e8ee;--mut:#9aa5b4;--card:#1a1f26;--line:#2c333d;--acc:#4fc0dc;--acc2:#f0a06b;--code:#0d1014;--ok:#5fcf8a;--warn:#e8c25a;--bad:#ff8a80;--svgfill:#1f2a33;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.55;padding-inline:16px}
+.w{max-width:860px;margin:0 auto;padding-block:12px 48px}
+h1{font-size:1.7rem;line-height:1.2;margin:.2em 0;text-wrap:balance}
+h2{font-size:1.3rem;margin:2em 0 .5em;padding-top:.4em;border-top:1px solid var(--line);text-wrap:balance}
+h3{font-size:1.05rem;margin:1.4em 0 .3em;color:var(--acc)}
+p,li{max-width:70ch}
+a{color:var(--acc)}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:.8rem;z-index:5}
+nav.toc a{text-decoration:none;color:var(--mut)}
+nav.toc a:hover{color:var(--acc)}
+.hdr{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-top:14px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem;color:var(--mut)}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;font-size:.88rem;min-width:560px;width:100%}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--svgfill)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:4px;padding:10px 12px;overflow-x:auto;font-size:.8rem;line-height:1.45;margin:10px 0}
+code{font-family:var(--mono);font-size:.88em}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:3px}
+pre code{background:none;padding:0}
+svg{width:100%;height:auto;display:block;margin:12px 0;background:var(--card);border:1px solid var(--line);border-radius:6px}
+svg text{fill:var(--fg);font-family:var(--sans)}
+svg .m{fill:var(--mut)}
+svg .b{fill:var(--svgfill);stroke:var(--acc);stroke-width:1.5}
+svg .b2{fill:var(--svgfill);stroke:var(--acc2);stroke-width:1.5}
+svg .l{stroke:var(--mut);stroke-width:1.5;fill:none}
+svg .la{stroke:var(--acc);stroke-width:1.8;fill:none}
+details{border:1px solid var(--line);border-radius:4px;padding:6px 10px;margin:6px 0;background:var(--card)}
+summary{cursor:pointer;color:var(--acc)}
+.bd{display:inline-block;font-size:.72rem;border:1px solid var(--ok);color:var(--ok);border-radius:3px;padding:0 5px;margin-right:4px}
+.warn{color:var(--warn)}
+.cap{font-size:.82rem;color:var(--mut);margin-top:-6px}
+.ref li{margin:10px 0}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+<div class="w" id="top">
+<nav class="toc"><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+
+<div class="hdr">
+<h1>2.3 Consume and use a new API given documentation (REST, GraphQL)</h1>
+<div class="meta"><span><b>Date</b> 2026-10-05 (Mon)</span><span><b>Blueprint</b> 2.3.a REST, 2.3.b GraphQL</span><span><b>Domain</b> 2.0 Infrastructure as Code, 30%</span><span><b>Tier</b> 2</span><span><b>Read</b> ~18 min</span><span><b>Unit</b> 5 of 49</span></div>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>The verb is <i>consume</i>: you get docs you have never seen and must produce a working call. The skill is reading docs fast, not memorizing endpoints.</li>
+<li>Every doc answers the same five questions: base URL and path, auth, request shape, response shape, how big results are paged. Find those five first, in that order.</li>
+<li>REST puts meaning in the URL and the method. GraphQL puts meaning in the request body, behind one endpoint, and almost always uses POST.</li>
+<li>Cisco REST APIs differ in the details that bite: token header (<code>X-Auth-Token</code> on Catalyst Center), cookie session (<code>APIC-cookie</code> on APIC), and pagination style (Link header on Meraki, <code>page</code>/<code>page-size</code> on APIC).</li>
+<li>GraphQL returns HTTP 200 with an <code>errors</code> array more often than you expect. Check the body, not just the status.</li>
+<li>If the schema is unknown, GraphQL can describe itself through introspection. REST has no equivalent; you rely on the spec or docs you were handed.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 760 250" role="img" aria-label="Blueprint domain 2 neighbors and tool chain">
+<text x="12" y="22" font-size="13" font-weight="600">Domain 2.0 neighbors</text>
+<rect class="b" x="12" y="34" width="150" height="46" rx="4"/><text x="87" y="55" font-size="12" text-anchor="middle">2.1 Python REST API</text><text x="87" y="71" font-size="10" text-anchor="middle" class="m">you build the server</text>
+<rect class="b" x="176" y="34" width="150" height="46" rx="4"/><text x="251" y="55" font-size="12" text-anchor="middle">2.2 Python CLI app</text><text x="251" y="71" font-size="10" text-anchor="middle" class="m">client of a REST API</text>
+<rect class="b2" x="340" y="34" width="170" height="46" rx="4"/><text x="425" y="55" font-size="12" text-anchor="middle" font-weight="700">2.3 Consume new API</text><text x="425" y="71" font-size="10" text-anchor="middle" class="m">REST + GraphQL (today)</text>
+<rect class="b" x="524" y="34" width="224" height="46" rx="4"/><text x="636" y="55" font-size="12" text-anchor="middle">2.4-2.6 YANG / NETCONF / RESTCONF</text><text x="636" y="71" font-size="10" text-anchor="middle" class="m">model-driven flavor of REST</text>
+<text x="12" y="124" font-size="13" font-weight="600">Tool chain for a consume task</text>
+<rect class="b" x="12" y="136" width="130" height="50" rx="4"/><text x="77" y="158" font-size="12" text-anchor="middle">API docs / spec</text><text x="77" y="175" font-size="10" text-anchor="middle" class="m">provided in exam</text>
+<rect class="b" x="170" y="136" width="130" height="50" rx="4"/><text x="235" y="158" font-size="12" text-anchor="middle">Auth step</text><text x="235" y="175" font-size="10" text-anchor="middle" class="m">token / cookie</text>
+<rect class="b" x="328" y="136" width="130" height="50" rx="4"/><text x="393" y="158" font-size="12" text-anchor="middle">Client</text><text x="393" y="175" font-size="10" text-anchor="middle" class="m">Python / Ansible / curl</text>
+<rect class="b" x="486" y="136" width="130" height="50" rx="4"/><text x="551" y="158" font-size="12" text-anchor="middle">Parse + page</text><text x="551" y="175" font-size="10" text-anchor="middle" class="m">imdata / data / Link</text>
+<rect class="b" x="644" y="136" width="104" height="50" rx="4"/><text x="696" y="158" font-size="12" text-anchor="middle">Verify</text><text x="696" y="175" font-size="10" text-anchor="middle" class="m">GET back</text>
+<path class="l" d="M142 161H170M300 161H328M458 161H486M616 161H644"/>
+<text x="12" y="224" font-size="11" class="m">Ansible path: ansible.netcommon / cisco.aci modules wrap the same calls. Python path: HTTP client plus json.</text>
+</svg>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+
+<h3>L1: Concept</h3>
+<p>A REST API exposes resources at URLs and uses HTTP methods as verbs. GET reads, POST creates or acts, PUT replaces, PATCH modifies part, DELETE removes. The status code tells you what happened and the body carries the representation, usually JSON. RFC 9110 defines these semantics: safe and idempotent methods are in its section 9.2, and status code classes are in section 15 (<a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">RFC 9110</a>). 401 means authenticate (missing or bad credentials); 403 means you are known but refused.</p>
+<p>GraphQL exposes a typed schema behind a single endpoint. The client sends a document that names the fields it wants, and the server returns exactly that shape. There are three operation types: query (read), mutation (write), subscription (push). The <a href="https://graphql.org/learn/queries/" target="_blank" rel="noopener">GraphQL queries guide</a> covers fields, arguments, aliases, variables, fragments and directives.</p>
+
+<h3>L2: Mechanics</h3>
+<svg viewBox="0 0 760 330" role="img" aria-label="Sequence: auth, call, async task poll">
+<text x="12" y="20" font-size="13" font-weight="600">Typical Cisco REST session (Catalyst Center shown)</text>
+<rect class="b" x="40" y="32" width="150" height="30" rx="4"/><text x="115" y="52" font-size="12" text-anchor="middle">Client</text>
+<rect class="b2" x="560" y="32" width="160" height="30" rx="4"/><text x="640" y="52" font-size="12" text-anchor="middle">Controller</text>
+<path class="l" d="M115 62V320M640 62V320" stroke-dasharray="4 4"/>
+<path class="la" d="M115 92H636"/><polygon points="636,92 626,87 626,97" fill="var(--acc)"/>
+<text x="375" y="85" font-size="11" text-anchor="middle">1. POST /dna/system/api/v1/auth/token  (Basic auth)</text>
+<path class="la" d="M640 125H119"/><polygon points="119,125 129,120 129,130" fill="var(--acc)"/>
+<text x="375" y="118" font-size="11" text-anchor="middle">2. 200 + token in JSON body</text>
+<path class="la" d="M115 160H636"/><polygon points="636,160 626,155 626,165" fill="var(--acc)"/>
+<text x="375" y="153" font-size="11" text-anchor="middle">3. GET /dna/intent/api/v1/...   X-Auth-Token: &lt;token&gt;</text>
+<path class="la" d="M640 193H119"/><polygon points="119,193 129,188 129,198" fill="var(--acc)"/>
+<text x="375" y="186" font-size="11" text-anchor="middle">4. 200 + JSON (page 1)</text>
+<path class="la" d="M115 232H636"/><polygon points="636,232 626,227 626,237" fill="var(--acc)"/>
+<text x="375" y="225" font-size="11" text-anchor="middle">5. POST / PUT / DELETE  (a write)</text>
+<path class="la" d="M640 265H119"/><polygon points="119,265 129,260 129,270" fill="var(--acc)"/>
+<text x="375" y="258" font-size="11" text-anchor="middle">6. response carries a task reference, not the final result</text>
+<path class="la" d="M115 302H636"/><polygon points="636,302 626,297 626,307" fill="var(--acc)"/>
+<text x="375" y="295" font-size="11" text-anchor="middle">7. GET the task, repeat until finished, then verify with a GET</text>
+</svg>
+<p class="cap">Steps 1, 3, 5 and 6 are in the <a href="https://developer.cisco.com/docs/catalyst-center/api-quick-start/" target="_blank" rel="noopener">Catalyst Center API Quick Start</a> (page is 3.1.6 docs). The JSON key that holds the token in step 2 is not stated there. See footer.</p>
+
+<p>Three mechanics decide most consume tasks:</p>
+<ul>
+<li><b>Auth.</b> Either exchange credentials for a token you resend in a header, or log in and let a cookie ride along. Catalyst Center uses Basic auth to get a token, then <code>X-Auth-Token</code>. APIC uses <code>POST /api/aaaLogin.json</code> with an <code>aaaUser</code> object carrying <code>name</code> and <code>pwd</code>, and returns an <code>APIC-cookie</code> (<a href="https://www.cisco.com/c/en/us/td/docs/dcn/aci/apic/all/apic-rest-api-configuration-guide/cisco-apic-rest-api-configuration-guide-42x-and-later/m_using_the_rest_api.html" target="_blank" rel="noopener">APIC REST API guide</a>). Sessions expire; APIC has an <code>aaaRefresh</code> URI.</li>
+<li><b>Async writes.</b> Catalyst Center answers writes with a task response, so a 2xx on your POST does not mean the change is done. Poll the task, then read the object back.</li>
+<li><b>Paging.</b> Never assume one response is everything. See the table below.</li>
+</ul>
+
+<div class="tw"><table>
+<caption style="text-align:left;color:var(--mut);padding-bottom:4px">REST pagination and result handling across Cisco APIs you may be handed</caption>
+<tr><th>API</th><th>Page control</th><th>How to know there is more</th><th>Result envelope</th></tr>
+<tr><td>APIC REST</td><td><code>page</code>, <code>page-size</code>, <code>order-by</code> query options</td><td><code>totalCount</code> in response</td><td><code>imdata</code> list; each item is <code>{ClassName:{attributes:{...}}}</code></td></tr>
+<tr><td>Meraki Dashboard v1</td><td><code>perPage</code>, <code>startingAfter</code>, <code>endingBefore</code></td><td>RFC 5988 <code>Link</code> header with <code>rel</code> first/prev/next/last</td><td>Plain JSON array (⚠ not stated on the page)</td></tr>
+<tr><td>Catalyst Center</td><td>Not described on the quick start page</td><td>Read the endpoint's own doc; do not guess <code>limit</code>/<code>offset</code></td><td>Per endpoint</td></tr>
+<tr><td>GraphQL</td><td>Slicing, or cursors via <code>first</code>/<code>after</code></td><td><code>pageInfo.hasNextPage</code>, <code>endCursor</code></td><td><code>data</code>, plus <code>errors</code> if any</td></tr>
+</table></div>
+<p>The <a href="https://developer.cisco.com/meraki/api-v1/pagination/" target="_blank" rel="noopener">Meraki pagination page</a> also documents a Python library option, <code>total_pages</code>, that fetches several or all pages. That is a library convenience, not an HTTP feature.</p>
+
+<h3>L3: Exam detail</h3>
+<svg viewBox="0 0 760 270" role="img" aria-label="GraphQL request and response anatomy">
+<text x="12" y="20" font-size="13" font-weight="600">GraphQL over HTTP: one endpoint, body decides everything</text>
+<rect class="b" x="12" y="34" width="330" height="170" rx="4"/>
+<text x="24" y="54" font-size="12" font-weight="600">POST /graphql   Content-Type: application/json</text>
+<text x="24" y="78" font-size="12" font-family="monospace">{ "query": "query Q($id:ID!){...}",</text>
+<text x="24" y="98" font-size="12" font-family="monospace">  "operationName": "Q",</text>
+<text x="24" y="118" font-size="12" font-family="monospace">  "variables": { "id": "1000" } }</text>
+<text x="24" y="148" font-size="11" class="m">only "query" is required</text>
+<text x="24" y="166" font-size="11" class="m">operationName needed if document has several operations</text>
+<text x="24" y="184" font-size="11" class="m">GET allowed for queries only; mutations need POST</text>
+<path class="la" d="M342 119H408"/><polygon points="408,119 398,114 398,124" fill="var(--acc)"/>
+<rect class="b2" x="418" y="34" width="330" height="170" rx="4"/>
+<text x="430" y="54" font-size="12" font-weight="600">Response body</text>
+<text x="430" y="78" font-size="12" font-family="monospace">{ "data": { ... },</text>
+<text x="430" y="98" font-size="12" font-family="monospace">  "errors": [ {message, path,</text>
+<text x="430" y="118" font-size="12" font-family="monospace">     locations, extensions} ] }</text>
+<text x="430" y="148" font-size="11" class="m">request error (syntax/validation): no "data"</text>
+<text x="430" y="166" font-size="11" class="m">field error: partial "data" + "errors"</text>
+<text x="430" y="184" font-size="11" class="m">partial success can still be HTTP 2xx</text>
+<text x="12" y="236" font-size="11" class="m">Sources: graphql.org Serving over HTTP and Response pages, fetched 2026-10-05.</text>
+</svg>
+<ul>
+<li><b>Variables, not string building.</b> Declare <code>$name: Type</code> in the operation and pass values in the JSON <code>variables</code> object. Defaults go in the declaration. <code>!</code> marks non-null.</li>
+<li><b>Aliases</b> let you call the same field twice with different arguments in one document. <b>Fragments</b> reuse a selection set. <code>@include(if:)</code> and <code>@skip(if:)</code> toggle fields from a Boolean variable.</li>
+<li><b>Mutations</b> are written like queries but with the <code>mutation</code> keyword; return the fields you want to confirm the change in the same call.</li>
+<li><b>Introspection.</b> <code>__schema</code> and <code>__type(name:)</code> let you discover types and fields (<a href="https://graphql.org/learn/introspection/" target="_blank" rel="noopener">Introspection</a>). It is often disabled in production, so the exam is more likely to hand you a schema or SDL than to rely on it.</li>
+<li><b>Errors.</b> In the <a href="https://graphql.org/learn/response/" target="_blank" rel="noopener">Response page</a> example, one deletion succeeds and the other returns null with an error at <code>path ["secondShip"]</code>. Your client must inspect <code>errors</code> every time.</li>
+<li><b>Auth lives outside GraphQL.</b> It is handled before the request is validated, typically as an HTTP header. Authorization happens in resolvers, field by field.</li>
+</ul>
+<div class="tw"><table>
+<caption style="text-align:left;color:var(--mut);padding-bottom:4px">REST vs GraphQL, consume-side</caption>
+<tr><th>Question</th><th>REST</th><th>GraphQL</th></tr>
+<tr><td>Endpoints</td><td>Many; path identifies resource</td><td>One; body identifies operation</td></tr>
+<tr><td>Read shape</td><td>Server decides; some APIs offer filters (APIC <code>query-target-filter</code>, <code>rsp-subtree</code>)</td><td>Client lists fields</td></tr>
+<tr><td>Write method</td><td>POST/PUT/PATCH/DELETE</td><td>POST with <code>mutation</code></td></tr>
+<tr><td>Failure signal</td><td>HTTP status</td><td>Status plus <code>errors</code> array; 200 possible with errors</td></tr>
+<tr><td>Discovery</td><td>Spec or docs (OpenAPI if provided)</td><td>Introspection or SDL</td></tr>
+<tr><td>Paging</td><td>API-specific</td><td>Cursor connections (edges, node, pageInfo) are the common pattern</td></tr>
+</table></div>
+<p>APIC detail worth knowing: the URL suffix <code>.json</code> or <code>.xml</code> is mandatory and sets the format; headers are ignored for that choice. The guide also lists a 90 second query timeout and a 100,000-object cap on generic class queries, and calls POST idempotent, which is stricter than the generic HTTP meaning. Those are APIC 4.2(x)-and-later docs; the lab APIC release is not stated by the task, so treat limits as ⚠ release-dependent.</p>
+
+<h2 id="anat">Anatomy</h2>
+<p>Snippets are patterns from the docs above, not a drill solution. Assume Python 3.13 on the workstation; ⚠ unverified — test in lab that <code>requests</code> is installed (otherwise use <code>urllib.request</code> from the standard library).</p>
+<pre><code># APIC: login, then class query with paging options (guide: aaaLogin.json, /api/class/..., page, page-size)
+import requests
+s = requests.Session(); s.verify = False   # sandbox cert; ⚠ lab only
+s.post(f"{base}/api/aaaLogin.json",
+       json={"aaaUser": {"attributes": {"name": user, "pwd": pw}}})
+r = s.get(f"{base}/api/class/fvTenant.json", params={"page": 0, "page-size": 5})
+for o in r.json()["imdata"]:
+    print(o["fvTenant"]["attributes"]["name"])
+print(r.json()["totalCount"])</code></pre>
+<pre><code># Catalyst Center: Basic auth for token, then X-Auth-Token (quick start)
+t = requests.post(f"{cc}/dna/system/api/v1/auth/token", auth=(user, pw), verify=False)
+token = t.json()["Token"]            # ⚠ key name not on the quick start page
+h = {"X-Auth-Token": token}
+requests.get(f"{cc}/dna/intent/api/v1/network-device/ip-address/{ip}", headers=h, verify=False)</code></pre>
+<pre><code># Meraki-style Link header paging (RFC 5988 rel=next, per Meraki pagination page)
+url = first_url
+while url:
+    r = requests.get(url, headers=hdrs)
+    rows += r.json()
+    url = r.links.get("next", {}).get("url")   # requests parses Link into r.links</code></pre>
+<pre><code># GraphQL: variables in JSON, check errors every time
+body = {"query": "query Q($id: ID!) { human(id: $id) { name } }",
+        "operationName": "Q", "variables": {"id": "1000"}}
+r = requests.post(gql_url, json=body, headers=hdrs)
+j = r.json()
+if "errors" in j: raise RuntimeError(j["errors"])</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>401 on every call after the first minutes</td><td>Token or session expired</td><td>Re-run login; does the same GET succeed?</td><td>Re-auth or refresh (APIC <code>aaaRefresh</code>); wrap calls in a re-login retry</td></tr>
+<tr><td>Catalyst Center GET works, POST returns 2xx but device unchanged</td><td>Write is task-based; you read the task ack, not the result</td><td>GET the task reference from the response, then GET the object</td><td>Poll the task until done before verifying</td></tr>
+<tr><td>You only ever see the first rows</td><td>Paging ignored</td><td>Compare row count with APIC <code>totalCount</code> or look for a Meraki <code>Link</code> header</td><td>Loop on <code>rel=next</code> / increment <code>page</code> until count reached</td></tr>
+<tr><td>APIC returns data in the wrong format or 404-like error</td><td>Missing <code>.json</code>/<code>.xml</code> suffix, or wrong <code>mo</code> vs <code>class</code> path</td><td>Print the exact URL sent</td><td>Use <code>/api/class/&lt;cls&gt;.json</code> or <code>/api/mo/&lt;dn&gt;.json</code></td></tr>
+<tr><td>GraphQL "works" (HTTP 200) but the field is null</td><td>Field error in <code>errors</code>, or authorization failed in a resolver</td><td>Print <code>j.get("errors")</code> and the <code>path</code></td><td>Fix argument or permission; do not trust status alone</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li><b>Read order for any new API doc:</b> auth section, one GET example, one write example, then paging/limits. Copy the example's headers verbatim.</li>
+<li><b>Offline discovery:</b> <code>curl -sk -i URL</code> shows status, headers (including <code>Link</code>) and body together. Pipe bodies through <code>python3 -m json.tool</code>.</li>
+<li><b>Ansible:</b> <code>ansible-doc cisco.aci.aci_rest</code> shows its parameters and examples offline. The module takes <code>path</code> ending in <code>.json</code> or <code>.xml</code>, <code>method</code> get/post/delete, and <code>content</code> or <code>src</code>; its docs include a paging example with <code>page_size</code> (<a href="https://docs.ansible.com/projects/ansible/latest/collections/cisco/aci/aci_rest_module.html" target="_blank" rel="noopener">aci_rest</a>). Lab collection is cisco.aci 2.12.0; the docs page does not show its own version.</li>
+<li><b>GraphQL without a client library:</b> build the JSON body with <code>json.dumps</code> and POST it. If the exam gives you a UI such as a GraphQL explorer, use it to confirm syntax, then port to Python.</li>
+<li>⚠ unverified — test in lab: whether <code>jq</code> is installed on the Candidate Workstation.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<p><b>Requirement.</b> Using only the APIC REST docs and the DevNet Sandbox APIC, list the names of the first 5 tenants and report the total tenant count, then confirm the count by fetching with <code>page-size</code> large enough to return everything. Then, on paper, write the GraphQL request body that fetches <code>human(id:"1000")</code> name and height in feet using a variable for the id.</p>
+<p><b>Reference.</b> Path <code>/api/class/fvTenant.json</code>; options <code>page</code>, <code>page-size</code>; response keys <code>imdata</code>, <code>totalCount</code>; object path <code>imdata[i].fvTenant.attributes.name</code>. GraphQL body keys <code>query</code>, <code>operationName</code>, <code>variables</code>.</p>
+<p><b>Target.</b> DevNet Sandbox APIC (Part 1). Part 2 has no lab endpoint; it is a syntax exercise. ⚠ unverified — I did not confirm any GraphQL service in the lab or on a Cisco product.</p>
+<p><b>Verify.</b> Part 1: first call returns 5 names; <code>totalCount</code> equals the number of names in the large-page call. Part 2: your body has the three keys and no values pasted into the query string.</p>
+<details><summary>Hint</summary><p>Login first and reuse the session. If the page-size call is capped, fetch in a loop with <code>page</code> until you collect <code>totalCount</code> items. For the GraphQL part, declare <code>$id: ID!</code> on the operation and use <code>height(unit: FOOT)</code> from the queries guide's example.</p></details>
+<details><summary>Solution</summary><pre><code>r = s.get(f"{base}/api/class/fvTenant.json", params={"page":0,"page-size":5})
+names = [o["fvTenant"]["attributes"]["name"] for o in r.json()["imdata"]]
+total = r.json()["totalCount"]    # ⚠ semantics: guide says "number of items"; confirm it is the full count, not page count
+
+{"query":"query H($id: ID!) { human(id: $id) { name height(unit: FOOT) } }",
+ "operationName":"H","variables":{"id":"1000"}}</code></pre></details>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<ol>
+<li>Name the three things a Catalyst Center client must do between getting credentials and confirming a configuration change.
+<details><summary>Answer</summary>Get a token via Basic auth, send it as <code>X-Auth-Token</code>, and for writes follow the task response then GET the object back.</details></li>
+<li>An APIC class query returns 5 objects but you expect more. Which two things do you check?
+<details><summary>Answer</summary><code>totalCount</code> versus the number of <code>imdata</code> items, and whether <code>page</code>/<code>page-size</code> were set (default behavior is not shown on today's pages).</details></li>
+<li>A GraphQL call returns HTTP 200 and <code>data.field</code> is null. Where do you look and why can the status be 200?
+<details><summary>Answer</summary>The <code>errors</code> array (message, path). Field errors give partial data alongside errors, and partial success can still be 2xx.</details></li>
+<li>What are the three keys in a GraphQL POST body, and which one is required?
+<details><summary>Answer</summary><code>query</code> (required), <code>operationName</code> (needed with multiple operations), <code>variables</code>.</details></li>
+</ol>
+<p><b>From earlier pages</b></p>
+<ol start="5">
+<li>(2026-09-30) A looped task is registered as <code>r</code>. The next task uses <code>when: r.stdout is search('x')</code> and fails with an undefined attribute. Why, and what structure fixes it?
+<details><summary>Answer</summary>With a loop, the registered variable holds a <code>results</code> list, one entry per item, and no top-level <code>stdout</code>. Iterate or map over <code>r.results</code>.</details></li>
+<li>(2026-10-01) In gNMI, which stream sub-mode rejects a sample interval, and what does it do per leaf?
+<details><summary>Answer</summary>ON_CHANGE: it sends an update when a leaf's value changes. ⚠ recalled from the 2026-10-01 page, not re-verified today.</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<ul class="ref">
+<li><b>Cisco</b></li>
+<li><span class="bd">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/dcn/aci/apic/all/apic-rest-api-configuration-guide/cisco-apic-rest-api-configuration-guide-42x-and-later/m_using_the_rest_api.html" target="_blank" rel="noopener">Cisco APIC REST API Configuration Guide - Using the REST API</a> · release 4.2(x) and later · verified 2026-10-05. Best for login, URI format, query options, limits.</li>
+<li><span class="bd">✅</span><a href="https://developer.cisco.com/docs/catalyst-center/api-quick-start/" target="_blank" rel="noopener">API Quick Start - Cisco Catalyst Center API 3.1.6</a> · 3.1.6 · verified 2026-10-05. Best for token flow and task-based writes. Does not cover paging.</li>
+<li><span class="bd">✅</span><a href="https://developer.cisco.com/meraki/api-v1/pagination/" target="_blank" rel="noopener">Pagination - Meraki Dashboard API v1</a> · API v1 · verified 2026-10-05. Best for Link-header paging.</li>
+<li><b>Standards</b></li>
+<li><span class="bd">✅</span><a href="https://www.rfc-editor.org/rfc/rfc9110" target="_blank" rel="noopener">RFC 9110: HTTP Semantics</a> · RFC · verified 2026-10-05. Best for method safety/idempotency and 401 vs 403.</li>
+<li><b>Third-party</b></li>
+<li><span class="bd">✅</span><a href="https://graphql.org/learn/queries/" target="_blank" rel="noopener">Queries | GraphQL</a> · current · verified 2026-10-05. Best for variables, aliases, fragments, directives.</li>
+<li><span class="bd">✅</span><a href="https://graphql.org/learn/serving-over-http/" target="_blank" rel="noopener">Serving over HTTP | GraphQL</a> · current · verified 2026-10-05. Best for request body keys and status codes.</li>
+<li><span class="bd">✅</span><a href="https://graphql.org/learn/pagination/" target="_blank" rel="noopener">Pagination in GraphQL</a> · current · verified 2026-10-05. Best for cursor connections and pageInfo.</li>
+</ul>
+
+<h2>Footer</h2>
+<p><b>Links: 10 ✅ · 0 🔎 · 0 removed</b> (also verified and inline-linked: RFC 9110 body link, Introspection, Response, aci_rest module docs).</p>
+<p><b>⚠ Unverified claims</b></p>
+<ul>
+<li>Catalyst Center token JSON key <code>Token</code>; quick start does not name it.</li>
+<li>APIC <code>page</code> index base (0 or 1) and meaning of <code>totalCount</code> under paging; <code>requests</code> cookie handling of <code>APIC-cookie</code>.</li>
+<li>Meraki response is a plain JSON array.</li>
+<li>RFC 9110 detail beyond sections 9.2.1, 9.2.2 and 15 (the specific PUT/DELETE idempotent, POST/PATCH not, grouping) is general knowledge, not read on the page.</li>
+<li>APIC limits and behavior are from 4.2(x)+ docs; lab release unknown.</li>
+<li>Any GraphQL service in the exam lab; <code>requests</code> and <code>jq</code> on the workstation; gNMI ON_CHANGE recall answer.</li>
+<li>cisco.aci docs page does not show its version (lab 2.12.0).</li>
+</ul>
+<p><b>Tomorrow (Tue 2026-10-06):</b> Unit 6, 3.4 dial-out: model-driven telemetry over gRPC.</p>
+</div>
+
+</body></html>

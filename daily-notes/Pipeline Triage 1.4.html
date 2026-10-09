@@ -1,0 +1,306 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pipeline Triage 1.4</title>
+<style>
+/* Layout: single column field manual; triage colors: red = failure class, teal = verified/ok, amber = caution */
+:root{
+  --bg:#f3f6f7; --panel:#ffffff; --fg:#15262d; --muted:#4f6670; --line:#cfdadf;
+  --fail:#b3361a; --ok:#0d7a6f; --warn:#9a6a00; --code-bg:#e8eff1; --accent:#1c5d7a;
+  --font-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a1f; --panel:#16252c; --fg:#e3edf0; --muted:#97aeb7; --line:#2b4049;
+  --fail:#ff8a6b; --ok:#4fd1c0; --warn:#f0c24b; --code-bg:#0b1519; --accent:#78c3e6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a1f; --panel:#16252c; --fg:#e3edf0; --muted:#97aeb7; --line:#2b4049;
+  --fail:#ff8a6b; --ok:#4fd1c0; --warn:#f0c24b; --code-bg:#0b1519; --accent:#78c3e6; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:8px 48px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+h1{font-size:1.9rem;line-height:1.2;margin:0 0 6px;text-wrap:balance}
+h2{font-size:1.35rem;margin:36px 0 10px;text-wrap:balance;border-bottom:2px solid var(--line);padding-bottom:6px}
+h3{font-size:1.05rem;margin:22px 0 6px}
+p{margin:0 0 12px;max-width:70ch}
+a{color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;margin-top:14px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:13px;color:var(--muted);margin:0;padding:0;list-style:none}
+.meta li{background:var(--code-bg);padding:2px 8px;border-radius:4px}
+ul{padding-left:20px;margin:0 0 12px}
+li{margin-bottom:4px;min-width:0}
+.tbl{overflow-x:auto;margin:10px 0 16px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--code-bg);font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;font-size:13px;line-height:1.5;margin:8px 0 14px}
+code{font-family:var(--font-mono);font-size:.9em}
+p code,li code,td code{background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre code{background:none;padding:0}
+figure{margin:14px 0}
+figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+svg{width:100%;height:auto;display:block;background:var(--panel);border:1px solid var(--line);border-radius:6px}
+svg text{fill:var(--fg);font-family:var(--font-body);font-size:13px}
+svg .m{fill:var(--muted);font-size:11px}
+svg .box{fill:var(--code-bg);stroke:var(--line);stroke-width:1.2}
+svg .hot{fill:var(--panel);stroke:var(--fail);stroke-width:2}
+svg .good{fill:var(--panel);stroke:var(--ok);stroke-width:2}
+svg .cur{fill:var(--panel);stroke:var(--accent);stroke-width:2.5}
+svg .ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+svg .arrow{fill:var(--muted)}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 6px;border-radius:3px;border:1px solid var(--ok);color:var(--ok);margin-right:4px;white-space:nowrap}
+.warn{border-left:4px solid var(--warn);padding:8px 12px;background:var(--panel);margin:12px 0;font-size:14px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.refs{list-style:none;padding:0}
+.refs li{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.refs .sub{display:block;font-size:13px;color:var(--muted)}
+footer{margin-top:40px;font-size:14px;border-top:2px solid var(--line);padding-top:12px}
+</style>
+<nav class="toc" aria-label="Contents">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anatomy">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+<div class="wrap">
+<header class="card">
+<h1>1.4 Troubleshoot CI/CD pipeline issues</h1>
+<ul class="meta">
+<li>2026-10-08</li><li>Domain 1 (weight: not in tracker)</li><li>Tier 2</li><li>~18 min read</li><li>Unit 8 of 49</li>
+</ul>
+<p style="margin-top:10px">Blueprint text: code failures, pipeline issues, tool incompatibility. GitLab is the pipeline platform in your pins (GitLab 18.4). The docs fetched today are the 19.x line; differences are flagged where I could see them.</p>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>Sort every failure into one of four places before touching anything: pipeline never created, job never scheduled, job ran and failed, or job passed but the merge is blocked.</li>
+<li>The three blueprint phrases map to those places. Pipeline issues: creation and scheduling. Code failures: the script and its exit codes. Tool incompatibility: image, runner, and version drift.</li>
+<li>A pipeline that shows <code>yaml invalid</code> never runs. The pipeline editor and CI Lint are your first tools, not the job log.</li>
+<li>Jobs that don't appear are almost always <code>rules</code> or <code>workflow:rules</code>. Do not mix <code>rules</code> with <code>only/except</code>.</li>
+<li>Reruns reuse the config from when the pipeline was created. Edit the YAML, then start a new pipeline.</li>
+<li>Debug output is dangerous: <code>export</code> and <code>CI_DEBUG_TRACE</code> expose secret values in the log.</li>
+<li>Pin images and tool versions. Unpinned images are the main source of "worked yesterday" failures.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure>
+<svg viewBox="0 0 720 230" role="img" aria-label="Blueprint neighbors and the CI/CD tool chain with 1.4 highlighted">
+<text x="16" y="22" class="m">BLUEPRINT NEIGHBORS (domain 1)</text>
+<rect class="box" x="16" y="32" width="190" height="52" rx="6"/><text x="26" y="55">1.3 Git in a CI/CD</text><text x="26" y="73" class="m">branches, MRs, merge methods</text>
+<rect class="cur" x="266" y="32" width="190" height="52" rx="6"/><text x="276" y="55">1.4 Troubleshoot</text><text x="276" y="73" class="m">today</text>
+<rect class="box" x="516" y="32" width="190" height="52" rx="6"/><text x="526" y="55">1.5 App performance</text><text x="526" y="73" class="m">AppDynamics / ThousandEyes</text>
+<path class="ln" d="M206 58H266M456 58H516"/>
+<text x="16" y="124" class="m">TOOL CHAIN, WITH THE FAILURE CLASS THAT LIVES AT EACH LINK</text>
+<rect class="box" x="16" y="136" width="100" height="44" rx="6"/><text x="30" y="163">Commit</text>
+<rect class="hot" x="146" y="136" width="120" height="44" rx="6"/><text x="156" y="157">YAML parse</text><text x="156" y="172" class="m">invalid, unknown key</text>
+<rect class="hot" x="296" y="136" width="120" height="44" rx="6"/><text x="306" y="157">Rules / runner</text><text x="306" y="172" class="m">no job, stuck</text>
+<rect class="hot" x="446" y="136" width="120" height="44" rx="6"/><text x="456" y="157">Job script</text><text x="456" y="172" class="m">exit code, image</text>
+<rect class="hot" x="596" y="136" width="110" height="44" rx="6"/><text x="606" y="157">Artifacts</text><text x="606" y="172" class="m">cache, merge gate</text>
+<path class="ln" d="M116 158H146M266 158H296M416 158H446M566 158H596"/>
+<text x="16" y="212" class="m">Red outline = a place a pipeline can break. Each has a different first tool.</text>
+</svg>
+<figcaption>1.4 sits between the Git workflow (1.3) and runtime diagnosis (1.5).</figcaption>
+</figure>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+
+<h3>L1: concept</h3>
+<p>A pipeline is a set of jobs created from <code>.gitlab-ci.yml</code> when an event happens (push, merge request, schedule). A runner picks up each job, starts an executor (often a Docker container from the job's image), and runs the script. The job passes if the script's last command, or the first failing one, exits 0.</p>
+<p>You know this from network troubleshooting: isolate the layer, then test it. The layers here are config parsing, job selection, execution, and result handling. A failure at one layer looks like silence at the next. A <code>rules</code> mistake produces no job, so there is no log to read. That is why "check the job log" fails as a first reflex.</p>
+
+<h3>L2: mechanics</h3>
+<figure>
+<svg viewBox="0 0 720 290" role="img" aria-label="Triage flow from symptom to first tool">
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path class="arrow" d="M0 0L8 4L0 8z"/></marker></defs>
+<rect class="box" x="270" y="10" width="180" height="34" rx="6"/><text x="302" y="32">Pipeline red or missing</text>
+<rect class="box" x="10" y="90" width="150" height="50" rx="6"/><text x="20" y="112">yaml invalid badge,</text><text x="20" y="128">no jobs at all?</text>
+<rect class="box" x="190" y="90" width="150" height="50" rx="6"/><text x="200" y="112">Pipeline exists but</text><text x="200" y="128">job absent?</text>
+<rect class="box" x="370" y="90" width="150" height="50" rx="6"/><text x="380" y="112">Job exists, pending</text><text x="380" y="128">or dropped?</text>
+<rect class="box" x="550" y="90" width="150" height="50" rx="6"/><text x="560" y="112">Job ran and</text><text x="560" y="128">failed?</text>
+<path class="ln" d="M360 44V66H85V90M360 66H265V90M360 66H445V90M360 66H625V90" marker-end="url(#ar)"/>
+<rect class="good" x="10" y="190" width="150" height="70" rx="6"/><text x="20" y="212">Pipeline editor /</text><text x="20" y="228">CI Lint</text><text x="20" y="246" class="m">syntax, unknown keys</text>
+<rect class="good" x="190" y="190" width="150" height="70" rx="6"/><text x="200" y="212">Validate tab / Full</text><text x="200" y="228">configuration</text><text x="200" y="246" class="m">rules, workflow, include</text>
+<rect class="good" x="370" y="190" width="150" height="70" rx="6"/><text x="380" y="212">Runner tags, timeout,</text><text x="380" y="228">failure_reason</text><text x="380" y="246" class="m">runner FAQ, job page</text>
+<rect class="good" x="550" y="190" width="150" height="70" rx="6"/><text x="560" y="212">Job log, then debug</text><text x="560" y="228">trace if needed</text><text x="560" y="246" class="m">script, image, vars</text>
+<path class="ln" d="M85 140V190M265 140V190M445 140V190M625 140V190" marker-end="url(#ar)"/>
+</svg>
+<figcaption>Symptom decides the tool. The green boxes are the first place to look.</figcaption>
+</figure>
+
+<p><b>Config layer.</b> Syntax problems show a <code>yaml invalid</code> badge and the pipeline does not run. The <a href="https://docs.gitlab.com/ci/pipeline_editor/" target="_blank" rel="noopener">pipeline editor</a> validates continuously against the schema. Its Validate tab simulates a push pipeline to expose wrong <code>rules</code> and <code>needs</code> logic. Its Full configuration tab shows <code>include</code> content merged and <code>extends</code> resolved, which is the view you want when a job is missing. Includes have their own limits: variables defined in jobs or in a global <code>variables</code> block can't be used in <code>include</code>, and a loop of includes ends in a 150-nested-include error. See <a href="https://docs.gitlab.com/ci/yaml/includes/" target="_blank" rel="noopener">the include page</a>.</p>
+
+<p><b>Scheduling layer.</b> <code>rules</code> are evaluated in order and the first match wins. If none match, the job is not added. This surprises people on branches with an open merge request: a job with a rule such as <code>when: always</code> and no <code>if</code> runs in both the branch pipeline and the merge request pipeline, giving two pipelines per push. GitLab warns about it with "Job may allow multiple pipelines to run for a single action". The fix is <code>workflow:rules</code> or tighter job rules. See <a href="https://docs.gitlab.com/ci/jobs/job_rules/" target="_blank" rel="noopener">job rules</a> and <a href="https://docs.gitlab.com/ci/pipelines/mr_pipeline_troubleshooting/" target="_blank" rel="noopener">merge request pipeline troubleshooting</a>. A related trap: <code>changes</code> is always true in scheduled pipelines and for new branches or tags, so a job you expected to skip runs anyway.</p>
+
+<p><b>Runner layer.</b> A job can sit pending with nothing wrong in your YAML. GitLab drops pending jobs after about an hour when no runner matches, running jobs with no updates after about 30 minutes, and running jobs past their <code>timeout</code> plus 15 minutes. Check <code>failure_reason</code> and add <code>retry:when</code> for transient causes. Runner-side oddities such as "Job failed (system failure): preparing environment" usually trace to a shell profile script that fails on the runner host, or SELinux. See the <a href="https://docs.gitlab.com/runner/faq/" target="_blank" rel="noopener">runner FAQ</a>.</p>
+
+<p><b>Execution layer (code failures).</b> Three YAML-in-shell traps cover many script failures. An unquoted colon in a script line gives "Syntax is incorrect". A chained <code>&amp;&amp;</code> line can return 0 even when a command in it failed, so the job keeps going; wrap the whole line in parentheses. A folded block (<code>- &gt;</code>) with extra indentation keeps line breaks, and the shell then runs each line separately, producing "command not found" on what was meant to be arguments. Details on the <a href="https://docs.gitlab.com/ci/yaml/script_troubleshooting/" target="_blank" rel="noopener">script troubleshooting page</a>.</p>
+
+<p><b>Variables.</b> A job variable with the same name as a default variable overrides it, so <code>MY_VAR: $MY_VAR</code> expands to empty. A trailing slash in a path variable gives double slashes after expansion. Large variable sets can hit "argument list too long"; use File-type variables. See <a href="https://docs.gitlab.com/ci/variables/variables_troubleshooting/" target="_blank" rel="noopener">variables troubleshooting</a>.</p>
+
+<h3>L3: exam detail</h3>
+<p><b>Tool incompatibility</b> is the least defined of the three blueprint phrases, so expect it to show up as version drift. Examples with a source behind them:</p>
+<ul>
+<li>ansible-core 2.19 supports Python 3.11 to 3.13 on the control node and 3.8 to 3.13 on targets. A job image with Python outside that range on the control side fails before your playbook runs. Your Python 3.13 pin is inside the range. (<a href="https://docs.ansible.com/projects/ansible/latest/reference_appendices/release_and_maintenance.html" target="_blank" rel="noopener">release matrix</a>)</li>
+<li>Docker-in-Docker from v19.03 starts with TLS. Jobs that talk to <code>tcp://docker:2375</code> get "Cannot connect to the Docker daemon". If the host runs Docker Engine 20.10 or newer and the <code>docker:dind</code> service is older, you get a cgroups mountpoint error. (<a href="https://docs.gitlab.com/ci/docker/docker_build_troubleshooting/" target="_blank" rel="noopener">Docker build troubleshooting</a>)</li>
+<li>A service image name that includes a registry hostname changes the derived hostname, so <code>docker</code> no longer resolves. Add <code>alias: docker</code>.</li>
+<li>Private CA certificates (a TLS-inspecting proxy, for example) must be present in both the build container and the dind service container, or you get an x509 unknown authority error.</li>
+<li>Config is read at pipeline creation. A rerun of an old pipeline will not pick up your YAML fix, including fixes in included files.</li>
+</ul>
+
+<div class="tbl"><table>
+<caption style="text-align:left;padding:8px 10px;font-weight:600">Comparison: where the evidence lives, by failure class</caption>
+<thead><tr><th>Class</th><th>Job log exists?</th><th>First tool</th><th>Typical message</th><th>Blueprint phrase</th></tr></thead>
+<tbody>
+<tr><td>Invalid config</td><td>No</td><td>Pipeline editor, CI Lint</td><td><code>config contains unknown keys</code></td><td>pipeline issues</td></tr>
+<tr><td>Wrong rules</td><td>No (job absent)</td><td>Validate tab, Full configuration</td><td>duplicate pipelines, missing job</td><td>pipeline issues</td></tr>
+<tr><td>Runner / scheduling</td><td>Maybe not</td><td>Job page, <code>failure_reason</code></td><td>stuck, dropped, system failure</td><td>pipeline issues</td></tr>
+<tr><td>Script error</td><td>Yes</td><td>Job log, <code>CI_DEBUG_TRACE</code></td><td><code>command not found</code>, non-zero exit</td><td>code failures</td></tr>
+<tr><td>Image / version drift</td><td>Yes</td><td>Print versions in <code>before_script</code></td><td>daemon unreachable, cgroups, x509</td><td>tool incompatibility</td></tr>
+<tr><td>Artifacts / cache</td><td>Yes</td><td>Job log, artifacts path</td><td><code>No files to upload</code></td><td>pipeline issues</td></tr>
+</tbody></table></div>
+
+<figure>
+<svg viewBox="0 0 720 200" role="img" aria-label="Two pipelines created from one push when a job has an unconditional rule">
+<rect class="box" x="16" y="70" width="110" height="50" rx="6"/><text x="30" y="92">git push</text><text x="30" y="108" class="m">to MR branch</text>
+<rect class="hot" x="230" y="20" width="200" height="56" rx="6"/><text x="242" y="43">Branch pipeline</text><text x="242" y="61" class="m">job rule: when: always</text>
+<rect class="hot" x="230" y="114" width="200" height="56" rx="6"/><text x="242" y="137">Merge request pipeline</text><text x="242" y="155" class="m">same job, same rule</text>
+<path class="ln" d="M126 85L230 48M126 105L230 142" marker-end="url(#ar)"/>
+<rect class="good" x="500" y="60" width="204" height="72" rx="6"/><text x="512" y="84">workflow:rules</text><text x="512" y="102" class="m">choose one pipeline type</text><text x="512" y="118" class="m">per event up front</text>
+<path class="ln" d="M430 48L500 85M430 142L500 108" marker-end="url(#ar)"/>
+</svg>
+<figcaption>Why a push to an open-MR branch starts two pipelines.</figcaption>
+</figure>
+
+<div class="warn"><b>Version flag.</b> The GitLab pages fetched today are the 19.x docs; your pin is 18.4. The troubleshooting causes above were stable concepts, but confirm any message text in the lab. The Pages and Duo items on those pages are not blueprint material.</div>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Short snippets of the failing shape and the repaired shape. These are pieces, not the drill answer.</p>
+<pre><code># 1. Debug trace for one job (shows ALL variables in the log; restrict log access)
+job:
+  variables:
+    CI_DEBUG_TRACE: "true"
+
+# 2. Colon in a script line: quote the whole line
+script:
+  - 'echo "Result: done"'
+
+# 3. Self-reference empties the variable
+variables:
+  API_URL: $API_URL        # expands to empty
+  API_URL_FROM_DEFAULTS: $API_URL   # rename the target instead (pattern from the variables page)
+
+# 4. Service name with a registry host: restore the hostname
+services:
+  - name: registry.example.internal/mirror/docker:dind   # hypothetical path
+    alias: docker</code></pre>
+<pre><code># 5. Duplicate pipeline guard (common pattern)
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH &amp;&amp; $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH</code></pre>
+<p style="font-size:14px;color:var(--muted)">Snippet 5: ⚠ unverified — not re-fetched from the workflow page today; test in lab. The pipeline-editor Validate tab will show what it creates. Snippet 3 comment text is my own labeling of the page's example. The registry path in snippet 4 is a placeholder, not a real host.</p>
+
+<h2 id="bf">Break/fix table</h2>
+<div class="tbl"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Pipeline shows <code>yaml invalid</code>, no jobs run</td><td>Syntax error, or "config contains unknown keys" from a typo or bad indentation</td><td>Pipeline editor, or CI Lint tool on the file</td><td>Correct the key or indentation; push; a new pipeline is created</td></tr>
+<tr><td>Two pipelines on every push to an MR branch</td><td>Job rules with <code>when</code> and no <code>if</code>; warning "may allow multiple pipelines"</td><td>Pipelines list shows branch plus MR; editor Validate tab</td><td>Add <code>workflow:rules</code> or add <code>if</code> to job rules</td></tr>
+<tr><td>Expected job missing from the pipeline</td><td>No rule matched (first match wins), or <code>rules</code> mixed with <code>only/except</code>, or a <code>changes</code> assumption</td><td>Full configuration tab; Validate tab simulates a push</td><td>Reorder or fix rules; do not mix keyword families</td></tr>
+<tr><td><code>Cannot connect to the Docker daemon at tcp://docker:2375</code></td><td>dind v19.03+ starts with TLS; job still targets the plain port</td><td>Job log first lines; service image tag; <code>DOCKER_HOST</code> value</td><td>Follow the dind TLS setup in the docs; check hostname alias if image path has a registry host</td></tr>
+<tr><td><code>No files to upload</code> on an artifacts block</td><td>Path wrong or the file was never created by the script</td><td>Add <code>ls -R</code> to the script; rerun with <code>CI_DEBUG_TRACE</code> if still unclear</td><td>Fix the artifacts path or the step that writes the file</td></tr>
+</tbody></table></div>
+<p>Also common and sourced: a rerun uses stale config (start a new pipeline); a job stuck on <code>resource_group</code> needs an administrator; "pipeline must succeed" blocks a merge only for merge request, merged results, or merge train pipeline failures, not a failed branch pipeline.</p>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>Reproduce the job's commands locally: run the job's image on a machine and execute the script there (the debugging page describes this). ⚠ unverified — whether Docker or a container runtime exists on the Candidate Workstation; test in lab.</li>
+<li>For Ansible jobs: <code>ansible-playbook --syntax-check</code>, <code>ansible-doc -l | grep netcommon</code>, and <code>ansible --version</code> to print the Python and core versions. ⚠ unverified — run on the workstation to confirm.</li>
+<li>Put <code>python3 --version</code>, <code>ansible --version</code>, and <code>terraform version</code> in <code>before_script</code> so version drift is visible in every log.</li>
+<li>Use <code>--verbose</code> over <code>--silent</code> for tools in jobs, and save reports as artifacts. Never store secrets in artifacts.</li>
+<li>Add a blank <code>DEBUG_VARS</code> style flag you set on manual runs to turn on extra output without editing the file.</li>
+<li>Use <code>workflow:name</code> so pipeline types are labeled in the list and you can see which kind ran.</li>
+<li>Bare <code>export</code> in a script lists all variables; masked values show as masked, but the list is still sensitive.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<div class="card">
+<p><b>Requirement.</b> The pipeline below should lint, run an Ansible check against Cat8000V, and publish a report. It misbehaves in five ways. Name each fault and its fix without running anything first.</p>
+<p><b>Target device.</b> Cat8000V (IOS XE 17.16) for the Ansible step; no cisco.ios collection on the workstation, so the playbook only uses netcommon modules. This is a reading drill; no device access needed.</p>
+<pre><code>stages: [lint, test, report]
+
+lint:
+  stage: lint
+  script:
+    - echo "Result: $(ansible-lint site.yml)"
+
+check:
+  stage: test
+  variables:
+    RESTCONF_HOST: $RESTCONF_HOST
+  script:
+    - ansible-playbook -i inv.yml site.yml --check &amp;&amp; echo checked
+  artifacts:
+    paths: [reports/check.xml]
+
+report:
+  stage: report
+  script: [echo publish]
+  rules:
+    - when: always</code></pre>
+<p><b>Reference.</b> Keywords: <code>script</code>, <code>variables</code>, <code>artifacts:paths</code>, <code>rules</code>, <code>workflow:rules</code>. Pages: script troubleshooting, variables troubleshooting, artifacts troubleshooting, job rules.</p>
+<p><b>Verification.</b> Paste the file into the pipeline editor or CI Lint. Check the Validate tab for the pipelines created on a push to an MR branch. After fixes, confirm in the job log that the artifact upload prints no "No files to upload" error.</p>
+<details><summary>Hint</summary><p>One fault each in: YAML parsing of a script line, a variable assignment, a shell chain, a file path expectation, and rule scope.</p></details>
+<details><summary>Solution</summary>
+<ul>
+<li><code>echo "Result: ..."</code> unquoted in YAML: the colon-space breaks parsing. Wrap the whole line in single quotes.</li>
+<li><code>RESTCONF_HOST: $RESTCONF_HOST</code>: same-name self-assignment expands empty. Use the default variable directly or assign to a new name.</li>
+<li><code>... --check &amp;&amp; echo checked</code>: a chained line can mask a failure. Wrap the line in parentheses so the job fails when a command fails.</li>
+<li><code>reports/check.xml</code> is never written by the script: the artifact upload reports no files. Create it or fix the path.</li>
+<li><code>rules: - when: always</code> with no <code>if</code>: runs in branch and MR pipelines. Add <code>workflow:rules</code> or an <code>if</code>.</li>
+</ul>
+<p style="font-size:14px;color:var(--muted)">⚠ unverified — whether <code>--check</code> works with the restconf modules in lab; the faults above are YAML and GitLab behavior, not Ansible behavior.</p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today's topic</b></p>
+<details><summary>1. A push to an MR branch creates two pipelines. Name the cause in one line and two ways to fix it.</summary><p>A job rule has <code>when</code> with no <code>if</code>, so it runs in both the branch and MR pipelines. Fix with <code>workflow:rules</code> that pick one pipeline type, or add an <code>if</code> to the job rules.</p></details>
+<details><summary>2. You fixed the YAML but rerunning the failed job still fails the old way. Why?</summary><p>Reruns reuse the config captured when the pipeline was created, including included files. Start a new pipeline.</p></details>
+<details><summary>3. A job needs docker builds. The log says it cannot connect to <code>tcp://docker:2375</code>. What changed in Docker-in-Docker, and what second error appears if the dind image is too old for the host?</summary><p>From v19.03 dind starts with TLS, so the plain port fails. A dind image older than 20.10 on a 20.10+ host gives a cgroups mountpoint error; use a newer dind tag.</p></details>
+<details><summary>4. A script line <code>- echo "Status: ok"</code> breaks the whole file, and a different line using <code>&amp;&amp;</code> lets a failing job continue. Explain each and the fix.</summary><p>The colon-space is read as a YAML key separator; quote the whole line in single quotes. The chained line can return 0 despite a failure; wrap the whole line in parentheses.</p></details>
+<p><b>From earlier days</b></p>
+<details><summary>5. (from 2026-10-01) Why does a NETCONF dial-in subscription disappear after a switchover, and where would you see (or not see) it in the router config?</summary><p>Dynamic dial-in subscriptions live in device state, not the configuration, so they don't survive a switchover and do not appear in running-config; check the telemetry subscription show output. ⚠ restated from the 2026-10-01 page, not re-verified today.</p></details>
+<details><summary>6. (from 2026-10-05) A GraphQL call returns HTTP 200 and data.field is null. Where do you look and why can the status be 200?</summary><p>Look at the <code>errors</code> array in the response body. GraphQL can return 200 with partial data and per-field errors, so the status code does not tell you the field succeeded. ⚠ restated from the 2026-10-05 page.</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<p>No Cisco-owned page applies: 1.4 is about the pipeline platform. No standards (RFC) apply. Verified 2026-10-08.</p>
+<h3>Third-party (official docs)</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/ci/debugging/" target="_blank" rel="noopener">Debugging CI/CD pipelines | GitLab Docs</a><span class="sub">GitLab docs 19.x (pin 18.4) · verified 2026-10-08 · Best first read: syntax checks, CI Lint, pipeline names, rules mistakes, pipeline error list.</span></li>
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/ci/jobs/job_troubleshooting/" target="_blank" rel="noopener">Troubleshooting jobs | GitLab Docs</a><span class="sub">GitLab docs 19.x · verified 2026-10-08 · Stale reruns, <code>changes</code> behavior, expression quoting, dropped and stuck jobs with thresholds.</span></li>
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/ci/yaml/script_troubleshooting/" target="_blank" rel="noopener">Troubleshooting scripts and job logs | GitLab Docs</a><span class="sub">GitLab docs 19.x · verified 2026-10-08 · Colon, <code>&amp;&amp;</code>, folded-scalar and TERM problems.</span></li>
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/ci/variables/variables_troubleshooting/" target="_blank" rel="noopener">Troubleshooting CI/CD variables | GitLab Docs</a><span class="sub">GitLab docs 19.x · verified 2026-10-08 · <code>export</code>, <code>CI_DEBUG_TRACE</code>, same-name override, argument list too long.</span></li>
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/ci/docker/docker_build_troubleshooting/" target="_blank" rel="noopener">Troubleshooting Docker Build | GitLab Docs</a><span class="sub">GitLab docs 19.x · verified 2026-10-08 · The dind error catalog: TLS, hostnames, privileged, cgroups, x509.</span></li>
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/ci/jobs/job_artifacts_troubleshooting/" target="_blank" rel="noopener">Troubleshooting job artifacts | GitLab Docs</a><span class="sub">GitLab docs 19.x · verified 2026-10-08 · <code>No files to upload</code>, <code>needs</code>/<code>dependencies</code> artifact retrieval.</span></li>
+<li><span class="badge">✅</span><a href="https://docs.gitlab.com/runner/faq/" target="_blank" rel="noopener">Troubleshooting GitLab Runner | GitLab Docs</a><span class="sub">GitLab Runner docs 19.x · verified 2026-10-08 · Runner-side failures such as system failure, docker.sock permission, executor errors.</span></li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/reference_appendices/release_and_maintenance.html" target="_blank" rel="noopener">Releases and maintenance — Ansible Community Documentation</a><span class="sub">latest (covers core 2.18 to 2.20; pin 2.19) · verified 2026-10-08 · Python support matrix for control and target nodes.</span></li>
+</ul>
+<p style="font-size:14px">Also cited inline: <a href="https://docs.gitlab.com/ci/pipeline_editor/" target="_blank" rel="noopener">pipeline editor</a>, <a href="https://docs.gitlab.com/ci/yaml/includes/" target="_blank" rel="noopener">includes</a>, <a href="https://docs.gitlab.com/ci/jobs/job_rules/" target="_blank" rel="noopener">job rules</a>, <a href="https://docs.gitlab.com/ci/pipelines/mr_pipeline_troubleshooting/" target="_blank" rel="noopener">MR pipeline troubleshooting</a>, and <a href="https://docs.gitlab.com/ci/caching/" target="_blank" rel="noopener">caching</a> (cache mismatch from shared keys or multiple runners without a distributed cache). All ✅ 2026-10-08.</p>
+
+<footer>
+<p><b>Links: 13 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims:</b></p>
+<ul>
+<li><code>workflow:rules</code> duplicate-guard snippet (not re-fetched today).</li>
+<li>Docker or container runtime availability, and <code>ansible-playbook --syntax-check</code>/<code>ansible-doc</code> behavior, on the Candidate Workstation.</li>
+<li>Exact message text on GitLab 18.4 (docs fetched are 19.x).</li>
+<li>Recall answers 5 and 6 restate earlier pages; not re-verified today.</li>
+<li>Whether <code>--check</code> works with restconf modules in lab.</li>
+<li>Domain 1 exam weight (not stated in tracker).</li>
+</ul>
+<p><b>Tomorrow:</b> Friday weekly review 2 (units 2.3, 3.4 dial-out, 2.5, 1.4). Next unit after that: 2.7.c Ansible variables and templating.</p>
+</footer>
+</div>
+
+</body></html>

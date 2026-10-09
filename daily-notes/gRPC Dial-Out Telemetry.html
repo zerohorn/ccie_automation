@@ -1,0 +1,342 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>gRPC Dial-Out Telemetry</title>
+<style>
+:root{
+  /* Layout: single reading column, sticky TOC, SVGs as full-width figures. Palette: ink on paper with a signal-teal accent and amber for caution. */
+  --bg:#f6f7f8; --fg:#16202a; --muted:#56636f; --card:#ffffff; --line:#d5dbe0;
+  --accent:#0a7c86; --accent-soft:#d6eef0; --warn:#a15c00; --warn-soft:#fbeed6; --bad:#b3261e; --ok:#1b7a3d; --code-bg:#eef1f3;
+  --svg-box:#ffffff; --svg-stroke:#56636f; --svg-hi:#d6eef0; --svg-hi-stroke:#0a7c86; --svg-warn:#fbeed6;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --f-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10171d; --fg:#e3e9ee; --muted:#9aa8b4; --card:#17212a; --line:#2b3945;
+  --accent:#4fc3cd; --accent-soft:#12363b; --warn:#f0b254; --warn-soft:#3a2a10; --bad:#ff8a80; --ok:#6fd08c; --code-bg:#0c1217;
+  --svg-box:#17212a; --svg-stroke:#9aa8b4; --svg-hi:#12363b; --svg-hi-stroke:#4fc3cd; --svg-warn:#3a2a10; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10171d; --fg:#e3e9ee; --muted:#9aa8b4; --card:#17212a; --line:#2b3945;
+  --accent:#4fc3cd; --accent-soft:#12363b; --warn:#f0b254; --warn-soft:#3a2a10; --bad:#ff8a80; --ok:#6fd08c; --code-bg:#0c1217;
+  --svg-box:#17212a; --svg-stroke:#9aa8b4; --svg-hi:#12363b; --svg-hi-stroke:#4fc3cd; --svg-warn:#3a2a10; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--f-body);margin:0;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:860px;margin:0 auto}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;z-index:5;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none;white-space:nowrap}
+nav.toc a:hover{text-decoration:underline}
+h1{font-size:1.9rem;line-height:1.2;margin:20px 0 8px;text-wrap:balance}
+h2{font-size:1.3rem;margin:36px 0 10px;padding-top:6px;border-top:1px solid var(--line);text-wrap:balance}
+h3{font-size:1.05rem;margin:22px 0 6px}
+p,li{max-width:70ch}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px;margin:12px 0}
+.meta div{min-width:0}.meta b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.layer{border-left:3px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+.layer h3{margin-top:0}
+.tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-right:6px}
+.tbl{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;font:13px/1.5 var(--f-mono);margin:10px 0}
+code{font-family:var(--f-mono);font-size:.9em;background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre code{background:none;padding:0;font-size:inherit}
+figure{margin:16px 0;overflow-x:auto}
+figure svg{width:100%;height:auto;display:block;min-width:340px}
+figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+.callout{background:var(--warn-soft);border:1px solid var(--warn);border-radius:6px;padding:10px 14px;margin:12px 0;color:var(--fg)}
+details{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:10px;background:var(--accent-soft);color:var(--accent);margin-right:6px;white-space:nowrap}
+.refs li{margin:10px 0}.refs small{display:block;color:var(--muted)}
+a{color:var(--accent)}
+.svg-box{fill:var(--svg-box);stroke:var(--svg-stroke);stroke-width:1.2}
+.svg-hi{fill:var(--svg-hi);stroke:var(--svg-hi-stroke);stroke-width:1.8}
+.svg-warn{fill:var(--svg-warn);stroke:var(--warn);stroke-width:1.2}
+.svg-line{stroke:var(--svg-stroke);stroke-width:1.4;fill:none}
+.svg-acc{stroke:var(--svg-hi-stroke);stroke-width:1.8;fill:none}
+.svg-t{fill:var(--fg);font:13px var(--f-body)}
+.svg-s{fill:var(--muted);font:11.5px var(--f-body)}
+.svg-b{fill:var(--fg);font:700 13px var(--f-body)}
+.svg-ah{fill:var(--svg-stroke)}.svg-aa{fill:var(--svg-hi-stroke)}
+</style>
+<div class="wrap">
+<nav class="toc" aria-label="Sections">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Fundamentals to exam</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<h1>3.4 Model-driven telemetry, dial-out: gRPC</h1>
+<div class="meta">
+<div><b>Date</b>2026-10-06 (Tue)</div>
+<div><b>Blueprint</b>3.4 Design a model-driven telemetry solution (gRPC dial-out)</div>
+<div><b>Domain</b>3 (weight not stated in the tracker)</div>
+<div><b>Tier</b>1 (gap)</div>
+<div><b>Read time</b>about 18 min</div>
+<div><b>Position</b>Unit 6 of 49</div>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>Dial-out means the device is the client. It opens the connection to a collector you name, so the config lives on the device and survives reboots.</li>
+<li>On IOS XE this is a <em>configured subscription</em>: <code>telemetry ietf subscription N</code>, stream <code>yang-push</code>, encoding <code>encode-kvgpb</code>, transport gRPC (<code>grpc-tcp</code> or <code>grpc-tls</code>).</li>
+<li>On NX-OS it is the three-part model: <code>destination-group</code> (where), <code>sensor-group</code> (what), <code>subscription</code> (glue plus cadence).</li>
+<li>Units differ and the exam will punish you for it: IOS XE <code>periodic</code> is in centiseconds, NX-OS <code>sample-interval</code> is in milliseconds.</li>
+<li>Receivers cannot be edited in place on IOS XE. Delete and recreate. Only the first receiver of a subscription is used.</li>
+<li>Verification ladder: subscription <code>Valid</code> only proves the config parsed. Receiver state and bytes arriving at the collector prove delivery.</li>
+<li>Compared with yesterday's dial-in units: no client session to keep alive, and nothing disappears on a switchover.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure>
+<svg viewBox="0 0 720 330" role="img" aria-label="Blueprint 3.4 branches into dial-in and dial-out, feeding 3.5 subscriptions; below, the dial-out tool chain from device to Grafana">
+<rect class="svg-box" x="10" y="10" width="190" height="44" rx="6"/><text class="svg-b" x="22" y="30">3.4 Design telemetry</text><text class="svg-s" x="22" y="46">pick transport and direction</text>
+<rect class="svg-box" x="260" y="10" width="190" height="34" rx="6"/><text class="svg-t" x="272" y="32">Dial-in: gNMI</text>
+<rect class="svg-box" x="260" y="52" width="190" height="34" rx="6"/><text class="svg-t" x="272" y="74">Dial-in: NETCONF</text>
+<rect class="svg-hi" x="260" y="94" width="190" height="34" rx="6"/><text class="svg-b" x="272" y="116">Dial-out: gRPC (today)</text>
+<path class="svg-line" d="M200 32 H230 V27 H260 M230 32 V69 H260 M230 32 V111 H260"/>
+<rect class="svg-box" x="510" y="10" width="200" height="118" rx="6"/>
+<text class="svg-b" x="522" y="30">3.5 Subscriptions</text>
+<text class="svg-s" x="522" y="48">a  elements + cadence</text><text class="svg-s" x="522" y="64">b  on-change vs event</text><text class="svg-s" x="522" y="80">c  optimize frequency</text><text class="svg-s" x="522" y="96">d  dial-out config</text><text class="svg-s" x="522" y="112">e  secure   f  confirm   g  fix</text>
+<path class="svg-acc" d="M450 111 H510"/>
+<text class="svg-s" x="10" y="160">Dial-out tool chain (IOS XE example)</text>
+<rect class="svg-hi" x="10" y="172" width="150" height="70" rx="6"/><text class="svg-b" x="22" y="194">Cat8000V</text><text class="svg-s" x="22" y="212">pubd, mdt-cfg</text><text class="svg-s" x="22" y="228">subscription 101</text>
+<rect class="svg-box" x="205" y="172" width="150" height="70" rx="6"/><text class="svg-b" x="217" y="194">Collector</text><text class="svg-s" x="217" y="212">gRPC server</text><text class="svg-s" x="217" y="228">decodes kvGPB</text>
+<rect class="svg-box" x="400" y="172" width="140" height="70" rx="6"/><text class="svg-b" x="412" y="194">Time-series DB</text><text class="svg-s" x="412" y="212">e.g. InfluxDB</text>
+<rect class="svg-box" x="585" y="172" width="125" height="70" rx="6"/><text class="svg-b" x="597" y="194">Dashboard</text><text class="svg-s" x="597" y="212">e.g. Grafana</text>
+<path class="svg-acc" d="M160 207 H205"/><path class="svg-line" d="M355 207 H400 M540 207 H585"/>
+<text class="svg-s" x="164" y="198">TCP/TLS</text>
+<text class="svg-s" x="10" y="270">Direction of the TCP SYN: device to collector. Firewalls only need an outbound rule from the device.</text>
+<text class="svg-s" x="10" y="288">Pairs with 3.5.d (config), 3.5.e (TLS) and 3.5.f (confirm data) later in the queue.</text>
+</svg>
+<figcaption>Dial-out sits beside dial-in under 3.4 and is exercised by 3.5.d. Collector, database and dashboard choices are lab convention, not blueprint text.</figcaption>
+</figure>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+
+<div class="layer"><h3><span class="tag">L1</span>Concept</h3>
+<p>You already know SNMP polling and traps. Model-driven telemetry replaces both with a publisher/subscriber model over structured data: you describe <em>what</em> (a YANG path), <em>how often</em> (period or on-change) and <em>where</em> (receiver), and the device pushes. The only question dial-out answers is who opens the TCP session.</p>
+<p>In dial-in the collector connects to the device (gNMI on a gRPC server, or NETCONF) and the subscription dies with that session. In dial-out the device holds the subscription in its running configuration and connects out. RFC 8639 calls the second kind <em>configured subscriptions</em> and says the publisher uses call-home style connection setup when it has something to send. The practical consequences are what the design question tests:</p>
+<ul>
+<li>Collectors behind NAT or a firewall are no problem, because only the device needs a route to the collector.</li>
+<li>Scale is easier to reason about. The device pushes to one or a few collectors and you do not maintain thousands of inbound sessions.</li>
+<li>Subscriptions persist across reboots and survive a stack or HA switchover, because they are configuration.</li>
+<li>The cost: the receiver list is configuration, so changing a collector means changing device config, which is exactly the job a pipeline or Ansible play should do.</li>
+</ul>
+<div class="tbl"><table>
+<thead><tr><th>Property</th><th>Dial-in (gNMI / NETCONF)</th><th>Dial-out (gRPC)</th></tr></thead>
+<tbody>
+<tr><td>Who opens TCP</td><td>Collector</td><td>Device</td></tr>
+<tr><td>Where the subscription lives</td><td>Session state (dynamic)</td><td>Running config (configured)</td></tr>
+<tr><td>After switchover or reload</td><td>Gone; client must resubscribe</td><td>Reconnects on its own</td></tr>
+<tr><td>Change a subscription</td><td>New RPC from the client</td><td>Config change on the device (CLI, NETCONF, RESTCONF)</td></tr>
+<tr><td>Typical encoding on IOS XE</td><td>gNMI proto / XML</td><td><code>encode-kvgpb</code></td></tr>
+<tr><td>Delete via RPC</td><td>Yes (delete or kill subscription)</td><td>No; remove the configuration</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="layer"><h3><span class="tag">L2</span>Mechanics</h3>
+<p>On IOS XE the telemetry publisher is the <code>pubd</code> process inside the DMI (data management interface) stack. That is why <code>netconf-yang</code> must be configured and running before a configured subscription does anything, even though you are not using NETCONF as the transport. The guide also lists the NETCONF notification capability as a prerequisite. Check the process list when nothing works.</p>
+<p>A configured subscription has five parts. The stream is <code>yang-push</code>, which reads from the configuration and operational datastores. The filter is an XPath into a YANG module, written with the module prefix, for example <code>/memory-ios-xe-oper:memory-statistics/memory-statistic</code>. The update policy is <code>periodic</code> (a number in centiseconds, minimum 100, so one second) or <code>on-change</code>. The encoding must be <code>encode-kvgpb</code> for gRPC. The receiver is an address, a port and a protocol. Two optional lines control the path out: <code>source-vrf</code> and <code>source-address</code>.</p>
+<p>The gRPC session itself is HTTP/2 over TCP. The device acts as the gRPC client and streams messages to a service the collector implements. The payload is key-value Google Protocol Buffers, which flattens the YANG tree into name/value pairs with timestamps. A collector that only speaks JSON will not decode it. (The exact service and message names are defined by Cisco's dial-out proto file; I did not fetch that file, so treat names as ⚠ unverified.)</p>
+<figure>
+<svg viewBox="0 0 720 360" role="img" aria-label="Sequence: operator configures subscription, device connects to receiver over TCP and TLS, streams kvGPB, and reconnects after switchover">
+<rect class="svg-box" x="20" y="10" width="140" height="34" rx="6"/><text class="svg-b" x="38" y="32">Operator</text>
+<rect class="svg-hi" x="290" y="10" width="140" height="34" rx="6"/><text class="svg-b" x="306" y="32">Device (pubd)</text>
+<rect class="svg-box" x="560" y="10" width="140" height="34" rx="6"/><text class="svg-b" x="580" y="32">Receiver</text>
+<path class="svg-line" d="M90 44 V345 M360 44 V345 M630 44 V345" stroke-dasharray="4 4"/>
+<path class="svg-acc" d="M90 74 H352"/><polygon class="svg-aa" points="360,74 350,69 350,79"/>
+<text class="svg-t" x="100" y="68">1  telemetry ietf subscription 101 ...</text>
+<text class="svg-s" x="372" y="92">subscription becomes Valid</text>
+<path class="svg-acc" d="M360 120 H622"/><polygon class="svg-aa" points="630,120 620,115 620,125"/>
+<text class="svg-t" x="372" y="114">2  TCP SYN (source-vrf / source-address)</text>
+<path class="svg-line" d="M360 148 H622"/><polygon class="svg-ah" points="630,148 620,143 620,153"/>
+<text class="svg-t" x="372" y="142">3  TLS handshake if grpc-tls (profile)</text>
+<path class="svg-line" d="M360 176 H622"/><polygon class="svg-ah" points="630,176 620,171 620,181"/>
+<text class="svg-t" x="372" y="170">4  HTTP/2 stream opens (gRPC)</text>
+<text class="svg-s" x="440" y="196">receiver state: connecting to connected</text>
+<path class="svg-acc" d="M360 226 H622"/><polygon class="svg-aa" points="630,226 620,221 620,231"/>
+<text class="svg-t" x="372" y="220">5  kvGPB message every period (e.g. 60 s)</text>
+<path class="svg-acc" d="M360 252 H622"/><polygon class="svg-aa" points="630,252 620,247 620,257"/>
+<text class="svg-t" x="372" y="274">   ...repeats until config is removed</text>
+<rect class="svg-warn" x="250" y="294" width="220" height="40" rx="6"/>
+<text class="svg-t" x="262" y="311">6  switchover: sessions torn down,</text><text class="svg-t" x="262" y="327">   device reconnects, no operator action</text>
+</svg>
+<figcaption>Only the device initiates. Step 6 comes from the 17.5 guide's high-availability note.</figcaption>
+</figure>
+<h3>RFC 8639 receiver states</h3>
+<p>The standard defines four receiver states for a configured subscription. IOS XE shows its own state names in <code>show</code> output (the guide mentions connecting and connected values), so map them rather than expect identical words.</p>
+<figure>
+<svg viewBox="0 0 720 200" role="img" aria-label="Receiver state machine: connecting, active, suspended, disconnected, with reset back to connecting">
+<rect class="svg-hi" x="20" y="70" width="130" height="50" rx="25"/><text class="svg-b" x="45" y="100">Connecting</text>
+<rect class="svg-hi" x="260" y="70" width="130" height="50" rx="25"/><text class="svg-b" x="298" y="100">Active</text>
+<rect class="svg-warn" x="500" y="70" width="130" height="50" rx="25"/><text class="svg-b" x="528" y="100">Suspended</text>
+<rect class="svg-box" x="20" y="150" width="130" height="40" rx="20"/><text class="svg-b" x="40" y="175">Disconnected</text>
+<path class="svg-acc" d="M150 95 H260"/><polygon class="svg-aa" points="260,95 250,90 250,100"/>
+<text class="svg-s" x="156" y="86">transport up</text>
+<path class="svg-line" d="M390 88 H500"/><polygon class="svg-ah" points="500,88 490,83 490,93"/>
+<text class="svg-s" x="396" y="80">CPU / buffer limits</text>
+<path class="svg-line" d="M500 106 H390"/><polygon class="svg-ah" points="390,106 400,101 400,111"/>
+<text class="svg-s" x="418" y="124">resume</text>
+<path class="svg-line" d="M85 120 V150"/><polygon class="svg-ah" points="85,150 80,140 90,140"/>
+<text class="svg-s" x="94" y="140">cannot connect</text>
+<path class="svg-line" d="M565 70 V30 H85 V70"/><polygon class="svg-ah" points="85,70 80,60 90,60"/>
+<text class="svg-s" x="250" y="24">reset / retry returns to connecting</text>
+</svg>
+<figcaption>Receiver state machine paraphrased from RFC 8639 section 2.5. Transition labels are my condensation.</figcaption>
+</figure>
+</div>
+
+<div class="layer"><h3><span class="tag">L3</span>Exam detail</h3>
+<p>The blueprint verb is <em>design</em>, so expect task shapes like: given a collector address and a requirement (cadence, security, what to measure), pick the direction and transport, then produce a working configured subscription and prove delivery. Pay attention to these traps.</p>
+<div class="tbl"><table>
+<thead><tr><th>Item</th><th>IOS XE 17.5 guide</th><th>NX-OS 9.3(x) guide</th></tr></thead>
+<tbody>
+<tr><td>Config model</td><td>One block: <code>telemetry ietf subscription N</code></td><td>Three blocks: destination-group, sensor-group, subscription</td></tr>
+<tr><td>Cadence unit</td><td><code>periodic</code> in centiseconds, minimum 100</td><td><code>sample-interval</code> in milliseconds (unit confirmed on a newer 10.6(4) doc; ⚠ for 9.3(8))</td></tr>
+<tr><td>Event-driven</td><td><code>update-policy on-change</code>, dampening must be 0</td><td>Sample interval 0 means event-based (same newer doc)</td></tr>
+<tr><td>Transport options</td><td><code>grpc-tcp</code>, <code>grpc-tls</code>; NETCONF transport is not valid for configured subscriptions</td><td>gRPC (default), HTTP, UDP/DTLS</td></tr>
+<tr><td>Encoding</td><td><code>encode-kvgpb</code></td><td>GPB or JSON in <code>destination-group</code> line</td></tr>
+<tr><td>Receivers</td><td>One effective receiver; cannot be modified</td><td>Up to five remote receivers</td></tr>
+<tr><td>Path out</td><td><code>source-vrf</code>, <code>source-address</code></td><td><code>use-vrf</code>, <code>source-interface</code></td></tr>
+<tr><td>Security</td><td><code>grpc-tls</code> plus profile; certificates installed via gNOI Cert service or crypto PKI</td><td><code>certificate &lt;path&gt; &lt;hostname&gt;</code> under the destination</td></tr>
+<tr><td>Data path</td><td>YANG XPath (<code>|</code> union does not work for gRPC)</td><td>DME path (<code>sys/intf/phys-[eth1/10]</code>) or other model</td></tr>
+</tbody></table></div>
+<p>Additional limits from the IOS XE guide: no subtree filters, no authorization check on the data sent, no automatic hierarchy selection for on-change, no subscription QoS, and a platform-dependent ceiling of about 100 subscriptions. A configured subscription cannot be deleted by a delete-subscription RPC. Remove the configuration. If you build the subscription through NETCONF instead of the CLI, the model is <code>Cisco-IOS-XE-mdt-cfg</code> and the list is <code>mdt-subscription</code>, as in the Anatomy section.</p>
+<p>On TLS: the 17.5 guide says TLS for gRPC dial-out arrived in 17.1.1 and shows the receiver line with a <code>profile</code> argument. The gNOI chapter in the same book explains how certificates and trustpoints are installed or rotated by RPC, and says those trustpoints persist across switchovers. The guide's own examples spell the protocol both <code>grpc-tls</code> and <code>grpc_tls</code>. Use <code>?</code> on the device to see which the parser takes (⚠ unverified). Whether the device requires the collector to present a certificate, a client certificate in return, or both is not settled by the pages I fetched. Test it (⚠).</p>
+<div class="callout"><b>Design heuristic.</b> Choose dial-out when the collector sits behind NAT, when you want subscriptions to survive HA events without a client babysitting them, or when config should be reviewable in Git. Choose dial-in when many different consumers need ad hoc, short-lived queries.</div>
+</div>
+
+<h2 id="anat">Anatomy</h2>
+<p>Snippets pinned to the 17.5 guide. They show structure, not your drill answer.</p>
+<h3>IOS XE, periodic, plain gRPC (17.5 guide example)</h3>
+<pre><code>telemetry ietf subscription 101
+ encoding encode-kvgpb
+ filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic
+ stream yang-push
+ update-policy periodic 6000          ! 6000 cs = 60 s
+ source-vrf Mgmt-intf                 ! VRF that reaches the collector
+ receiver ip address 10.28.35.45 57555 protocol grpc-tcp</code></pre>
+<h3>IOS XE, on-change with TLS (17.5 guide example)</h3>
+<pre><code>telemetry ietf subscription 8
+ stream yang-push
+ filter xpath /iosxe-oper:ios-oper-db/hwidb-table
+ update-policy on-change
+ encoding encode-kvgpb
+ receiver ip address 10.22.22.45 45000 protocol grpc_tls profile secure_profile</code></pre>
+<h3>Same thing as NETCONF edit-config (17.5 guide)</h3>
+<pre><code>&lt;mdt-config-data xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-mdt-cfg"&gt;
+  &lt;mdt-subscription&gt;
+    &lt;subscription-id&gt;200&lt;/subscription-id&gt;
+    &lt;base&gt;
+      &lt;stream&gt;yang-push&lt;/stream&gt;
+      &lt;encoding&gt;encode-kvgpb&lt;/encoding&gt;
+      &lt;period&gt;6000&lt;/period&gt;
+      &lt;xpath&gt;/memory-ios-xe-oper:memory-statistics/memory-statistic&lt;/xpath&gt;
+    &lt;/base&gt;
+    &lt;mdt-receivers&gt;
+      &lt;address&gt;10.22.23.48&lt;/address&gt;
+      &lt;port&gt;57555&lt;/port&gt;
+      &lt;protocol&gt;grpc-tcp&lt;/protocol&gt;
+    &lt;/mdt-receivers&gt;
+  &lt;/mdt-subscription&gt;
+&lt;/mdt-config-data&gt;</code></pre>
+<p>The wrapper (<code>rpc</code>, <code>edit-config</code>, <code>target running</code>) is omitted here. Note <code>period</code> carries the same centisecond value as the CLI.</p>
+<h3>NX-OS dial-out (destination syntax from the 9.3(x) chapter; the rest follows the newer 10.6(4) doc, ⚠ for 9.3(8))</h3>
+<pre><code>feature telemetry
+telemetry
+  destination-group 1
+    ip address 192.168.100.10 port 57000 protocol gRPC encoding GPB
+    use-vrf default
+  sensor-group 1
+    path sys/intf/phys-[eth1/10]
+  subscription 1
+    dst-grp 1
+    snsr-grp 1 sample-interval 10000   ! milliseconds</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tbl"><table>
+<thead><tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Subscription state <code>Invalid</code></td><td>Bad XPath: stray <code>/</code> after the prefix, wrong module name, or an unsupported union</td><td><code>show telemetry ietf subscription 101 detail</code> (parse error shows the offset per the Cisco support doc)</td><td>Correct the filter, then re-test the same path with a NETCONF get (⚠ lab check)</td></tr>
+<tr><td><code>Valid</code> but nothing reaches the collector</td><td>No route from the chosen VRF or source address, firewall, or wrong port</td><td>Ping and <code>telnet</code> to the receiver from the right VRF; packet capture on the collector for the SYN</td><td>Set <code>source-vrf</code> and <code>source-address</code>; open the port</td></tr>
+<tr><td>Config accepted, no subscription appears at all</td><td><code>netconf-yang</code> off or <code>pubd</code> not running</td><td><code>show platform software yang-management process</code></td><td>Enable <code>netconf-yang</code>; wait for processes to come up</td></tr>
+<tr><td>Changed the receiver port, still hitting the old one</td><td>Receivers cannot be modified in place</td><td><code>show running-config | section telemetry</code></td><td><code>no telemetry ietf subscription N</code>, then recreate with the new receiver</td></tr>
+<tr><td>On-change subscription rejected</td><td>Dampening not 0, or the XPath targets a container with many rows (no automatic hierarchy)</td><td>Subscription detail output and the config you sent</td><td>Dampening 0; point the XPath at specific list entries or leaves</td></tr>
+</tbody></table></div>
+<p>On NX-OS the same ladder reads: <code>show telemetry transport</code> for connection status, <code>show telemetry transport 0 errors</code> for the last return code, and <code>show telemetry data collector details</code> for per-path failures (all from the Nexus support doc, tested on 10.6(4)).</p>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>On the device, type <code>telemetry ietf subscription 1</code> then <code>?</code> at each level. The parser lists streams, encodings and receiver protocols, which also settles the <code>grpc-tls</code> spelling.</li>
+<li><code>show telemetry ietf subscription all</code> then <code>... 101 detail</code> then the receiver view for connection state. The lab README I read uses <code>show telemetry ietf subscription 201 receiver</code> (⚠ confirm syntax on 17.16).</li>
+<li><code>show running-config | section telemetry</code> is faster than reading detail when you suspect typo or unit errors.</li>
+<li>To see the model offline: <code>pyang -f tree</code> against the <code>Cisco-IOS-XE-mdt-cfg</code> module, if the YANG files are on the workstation (⚠ unverified location). Otherwise pull the module from the device with a NETCONF <code>get-schema</code>.</li>
+<li>Collector side on Ubuntu: <code>ss -ltn</code> to confirm the listener, <code>tcpdump -ni any tcp port 57555</code> to see who connects and from which source address. If the source IP is not the one you intended, fix <code>source-address</code> first.</li>
+<li>Unit check before every submit: IOS XE centiseconds, NX-OS milliseconds. 60 seconds is <code>6000</code> versus <code>60000</code>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<p><b>Target:</b> Cat8000V (IOS XE, lab runs 17.16). IOSv and IOSvL2 do not support this. Collector: your Ubuntu workstation.</p>
+<p><b>Requirement.</b> Send memory statistics every 30 seconds to the workstation on port 57555 over plain gRPC, leaving the device through the VRF that reaches the workstation. Prove the device connects out.</p>
+<p><b>Reference.</b> Subscription ID 101. Stream <code>yang-push</code>. Filter path <code>/memory-ios-xe-oper:memory-statistics/memory-statistic</code>. Encoding <code>encode-kvgpb</code>. Protocol <code>grpc-tcp</code>.</p>
+<p><b>Verify.</b></p>
+<ul>
+<li>Subscription listed as Configured and Valid.</li>
+<li>Receiver state moves to a connected state (read the receiver view; ⚠ exact wording on 17.16).</li>
+<li>On the workstation, a listener on 57555 (or a capture) shows a connection from the device's source address.</li>
+</ul>
+<details><summary>Hint</summary><p>Thirty seconds in centiseconds is 3000. If the subscription is Valid but the workstation sees no SYN, look at the VRF and source-address before touching the filter.</p></details>
+<details><summary>Solution</summary>
+<pre><code>telemetry ietf subscription 101
+ encoding encode-kvgpb
+ filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic
+ stream yang-push
+ update-policy periodic 3000
+ source-vrf &lt;vrf that reaches workstation&gt;   ! omit if default VRF
+ receiver ip address &lt;workstation-ip&gt; 57555 protocol grpc-tcp
+!
+show telemetry ietf subscription 101 detail</code></pre>
+<p>With a bare <code>nc -l</code> listener the device will connect but the HTTP/2 conversation will not complete, so the subscription may not reach a healthy connected state. A capture proves the dial-out direction. A real gRPC collector is needed to see data (⚠ behavior unverified).</p></details>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<details><summary>1. You change the receiver port on a live IOS XE subscription and the collector never sees the new port. Why, and what is the minimum correct sequence?</summary><p>Receivers cannot be modified. Remove the subscription (or its receiver) with the <code>no</code> form and recreate it with the new receiver. Removal has to happen in configuration; a delete RPC does not remove configured subscriptions.</p></details>
+<details><summary>2. A colleague writes <code>update-policy periodic 30</code> meaning thirty seconds. What actually happens?</summary><p>The unit is centiseconds, so 30 is 0.3 s, below the documented minimum of 100 (one second). Use <code>3000</code> for 30 seconds. On NX-OS the same intent is <code>sample-interval 30000</code>, since that unit is milliseconds.</p></details>
+<details><summary>3. State two reasons dial-out suits a collector behind a firewall better than dial-in, and one thing the device needs in order to reach it.</summary><p>The device opens the TCP session, so the firewall needs only an outbound rule from the device, and the collector needs no inbound path to the device. The device needs a route out of the right VRF and source address, set with <code>source-vrf</code> and <code>source-address</code>.</p></details>
+<details><summary>4. Subscription shows Valid. List the next three checks before you call it working.</summary><p>Receiver connection state in the subscription detail or receiver view; reachability and port from the correct VRF; and evidence at the collector, by capture or decoded messages. Valid only says the configuration parsed.</p></details>
+<p><b>From history</b></p>
+<details><summary>5. (from 2026-10-01) Why does a NETCONF dial-in subscription disappear after a switchover, and where would you see (or not see) it in the router config?</summary><p>It is a dynamic subscription tied to the client session, so it is not in the running configuration and does not survive. Contrast with today's configured subscriptions, which are in config and reconnect.</p></details>
+<details><summary>6. (from 2026-09-28) Why does IOSvL2 accepting <code>restconf</code> into its configuration not mean RESTCONF actually works there?</summary><p>The command parses, but the image has no RESTCONF stack behind it. Only Cat8000V gives you NETCONF and RESTCONF in this lab.</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry</a><small>IOS XE 17.5 · verified 2026-10-06 · CLI, receiver limits, NETCONF payload, states. Start here.</small></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnoi_protocol.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - gRPC Network Operations Interface</a><small>IOS XE 17.5 · verified 2026-10-06 · certificate Install/Rotate RPCs behind grpc-tls.</small></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a><small>Tested on IOS XE 17.3.3 (older than pin) · verified 2026-10-06 · troubleshooting for Invalid and no-data cases.</small></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_0101001.html" target="_blank" rel="noopener">Model Driven Telemetry (chapter, Cisco Nexus 9000 Series NX-OS Programmability Guide, Release 9.3(x))</a><small>NX-OS 9.3(x) · verified 2026-10-06 · gRPC/HTTP/UDP transports, destination-group syntax, limits. Chapter title taken from the guide's contents list.</small></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/support/docs/switches/nexus-9000-series-switches/226393-configure-and-verify-telemetry-on-nexus.html" target="_blank" rel="noopener">Configure and Verify Telemetry on Nexus Platform</a><small>Document tested on NX-OS 10.6(4), newer than the 9.3(8) pin · verified 2026-10-06 · full show-command ladder; confirm behavior on N9Kv.</small></li>
+</ul>
+<h3>Standards</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8639" target="_blank" rel="noopener">RFC 8639: Subscription to YANG Notifications</a><small>RFC · verified 2026-10-06 · configured subscriptions and the receiver state machine (section 2.5).</small></li>
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641: Subscription to YANG Notifications for Datastore Updates</a><small>RFC · verified 2026-10-06 · periodic period/anchor-time and on-change dampening-period.</small></li>
+</ul>
+<h3>Third-party</h3>
+<p>None cited today. No allowlisted third-party page was fetched for gRPC itself. (Search: grpc.io core concepts, if you want the HTTP/2 background.)</p>
+
+<h2>Footer</h2>
+<p><b>Links: 7 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims, test in lab:</b></p>
+<ul>
+<li>Cisco dial-out proto service and message names (file not fetched).</li>
+<li><code>grpc-tls</code> vs <code>grpc_tls</code> spelling and whether mutual TLS is required.</li>
+<li>Receiver view command syntax and state wording on 17.16; Cat8000V mgmt VRF name.</li>
+<li>NX-OS sample-interval units and 0 = event-based on 9.3(8) (source doc is 10.6(4)); N9Kv behavior.</li>
+<li>Behavior of a bare TCP listener as dial-out target.</li>
+<li>Location of <code>Cisco-IOS-XE-mdt-cfg</code> YANG files on the workstation.</li>
+<li>Collector/database/dashboard names in the tool-chain figure come from a lab convention, not the blueprint.</li>
+</ul>
+<p><b>Tomorrow:</b> Unit 7, 2.5 Create a NETCONF filter using XPath (Tier 1).</p>
+</div>
+
+</body></html>
