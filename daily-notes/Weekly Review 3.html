@@ -1,0 +1,167 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weekly Review 3</title>
+<style>
+:root{--bg:#fafaf8;--fg:#1d2330;--mut:#5b6475;--card:#fff;--bd:#d9dde5;--acc:#0b6bcb;--ok:#1a7f4b;--warn:#a15c00;--code:#f1f3f7;--s1:#dbeafe;--s2:#dcfce7;--s3:#fef3c7;--s4:#fce7f3;--st:#1d2330}
+@media (prefers-color-scheme:dark){:root{--bg:#12151c;--fg:#e6e9f0;--mut:#9aa3b5;--card:#1a1f2a;--bd:#2d3444;--acc:#6db3ff;--ok:#5fd394;--warn:#f0b35a;--code:#232a38;--s1:#1e3a5f;--s2:#1c4a32;--s3:#4d3d12;--s4:#4d1f3a;--st:#e6e9f0}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 16px;z-index:5;overflow-x:auto;white-space:nowrap;font-size:14px}
+nav a{margin-right:14px;color:var(--acc);text-decoration:none}
+h1{font-size:1.6rem;margin:20px 0 4px}h2{margin-top:32px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{margin-bottom:4px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{color:var(--mut);font-size:14px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--code)}
+pre{background:var(--code);padding:10px;border-radius:8px;overflow-x:auto;font-size:13px}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}summary{cursor:pointer;font-weight:600}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--st);font:12px system-ui,sans-serif}
+.b{display:inline-block;border-radius:4px;padding:0 6px;font-size:12px;font-weight:700;background:var(--code);border:1px solid var(--bd)}
+.ok{color:var(--ok)}.w{color:var(--warn)}
+a{color:var(--acc)}li{margin:3px 0}
+</style></head><body>
+<nav><a href="#top">Top</a><a href="#map">Map</a><a href="#nums">Numbers</a><a href="#recall">Recall</a><a href="#drill">Drill</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a><a href="#foot">Footer</a></nav>
+<main id="top">
+<h1>Weekly Review 3</h1>
+<div class="card"><b>2026-10-16 (Friday)</b> · Units 9–12 of 49 · Topics 2.7.c, 3.5.a-b, 1.5, 2.6<br>
+<span class="meta">Domains 2, 3, 1 · Tiers T3, T1, T2, T1 · est. read 15–20 min · no new material, v1.1 only</span></div>
+
+<h2 id="map">The week on one map</h2>
+<p>Three of the four topics meet on one device path: variables feed a template, the template feeds a NETCONF/RESTCONF push, and a telemetry subscription proves the result. Topic 1.5 sits on the other side, watching the app the network carries.</p>
+<svg viewBox="0 0 760 250" role="img" aria-label="Chain from Ansible role variables to template to NETCONF push to telemetry subscription, with app monitoring on the side">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="var(--st)"/></marker></defs>
+<rect x="10" y="20" width="150" height="80" rx="8" fill="var(--s3)" stroke="var(--st)"/><text x="85" y="45" text-anchor="middle">2.7.c Role</text><text x="85" y="63" text-anchor="middle">defaults / vars /</text><text x="85" y="80" text-anchor="middle">-e precedence</text>
+<rect x="195" y="20" width="150" height="80" rx="8" fill="var(--s3)" stroke="var(--st)"/><text x="270" y="45" text-anchor="middle">2.7.c Template</text><text x="270" y="63" text-anchor="middle">Jinja2, trim_blocks,</text><text x="270" y="80" text-anchor="middle">when: boolean</text>
+<rect x="380" y="20" width="170" height="80" rx="8" fill="var(--s1)" stroke="var(--st)"/><text x="465" y="45" text-anchor="middle">2.6 Push</text><text x="465" y="63" text-anchor="middle">netconf_config /</text><text x="465" y="80" text-anchor="middle">restconf_config</text>
+<rect x="585" y="20" width="165" height="80" rx="8" fill="var(--s2)" stroke="var(--st)"/><text x="667" y="45" text-anchor="middle">3.5.a-b Telemetry</text><text x="667" y="63" text-anchor="middle">periodic (centisec)</text><text x="667" y="80" text-anchor="middle">vs on-change</text>
+<line x1="160" y1="60" x2="193" y2="60" stroke="var(--st)" marker-end="url(#a)"/><line x1="345" y1="60" x2="378" y2="60" stroke="var(--st)" marker-end="url(#a)"/><line x1="550" y1="60" x2="583" y2="60" stroke="var(--st)" marker-end="url(#a)"/>
+<rect x="380" y="150" width="370" height="80" rx="8" fill="var(--s4)" stroke="var(--st)"/><text x="565" y="175" text-anchor="middle">1.5 App performance</text><text x="565" y="193" text-anchor="middle">AppDynamics: BTs, flow maps, baselines</text><text x="565" y="211" text-anchor="middle">ThousandEyes: HTTP test phases, Path Viz</text>
+<line x1="667" y1="100" x2="667" y2="148" stroke="var(--st)" stroke-dasharray="4 3" marker-end="url(#a)"/><text x="675" y="130">"is it working?"</text>
+<text x="10" y="170">Left to right = how a change reaches</text><text x="10" y="188">the device. Down = how you judge</text><text x="10" y="206">whether users are actually served.</text>
+</svg>
+
+<h2 id="nums">Numbers and rules to have cold</h2>
+<div class="tw"><table>
+<tr><th>Topic</th><th>Fact</th><th>Source</th></tr>
+<tr><td>2.7.c</td><td>Precedence: role defaults are lowest; <code>-e</code> highest; set_fact/register = #19, role params #20, include params #21 (all above set_fact).</td><td><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Using variables</a> <span class="b ok">✅</span></td></tr>
+<tr><td>2.7.c / 2.19</td><td>Non-boolean conditional results are an error by default ("Conditionals must have a boolean result"); <code>ALLOW_BROKEN_CONDITIONALS</code> downgrades it to a warning.</td><td><a href="https://docs.ansible.com/projects/ansible/latest/porting_guides/porting_guide_core_2.19.html" target="_blank" rel="noopener">2.19 Porting Guide</a> <span class="b ok">✅</span></td></tr>
+<tr><td>3.5.a-b</td><td>Periodic <code>period</code> is in centiseconds; IOS XE 17.5 minimum 100 (1 s). On-change: dampening must be 0, row granularity, not hierarchical, XPath must hit one object. Receivers cannot be modified: delete and recreate.</td><td><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Model-Driven Telemetry</a> <span class="b ok">✅</span></td></tr>
+<tr><td>2.6</td><td><code>netconf_config</code>: target auto/candidate/running (auto prefers candidate), commit default true, lock default always, validate default false, confirm default 0.</td><td><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_config_module.html" target="_blank" rel="noopener">netconf_config</a> <span class="b ok">✅</span></td></tr>
+<tr><td>2.6</td><td>Candidate datastore needs <code>netconf-yang feature candidate-datastore</code>; confirmed-commit default 600 s; <code>show netconf-yang datastores</code> shows locks. RESTCONF has no candidate and no confirmed commit.</td><td><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">NETCONF Protocol</a> <span class="b ok">✅</span></td></tr>
+<tr><td>2.6</td><td>RESTCONF: PUT creates or replaces, PATCH updates, POST creates. Needs <code>restconf</code> and <code>ip http secure-server</code>.</td><td><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">RESTCONF Protocol</a> <span class="b ok">✅</span></td></tr>
+<tr><td>1.5</td><td>ThousandEyes HTTP server test: phases DNS, Connect, SSL (optional), Send, Receive, plus HTTP validation and content verification. Wait Time is a metric. Availability = share of successful requests (typically 2xx/3xx).</td><td><a href="https://docs.thousandeyes.com/product-documentation/tests/http-server-tests" target="_blank" rel="noopener">HTTP Server Tests</a> <span class="b ok">✅</span></td></tr>
+</table></div>
+
+<h3>Sequence: one Ansible push, one telemetry check</h3>
+<svg viewBox="0 0 760 260" role="img" aria-label="Sequence between Ansible controller, Cat8000V, and collector">
+<defs><marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="var(--st)"/></marker></defs>
+<rect x="30" y="8" width="130" height="30" rx="6" fill="var(--s3)" stroke="var(--st)"/><text x="95" y="28" text-anchor="middle">Controller</text>
+<rect x="320" y="8" width="130" height="30" rx="6" fill="var(--s1)" stroke="var(--st)"/><text x="385" y="28" text-anchor="middle">Cat8000V</text>
+<rect x="600" y="8" width="130" height="30" rx="6" fill="var(--s2)" stroke="var(--st)"/><text x="665" y="28" text-anchor="middle">Collector</text>
+<g stroke="var(--st)" stroke-dasharray="3 3"><line x1="95" y1="38" x2="95" y2="250"/><line x1="385" y1="38" x2="385" y2="250"/><line x1="665" y1="38" x2="665" y2="250"/></g>
+<line x1="95" y1="70" x2="383" y2="70" stroke="var(--st)" marker-end="url(#b)"/><text x="110" y="64">1 lock, edit-config (candidate), validate?</text>
+<line x1="95" y1="105" x2="383" y2="105" stroke="var(--st)" marker-end="url(#b)"/><text x="110" y="99">2 commit (confirmed? 600 s default)</text>
+<line x1="385" y1="140" x2="663" y2="140" stroke="var(--st)" marker-end="url(#b)"/><text x="400" y="134">3 subscription Valid, connects to receiver</text>
+<line x1="385" y1="175" x2="663" y2="175" stroke="var(--st)" marker-end="url(#b)"/><text x="400" y="169">4 periodic push every N centiseconds</text>
+<line x1="95" y1="215" x2="383" y2="215" stroke="var(--st)" marker-end="url(#b)"/><text x="110" y="209">5 show telemetry ietf subscription ... (verify)</text>
+</svg>
+
+<h2 id="recall">Recall check (12 questions, 3 per topic)</h2>
+<p class="meta">Answer from memory first. Answers marked ⚠ are reconstructed from the sources above or earlier pages; check them in the lab.</p>
+
+<h3>2.7.c Variables and templating</h3>
+<details><summary>1. Role has <code>port: 80</code> in defaults/, <code>8080</code> in vars/, and group_vars sets 9090. What does the task see, and what does <code>-e port=443</code> do?</summary>
+<p>The task sees 8080: role vars beat group_vars, and role defaults are the lowest rung. <code>-e</code> sits at the top and wins, so 443. ⚠ The type: <code>key=value</code> style extra vars normally arrive as strings; JSON/YAML-style <code>-e</code> keeps the type. Not stated on the fetched page.</p></details>
+<details><summary>2. <code>set_fact: mode=a</code> ran earlier; a later <code>include_role</code> passes <code>mode: b</code>. Which wins?</summary>
+<p>b. Role params (#20) and include params (#21) both rank above registered vars/set_fact (#19).</p></details>
+<details><summary>3. A template renders a blank line after each for-body and a leading space before interface lines. Which module defaults are involved, and what are two fixes?</summary>
+<p><code>trim_blocks</code> defaults true and <code>lstrip_blocks</code> defaults false (template module page, verified 10-12). Fixes: set <code>lstrip_blocks: true</code> on the task, or put Jinja whitespace control (<code>{%-</code>) on the block tags. ⚠ The whitespace-control syntax was not re-fetched.</p></details>
+
+<h3>3.5.a-b Cadence vs on-change</h3>
+<details><summary>4. <code>update-policy periodic 30</code>: what interval do you get, and what is the 17.5 minimum?</summary>
+<p>30 centiseconds = 0.3 s, not 30 s. The 17.5 guide gives a minimum of 100 (1 s), so the value is below the floor. ⚠ Whether the device rejects or clamps it on 17.16 is untested.</p></details>
+<details><summary>5. Name three limits of IOS XE on-change subscriptions.</summary>
+<p>Dampening must be 0; granularity is a row; not hierarchical (child containers are not seen, so subscribe to child lists separately); the XPath must point to a single object. Any three.</p></details>
+<details><summary>6. In gNMI, what do TARGET_DEFINED, SAMPLE with suppress_redundant, and heartbeat_interval each do?</summary>
+<p>TARGET_DEFINED lets the device choose on-change or sample per leaf. SAMPLE sends at <code>sample_interval</code>; <code>suppress_redundant</code> skips unchanged values. <code>heartbeat_interval</code> forces a send of an unchanged value after that time. From the OpenConfig gNMI spec read 10-13; the Cisco gNMI chapter has no subscribe-mode content. ⚠ IOS XE 17.5 ON_CHANGE support is unconfirmed.</p></details>
+
+<h3>1.5 App performance</h3>
+<details><summary>7. A business transaction is slow but step 1 of the AppDynamics slow-response flow finds no slow snapshots. Where next?</summary>
+<p>⚠ Reconstructed. The flow continues through its later steps (database and remote-service calls, node/tier scope) and ends by asking whether most BTs are affected. The step pages failed to fetch on 10-14 and again today, so confirm the order in the product docs.</p></details>
+<details><summary>8. In a ThousandEyes HTTP server test, what does wait time measure and what does 0% availability mean?</summary>
+<p>Wait Time: how long the agent waits for the server to begin responding. 0% availability: no request in the round succeeded (no 2xx/3xx). ⚠ The doc lists Wait as a metric, not a phase; a "time to first byte" mapping is not on the page.</p></details>
+<details><summary>9. Path Viz shows a red ring mid-path vs on the destination node. What does each mean?</summary>
+<p>⚠ From the 10-14 page, not re-fetched today: a mid-path ring marks a problem at that hop, a destination ring marks the target itself. Re-read the Path Visualization page before relying on this.</p></details>
+
+<h3>2.6 Config from a source of truth</h3>
+<details><summary>10. Payload passes pyang but the device returns 400. Name two URI vs body mismatches on a RESTCONF PUT to a list entry.</summary>
+<p>List key value in the URI differs from the key leaf in the body; the top-level node name or module prefix in the body does not match the resource addressed by the URI. ⚠ RFC 8040 PUT rule text was not read (fetch truncated).</p></details>
+<details><summary>11. Why does <code>restconf_config</code> with defaults fail on the second run of a create, and what makes it repeatable?</summary>
+<p>The default method is <code>post</code>, which creates, so the second run hits an existing resource. Use <code>put</code> (create or replace) or <code>patch</code>. ⚠ Exact error code on Cat8000V is untested.</p></details>
+<details><summary>12. <code>netconf_config</code> returns ok but <code>show run</code> is unchanged. Two causes? Also: confirmed-commit default and RESTCONF support?</summary>
+<p>Causes: edit went to the candidate and was never committed (<code>commit: false</code>), or a confirmed commit was not confirmed and rolled back; or <code>default_operation: none</code> with no per-element operation. Confirmed-commit default is 600 s and RESTCONF does not support it.</p></details>
+
+<h2 id="drill">Integration drill (about 20 min)</h2>
+<div class="card">
+<p><b>Target:</b> Cat8000V (lab IOS XE 17.16). Combines 2.7.c, 2.6, 3.5.a-b. No cisco.ios collection on the workstation.</p>
+<p><b>Requirement:</b> Build an Ansible role <code>mdt_sub</code> that pushes one configured periodic telemetry subscription via NETCONF, with the period coming from role defaults, overridable from group_vars, and a guard that skips the task when the period list is empty. Then prove the subscription is Valid and that a second run changes nothing.</p>
+<ul>
+<li>Role variables: <code>mdt_sub_id</code> (int), <code>mdt_period_cs</code> (default 1000), <code>mdt_xpath</code> (string), <code>mdt_receiver_ip</code>, <code>mdt_receiver_port</code>.</li>
+<li>Template: render the mdt-cfg payload from those variables; strip stray blank lines.</li>
+<li>Task: <code>ansible.netcommon.netconf_config</code> with <code>target</code>, <code>commit</code>, <code>lock</code>, <code>default_operation</code> set deliberately.</li>
+<li>Guard: a <code>when:</code> that evaluates to a real boolean on core 2.19.</li>
+</ul>
+<p><b>Verify:</b> <code>show telemetry ietf subscription all</code> then <code>show telemetry ietf subscription &lt;id&gt; detail</code> (state Valid); rerun the play and expect <code>changed=0</code>; change <code>mdt_receiver_port</code> and decide what must happen to the existing receiver (it cannot be modified in place).</p>
+<details><summary>Hint</summary>
+<p>Look up the namespace and leaf names with <code>pyang -f tree</code> on the Cisco-IOS-XE-mdt-cfg model, or YANG Suite. Check <code>ansible-doc -t module ansible.netcommon.netconf_config</code> for parameter defaults. A guard like <code>when: mdt_period_cs | length</code> on an integer is the kind of non-boolean 2.19 rejects; compare with <code>mdt_period_cs | int &gt;= 100</code>.</p></details>
+<details><summary>Solution outline</summary>
+<p>defaults/main.yml holds <code>mdt_period_cs: 1000</code>; group_vars can override because role defaults are lowest. Template renders the subscription under the mdt-cfg container with the id, xpath, period, and receiver. Task uses <code>target: auto</code> (or candidate if enabled), <code>commit: true</code>, <code>default_operation: merge</code>, <code>lock: always</code>. Idempotence comes from merge semantics, so the second run reports no change. For a port change, delete the old receiver entry (<code>operation="delete"</code> or <code>remove</code> on that element) in one push and recreate it in another, or send both in order.</p>
+<p>⚠ unverified — test in lab: mdt-cfg element names and namespace, whether 17.16 reports changed=0 on re-merge, and the delete-then-create ordering.</p></details>
+</div>
+
+<h2 id="self">Self-assessment</h2>
+<p class="meta">Mark a topic <code>weak:</code> in topic-queue.md if you check fewer than 3 of 4 boxes.</p>
+<div class="card">
+<b>2.7.c</b><ul><li>I can order defaults, vars, group_vars, set_fact, include params, <code>-e</code> without notes.</li><li>I can fix a 2.19 boolean-conditional error two ways.</li><li>I know trim_blocks/lstrip_blocks defaults.</li><li>I can run <code>ansible-doc</code> for a module from memory.</li></ul>
+<b>3.5.a-b</b><ul><li>I convert centiseconds to seconds without hesitation.</li><li>I can list the on-change limits.</li><li>I know how to check which models support on-change.</li><li>I can explain the three gNMI sample knobs.</li></ul>
+<b>1.5</b><ul><li>I can walk the AppD slow-response flow in order.</li><li>I can name the ThousandEyes HTTP phases.</li><li>I can say why a green flow map may still hide a problem.</li><li>I can read Path Viz for hop vs destination faults.</li></ul>
+<b>2.6</b><ul><li>I can pick candidate vs running and say why.</li><li>I know the restconf_config default method and its effect.</li><li>I can match URI to body on a list PUT.</li><li>I know what confirmed commit does and where it is unavailable.</li></ul>
+</div>
+
+<h2 id="deeper">Go deeper (week's best verified links)</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry</a> <span class="b ok">✅</span> · IOS XE 17.5 · verified 2026-10-16 · period units, on-change limits, receiver rules.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - NETCONF Protocol</a> <span class="b ok">✅</span> · IOS XE 17.5 · verified 2026-10-16 · candidate datastore, confirmed commit, datastore show commands.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - RESTCONF Protocol</a> <span class="b ok">✅</span> · IOS XE 17.5 · verified 2026-10-16 · enable steps and method table.</li>
+</ul>
+<h3>Standards</h3>
+<ul><li><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641: Subscription to YANG Notifications for Datastore Updates</a> <span class="b ok">✅</span> · RFC · verified 2026-10-16 · centisecond period, dampening, on-change considerations (s3.3).</li></ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_config_module.html" target="_blank" rel="noopener">ansible.netcommon.netconf_config module – netconf device configuration</a> <span class="b ok">✅</span> · netcommon docs latest (lab 8.4.0) · verified 2026-10-16 · parameter defaults for the drill.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Using variables — Ansible Community Documentation</a> <span class="b ok">✅</span> · docs latest (newer than core 2.19) · verified 2026-10-16 · full precedence list.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/porting_guides/porting_guide_core_2.19.html" target="_blank" rel="noopener">Ansible-core 2.19 Porting Guide — Ansible Community Documentation</a> <span class="b ok">✅</span> · core 2.19 · verified 2026-10-16 · boolean conditional rule.</li>
+<li><a href="https://docs.thousandeyes.com/product-documentation/tests/http-server-tests" target="_blank" rel="noopener">HTTP Server Tests</a> <span class="b ok">✅</span> · undated · verified 2026-10-16 · test phases and availability.</li>
+</ul>
+<p class="meta">AppDynamics slow-response flow: (Search: Step 1: Check for slow or stalled business transactions) — fetch failed today, so no link.</p>
+
+<h2 id="foot">Footer</h2>
+<div class="card">
+<p><b>Links: 8 ✅ · 0 🔎 · 1 removed</b> (AppDynamics step 1, fetch error).</p>
+<p><b>⚠ unverified — test in lab:</b></p>
+<ul>
+<li>Type of <code>-e key=value</code> values (string vs int).</li>
+<li>Jinja whitespace-control syntax (<code>{%-</code>).</li>
+<li>Rejection vs clamping of <code>period 30</code> on 17.16.</li>
+<li>IOS XE gNMI ON_CHANGE on 17.5.</li>
+<li>AppD slow-response step order; Path Viz ring meanings; "time to first byte" mapping.</li>
+<li>RESTCONF PUT URI/body rule (RFC 8040 s4.5 not read); restconf_config repeat error code.</li>
+<li>Drill: mdt-cfg element names, namespace, changed=0 on re-merge, receiver delete/recreate order.</li>
+<li>The last ~8K chars of the IOS XE MDT chapter and ~9.6K of RFC 8641 were not read.</li>
+</ul>
+<p><b>Tomorrow:</b> Saturday, no page. <b>Monday 2026-10-19:</b> Unit 13, 3.5.c-d, YANG telemetry subscriptions: optimize frequency + dial-out subscription config.</p>
+</div>
+</main></body></html>
+
+</body></html>

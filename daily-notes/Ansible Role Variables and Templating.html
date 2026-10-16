@@ -1,0 +1,399 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ansible Role Variables and Templating</title>
+<style>
+:root{
+  --bg:#f7f8fa; --fg:#1b1f24; --muted:#59636e; --card:#ffffff; --line:#d0d7de;
+  --accent:#0b6bcb; --accent-soft:#e3effc; --code-bg:#f0f2f5; --warn:#9a6700; --warn-bg:#fff8e1;
+  --ok:#1a7f37; --bad:#c62828;
+  --b1:#dbe9fb; --b2:#d6f1e3; --b3:#fdeccb; --b4:#f7d9e4; --b5:#e4dcf7; --b6:#d4eef2;
+  --s1:#0b6bcb; --s2:#1a7f37; --s3:#b26a00; --s4:#b4235a; --s5:#6f42c1; --s6:#12788a;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    --bg:#0f1318; --fg:#e6e9ee; --muted:#9aa5b1; --card:#171c23; --line:#2d3641;
+    --accent:#58a6ff; --accent-soft:#16283d; --code-bg:#1d242d; --warn:#e3b341; --warn-bg:#2a2210;
+    --ok:#56d364; --bad:#ff7b72;
+    --b1:#18304d; --b2:#14352a; --b3:#3d2f12; --b4:#40182c; --b5:#2c2347; --b6:#10353b;
+    --s1:#58a6ff; --s2:#56d364; --s3:#e3b341; --s4:#ff7eb6; --s5:#b392f0; --s6:#4fd1e0;
+  ;color-scheme:dark}}
+:root[data-theme="dark"]{
+    --bg:#0f1318; --fg:#e6e9ee; --muted:#9aa5b1; --card:#171c23; --line:#2d3641;
+    --accent:#58a6ff; --accent-soft:#16283d; --code-bg:#1d242d; --warn:#e3b341; --warn-bg:#2a2210;
+    --ok:#56d364; --bad:#ff7b72;
+    --b1:#18304d; --b2:#14352a; --b3:#3d2f12; --b4:#40182c; --b5:#2c2347; --b6:#10353b;
+    --s1:#58a6ff; --s2:#56d364; --s3:#e3b341; --s4:#ff7eb6; --s5:#b392f0; --s6:#4fd1e0;
+  ;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;margin:0 -16px 12px;padding-left:16px;padding-right:16px;overflow-x:auto;white-space:nowrap}
+nav.toc a{display:inline-block;margin-right:12px;font-size:13px;color:var(--accent);text-decoration:none}
+nav.toc a:hover{text-decoration:underline}
+h1{font-size:1.6rem;line-height:1.25;margin:.2em 0 .3em}
+h2{font-size:1.25rem;margin:1.8em 0 .5em;padding-top:.4em;border-top:1px solid var(--line)}
+h3{font-size:1.05rem;margin:1.2em 0 .3em}
+p{margin:.55em 0}
+a{color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:14px}
+.meta div span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-right:4px}
+.badge{display:inline-block;font-size:12px;padding:0 6px;border-radius:4px;border:1px solid var(--ok);color:var(--ok);margin-right:6px;white-space:nowrap}
+.layer{border-left:4px solid var(--accent);padding:2px 0 2px 12px;margin:14px 0}
+.layer.l2{border-color:var(--s2)} .layer.l3{border-color:var(--s3)}
+.layer h3{margin-top:.2em}
+.warn{background:var(--warn-bg);border:1px solid var(--warn);color:var(--fg);border-radius:8px;padding:8px 12px;font-size:14px;margin:10px 0}
+.tw{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45;margin:8px 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code-bg);padding:0 4px;border-radius:4px}
+svg{width:100%;height:auto;display:block;margin:10px 0}
+svg text{fill:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+svg .mut{fill:var(--muted)}
+svg .ln{stroke:var(--line);stroke-width:1.5;fill:none}
+svg .arr{stroke:var(--muted);stroke-width:1.8;fill:none}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+ul,ol{padding-left:1.3em;margin:.4em 0}
+li{margin:.25em 0}
+.small{font-size:13px;color:var(--muted)}
+footer{margin-top:2.2em;padding-top:1em;border-top:2px solid var(--line);font-size:14px}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+<a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anatomy">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a><a href="#foot">Footer</a>
+</nav>
+
+<header id="top">
+<div class="card">
+<h1>2.7.c — Ansible role: variables and templating</h1>
+<div class="meta">
+<div><span>Date</span>Mon 2026-10-12</div>
+<div><span>Blueprint</span>2.7.c, Ansible role variables and templating</div>
+<div><span>Domain / weight</span>2.0 Network automation development / weight ⚠ not verified this run</div>
+<div><span>Tier</span>3 (proficiency check)</div>
+<div><span>Read time</span>about 18 min, plus 10 min drill</div>
+<div><span>Position</span>Unit 9 of 49</div>
+</div>
+<p class="small" style="margin-bottom:0">Docs fetched are “latest” and newer than your pins: ansible-core 2.19, netcommon 8.4.0 and cisco.aci 2.12.0 in the lab versus netcommon 8.7.1 and cisco.aci 2.13.0 on the pages. Differences are flagged where they matter.</p>
+</div>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>Two separate skills: <b>placement</b> (which of 22 precedence levels wins) and <b>rendering</b> (Jinja2 turning variables into text or JSON).</li>
+<li>Role <code>defaults/</code> sits near the bottom (only command-line settings like <code>-u</code> are lower). Role <code>vars/</code> sits high, above play vars and every inventory source. Put the knob users should change in <code>defaults/</code>, never <code>vars/</code>.</li>
+<li>Runtime-created values (<code>register</code>, <code>set_fact</code>, <code>include_vars</code>) outrank role <code>vars/</code>. Role and include params outrank those. Extra vars (<code>-e</code>) beat everything.</li>
+<li>All templating runs on the control node. The device never sees Jinja2, only the rendered result.</li>
+<li><code>ansible.builtin.template</code> defaults to <code>trim_blocks: true</code> and <code>lstrip_blocks: false</code>. That default explains most “extra blank line / stray indent” bugs.</li>
+<li>Core 2.19 tightened templating: non-boolean <code>when</code> is an error, <code>{{ }}</code> inside an expression is an error, and untrusted template strings are not rendered.</li>
+<li>Lab trap: there is no <code>cisco.ios</code> collection on the workstation, so drills render text and send it through modules you do have (<code>aci_*</code>, <code>restconf_config</code>, <code>netconf_*</code>).</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 480 360" role="img" aria-label="Blueprint neighbours and tool chain for variables and templating">
+  <text x="240" y="20" text-anchor="middle" font-size="14" font-weight="700">Blueprint neighbours (Ansible role sub-items)</text>
+  <rect x="10" y="32" width="136" height="54" rx="8" fill="var(--b1)" stroke="var(--s1)"/>
+  <text x="78" y="55" text-anchor="middle" font-size="13">2.7.a-b</text>
+  <text x="78" y="73" text-anchor="middle" font-size="12" class="mut">loops, conditionals</text>
+  <rect x="172" y="32" width="136" height="54" rx="8" fill="var(--b3)" stroke="var(--s3)" stroke-width="3"/>
+  <text x="240" y="55" text-anchor="middle" font-size="13" font-weight="700">2.7.c</text>
+  <text x="240" y="73" text-anchor="middle" font-size="12">variables, templating</text>
+  <rect x="334" y="32" width="136" height="54" rx="8" fill="var(--b1)" stroke="var(--s1)"/>
+  <text x="402" y="55" text-anchor="middle" font-size="13">2.7.d</text>
+  <text x="402" y="73" text-anchor="middle" font-size="12" class="mut">connection plugins</text>
+  <path class="arr" d="M146 59 H172"/><path class="arr" d="M308 59 H334"/>
+  <text x="240" y="112" text-anchor="middle" font-size="12" class="mut">Cousins: 2.8.b-c Terraform variables, 2.4 payload from YANG</text>
+
+  <text x="240" y="142" text-anchor="middle" font-size="14" font-weight="700">Tool chain for one task</text>
+  <rect x="20" y="154" width="200" height="40" rx="8" fill="var(--b2)" stroke="var(--s2)"/>
+  <text x="120" y="179" text-anchor="middle" font-size="13">inventory, group_vars, host_vars</text>
+  <rect x="260" y="154" width="200" height="40" rx="8" fill="var(--b2)" stroke="var(--s2)"/>
+  <text x="360" y="179" text-anchor="middle" font-size="13">-e extra vars, vars files</text>
+  <rect x="20" y="214" width="440" height="40" rx="8" fill="var(--b3)" stroke="var(--s3)" stroke-width="3"/>
+  <text x="240" y="239" text-anchor="middle" font-size="13" font-weight="700">Role: defaults/ vars/ templates/ tasks/ meta/</text>
+  <rect x="20" y="274" width="200" height="40" rx="8" fill="var(--b5)" stroke="var(--s5)"/>
+  <text x="120" y="299" text-anchor="middle" font-size="13">Jinja2 render (controller)</text>
+  <rect x="260" y="274" width="200" height="40" rx="8" fill="var(--b6)" stroke="var(--s6)"/>
+  <text x="360" y="299" text-anchor="middle" font-size="13">module: aci_*, restconf_*</text>
+  <text x="240" y="346" text-anchor="middle" font-size="12" class="mut">then: APIC (sandbox) or Cat8000V (RESTCONF / NETCONF)</text>
+  <path class="arr" d="M120 194 V214"/><path class="arr" d="M360 194 V214"/>
+  <path class="arr" d="M120 254 V274"/><path class="arr" d="M220 294 H260"/><path class="arr" d="M360 314 V332"/>
+</svg>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+
+<div class="layer"><h3>L1: Concept</h3>
+<p>A variable is a named piece of data. A template is text with placeholders. Ansible fills the placeholders with variable values using Jinja2, then hands the result to a module. A role bundles tasks, default values, templates and files so you can reuse the pattern with different inputs. See <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_reuse_roles.html" target="_blank" rel="noopener">Roles</a> for the layout: <code>tasks/</code>, <code>handlers/</code>, <code>templates/</code>, <code>files/</code>, <code>vars/</code>, <code>defaults/</code>, <code>meta/</code>. Each directory is optional, and <code>main.yml</code> is read by default in most of them.</p>
+<p>Names may contain only letters, numbers and underscores, cannot start with a number, and cannot be a Python or playbook keyword. Avoid shadowing <code>lookup</code>, <code>query</code>, <code>now</code>, <code>undef</code> and the reserved magic names (<code>hostvars</code>, <code>groups</code>, <code>environment</code> and others). A leading underscore does not make a variable private.</p>
+<p>Templating happens on the control node: Ansible sends each target only the data a task needs. You do not need Jinja2 on a router, and a router never evaluates your <code>{{ }}</code>. Template files must be UTF-8. Source: <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_templating.html" target="_blank" rel="noopener">Templating (Jinja2)</a>.</p>
+</div>
+
+<div class="layer l2"><h3>L2: Mechanics</h3>
+<p><b>Precedence is a ladder, not a set of scopes.</b> Ansible collects every definition of a name, then the highest rung wins. Inside one rung, the later definition wins. Role defaults rank 2 of 22, only above command-line values that are not variables. Inventory sources and <code>group_vars</code>/<code>host_vars</code> follow, then host facts, then play-level vars, vars_prompt and vars_files, then role vars, block vars and task vars. After those come runtime values, then params, then <code>-e</code>.</p>
+<svg viewBox="0 0 480 420" role="img" aria-label="Variable precedence ladder, lowest at bottom">
+  <text x="240" y="18" text-anchor="middle" font-size="14" font-weight="700">Precedence ladder (rank numbers from the Using variables page)</text>
+  <rect x="150" y="30" width="320" height="38" rx="6" fill="var(--b4)" stroke="var(--s4)" stroke-width="3"/>
+  <text x="160" y="47" font-size="13" font-weight="700">22  extra vars (-e)</text><text x="160" y="62" font-size="12" class="mut">always win</text>
+  <rect x="150" y="72" width="320" height="38" rx="6" fill="var(--b4)" stroke="var(--s4)"/>
+  <text x="160" y="89" font-size="13">20-21  role / include_role params, include params</text><text x="160" y="104" font-size="12" class="mut">passed in at call time</text>
+  <rect x="150" y="114" width="320" height="38" rx="6" fill="var(--b5)" stroke="var(--s5)"/>
+  <text x="160" y="131" font-size="13">18-19  include_vars, register, set_fact</text><text x="160" y="146" font-size="12" class="mut">created while the play runs</text>
+  <rect x="150" y="156" width="320" height="38" rx="6" fill="var(--b3)" stroke="var(--s3)"/>
+  <text x="160" y="173" font-size="13">15-17  role vars, block vars, task vars</text><text x="160" y="188" font-size="12" class="mut">role vars/main.yml is high</text>
+  <rect x="150" y="198" width="320" height="38" rx="6" fill="var(--b6)" stroke="var(--s6)"/>
+  <text x="160" y="215" font-size="13">12-14  play vars, vars_prompt, vars_files</text><text x="160" y="230" font-size="12" class="mut">play keywords</text>
+  <rect x="150" y="240" width="320" height="38" rx="6" fill="var(--b2)" stroke="var(--s2)"/>
+  <text x="160" y="257" font-size="13">11  host facts, cached set_facts</text><text x="160" y="272" font-size="12" class="mut">play vars beat facts</text>
+  <rect x="150" y="282" width="320" height="38" rx="6" fill="var(--b1)" stroke="var(--s1)"/>
+  <text x="160" y="299" font-size="13">3-10  inventory + playbook group_vars, host_vars</text><text x="160" y="314" font-size="12" class="mut">all &lt; group &lt; host, inventory then playbook</text>
+  <rect x="150" y="324" width="320" height="38" rx="6" fill="var(--b3)" stroke="var(--s3)" stroke-width="3"/>
+  <text x="160" y="341" font-size="13" font-weight="700">2  role defaults</text><text x="160" y="356" font-size="12" class="mut">the “please override me” slot</text>
+  <rect x="150" y="366" width="320" height="30" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="160" y="386" font-size="13" class="mut">1  command-line values (not variables)</text>
+  <path class="arr" d="M70 390 V40"/><path class="arr" d="M70 40 l-6 10 M70 40 l6 10"/>
+  <text x="62" y="212" text-anchor="end" font-size="12" class="mut">wins</text>
+</svg>
+<p><b>Getting values into a role.</b> The <code>roles:</code> keyword takes <code>vars:</code> or inline parameters, and giving different parameters runs the role again. <code>include_role</code> and <code>import_role</code> accept <code>vars:</code> but not inline role parameters. Variables from a role’s <code>vars/</code> and <code>defaults/</code> are imported into play scope unless you switch that off with the <code>public</code> option on <code>import_role</code> or <code>include_role</code>. Before ansible-core 2.15, <code>vars:</code> under <code>roles:</code> leaked into play scope, and <code>DEFAULT_PRIVATE_ROLE_VARS</code> controls this.</p>
+<p><b>Role dependencies</b> go in <code>meta/main.yml</code> and run before the role that lists them. A duplicate dependency runs once unless its parameters, tags or <code>when</code> differ, or <code>allow_duplicates: true</code> is set.</p>
+<p><b>Facts and magic variables.</b> <code>hostvars[host]</code> reaches any host’s variables, but facts show up there only after they are gathered or cached, and play-level vars are not mapped into <code>hostvars</code>. <code>inventory_hostname</code> is the inventory name; <code>group_names</code> lists the host’s groups; <code>ansible_play_hosts</code> lists active hosts. Facts live under <code>ansible_facts</code>. See <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_vars_facts.html" target="_blank" rel="noopener">Discovering variables: facts and magic variables</a>.</p>
+<p><b>Rendering pipeline.</b> The controller merges variables for the host, evaluates the Jinja2 expression, and passes plain data to the module.</p>
+<svg viewBox="0 0 480 330" role="img" aria-label="Sequence: where variables are merged and templates rendered">
+  <text x="60" y="18" text-anchor="middle" font-size="13" font-weight="700">Play / role</text>
+  <text x="180" y="18" text-anchor="middle" font-size="13" font-weight="700">Jinja2 engine</text>
+  <text x="300" y="18" text-anchor="middle" font-size="13" font-weight="700">Module (action)</text>
+  <text x="420" y="18" text-anchor="middle" font-size="13" font-weight="700">Device</text>
+  <path class="ln" d="M60 26 V320"/><path class="ln" d="M180 26 V320"/><path class="ln" d="M300 26 V320"/><path class="ln" d="M420 26 V320"/>
+  <text x="240" y="30" text-anchor="middle" font-size="11" class="mut">Device is the only lane off the controller</text>
+  <path class="arr" d="M60 56 H176"/><text x="120" y="50" text-anchor="middle" font-size="11">1 merged vars</text>
+  <path class="arr" d="M180 98 H296"/><text x="240" y="92" text-anchor="middle" font-size="11">2 rendered text</text>
+  <path class="arr" d="M300 140 H416"/><text x="360" y="134" text-anchor="middle" font-size="11">3 API call</text>
+  <path class="arr" d="M416 182 H304"/><text x="360" y="176" text-anchor="middle" font-size="11">4 response</text>
+  <path class="arr" d="M300 224 H64"/><text x="180" y="218" text-anchor="middle" font-size="11">5 result for register</text>
+  <rect x="14" y="246" width="452" height="64" rx="8" fill="var(--b3)" stroke="var(--s3)"/>
+  <text x="24" y="266" font-size="12">Step 1 resolves the 22-rung ladder. Step 2 applies filters, tests,</text>
+  <text x="24" y="283" font-size="12">defaults and 2.19 trust rules. A bad variable fails here, before the</text>
+  <text x="24" y="300" font-size="12">device is touched. Step 5 feeds rank 19 (register) for later tasks.</text>
+</svg>
+<p><b>Where do you define it?</b></p>
+<div class="tw"><table>
+<thead><tr><th>Location</th><th>Rank</th><th>Scope</th><th>Use it for</th></tr></thead>
+<tbody>
+<tr><td>Role <code>defaults/main.yml</code></td><td>2</td><td>Play scope once role is loaded</td><td>Documented inputs with safe defaults</td></tr>
+<tr><td><code>group_vars/</code>, <code>host_vars/</code></td><td>3-10</td><td>Per group or host</td><td>Site and device data (source of truth)</td></tr>
+<tr><td>Play <code>vars</code>, <code>vars_files</code></td><td>12, 14</td><td>That play</td><td>Play-local constants, keeping secrets out of the playbook</td></tr>
+<tr><td>Role <code>vars/main.yml</code></td><td>15</td><td>Play scope (unless <code>public</code> off)</td><td>Internal constants the caller must not override</td></tr>
+<tr><td><code>include_vars</code></td><td>18</td><td>Host, from task onward</td><td>Loading files chosen at runtime</td></tr>
+<tr><td><code>register</code>, <code>set_fact</code></td><td>19</td><td>Host, rest of the run</td><td>Computed values and task output</td></tr>
+<tr><td>Role / include params</td><td>20-21</td><td>That call</td><td>Per-call override</td></tr>
+<tr><td><code>-e</code></td><td>22</td><td>Everything</td><td>Emergency override and CI parameters</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="layer l3"><h3>L3: Exam detail</h3>
+<p><b>Types on the command line.</b> <code>-e key=value</code> gives strings. For numbers, booleans, lists or dicts use JSON or YAML (<code>-e '{"vlan": 20}'</code>) or <code>-e @file.yml</code>. Source: <a href="https://docs.ansible.com/projects/ansible/latest/cli/ansible-playbook.html" target="_blank" rel="noopener">ansible-playbook</a> and <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Using variables</a>.</p>
+<p><b>Combining data.</b> Lists merge with <code>+</code> in <code>set_fact</code>. Dicts merge with the <code>combine</code> filter, where later arguments win and <code>recursive</code> merges nested dicts. <code>hash_behaviour=merge</code> changes how dictionaries from different sources combine, and <code>include_vars</code> has a per-task <code>hash_behaviour</code> (added in core 2.12). <code>dict2items</code> and <code>items2dict</code> convert between dicts and lists. See <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_filters.html" target="_blank" rel="noopener">filters</a>.</p>
+<p><b>Missing values.</b> <code>default(x)</code> covers undefined; <code>default(x, true)</code> also covers false and empty. <code>default(omit)</code> on a module option drops the option entirely, so the module’s own default applies. <code>mandatory</code> raises when undefined. In 2.19, values that resolve to <code>omit</code> are dropped as soon as loop items are templated, so a missing loop-item key needs <code>| default(omit)</code>.</p>
+<p><b>Core 2.19 template engine (porting guide).</b></p>
+<div class="tw"><table>
+<thead><tr><th>Change</th><th>What you see</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Non-boolean conditionals are errors</td><td><code>Conditionals must have a boolean result.</code></td><td><code>| length &gt; 0</code> or <code>is truthy</code>; <code>ALLOW_BROKEN_CONDITIONALS</code> only downgrades to a warning</td></tr>
+<tr><td>No embedded templates in expressions</td><td><code>Template delimiters are not supported in expressions.</code></td><td>Write the bare expression, no <code>{{ }}</code> inside <code>when</code></td></tr>
+<tr><td>Trust model inverted</td><td>Untrusted template strings used as-is, silently, by default</td><td>Keep templates in playbooks, roles and files you wrote; <code>!unsafe</code> to block rendering</td></tr>
+<tr><td>Native Jinja only</td><td>Results are not re-evaluated as Python literals; a template evaluating to <code>None</code> can stay <code>None</code></td><td>Explicit filters (<code>int</code>, <code>bool</code>, <code>to_json</code>)</td></tr>
+<tr><td>Stricter undefined</td><td><code>result.exists is false</code> errors</td><td>Test the right path: <code>result.stat.exists is false</code></td></tr>
+<tr><td><code>vars_files</code> with undefined variable</td><td>Warning: skipping the item</td><td>Define the variable first</td></tr>
+</tbody></table></div>
+<p><b>The template module.</b> <code>src</code> is read on the controller, <code>dest</code> is on the target. <code>trim_blocks</code> defaults to true (removes the first newline after a block tag), <code>lstrip_blocks</code> defaults to false, <code>newline_sequence</code> defaults to <code>\n</code>, <code>backup</code> false, <code>force</code> true. <code>validate</code> runs a command against a temp file (<code>%s</code>) before the final copy; no pipes. Putting a date in the template makes the task report changed every run. A first-line <code>#jinja2:</code> header overrides Jinja2 settings per file. Source: <a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/template_module.html" target="_blank" rel="noopener">ansible.builtin.template</a>.</p>
+<p><b>Which rendering form?</b></p>
+<div class="tw"><table>
+<thead><tr><th>Form</th><th>Result</th><th>Good for</th></tr></thead>
+<tbody>
+<tr><td><code>ansible.builtin.template</code></td><td>File written to <code>dest</code></td><td>Evidence file, backup of intended config, local review with <code>--diff</code></td></tr>
+<tr><td><code>lookup('ansible.builtin.template', 'x.j2')</code></td><td>Rendered string in a parameter</td><td>Module parameters such as <code>config:</code> (the cli_config example uses this form)</td></tr>
+<tr><td>Dict + <code>to_json</code></td><td>JSON string built from data</td><td><code>content:</code> for RESTCONF; avoids hand-written JSON braces</td></tr>
+<tr><td>Inline <code>{{ }}</code></td><td>Single value</td><td>Module args and task names</td></tr>
+</tbody></table></div>
+<p><b>Validate inputs.</b> A role can ship <code>meta/argument_specs.yml</code> with a top-level <code>argument_specs</code> block (<code>type</code>, <code>required</code>, <code>default</code>, <code>choices</code>, <code>elements</code>). Ansible inserts a validation task at the start of the role and fails on mismatch. Play-level validation (<code>validate_argspec</code>) arrived in 2.20 as a tech preview, so it is outside your 2.19 pin. See <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_variables_validation.html" target="_blank" rel="noopener">Play Argument Validation</a>.</p>
+<p><b>Network twist.</b> <a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/cli_config_module.html" target="_blank" rel="noopener">cli_config</a> is the platform-agnostic CLI push and its page names the <code>network_cli</code> connection. It works through the platform’s cliconf plugin, which on IOS comes from a collection that your workstation does not have. Use it as a reading exercise only. <a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/restconf_config_module.html" target="_blank" rel="noopener">restconf_config</a> takes <code>path</code>, <code>content</code> (JSON by default, XML via <code>format</code>) and <code>method</code> (default <code>post</code>), over <code>ansible.netcommon.httpapi</code> with <code>ansible_network_os: ansible.netcommon.restconf</code>.</p>
+<div class="warn">⚠ Exam-shape reminder: tasks of this kind usually ask you to <i>change</i> a role so a value comes from the right place (inventory, defaults, extra vars) or so a rendered output matches a spec. Practise reading the rendered output, not just writing the template.</div>
+</div>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Short snippets pinned to the fetched docs. They are parts, not the drill solution.</p>
+<h3>1. Role layout and which rung each file occupies</h3>
+<pre><code>roles/tenant_baseline/
+├── defaults/main.yml        # rank 2: inputs with safe defaults
+├── vars/main.yml            # rank 15: internal constants
+├── templates/summary.txt.j2 # read by template on the controller
+├── tasks/main.yml
+└── meta/argument_specs.yml  # validated before tasks run</code></pre>
+<h3>2. Same name, four places</h3>
+<pre><code># roles/tenant_baseline/defaults/main.yml
+baseline_state: present            # rank 2
+# group_vars/all.yml
+baseline_state: absent             # rank 5 (beats defaults)
+# play:  vars: { baseline_state: query }   # rank 12 (beats group_vars)
+# CLI:   ansible-playbook site.yml -e baseline_state=present   # rank 22 (wins)</code></pre>
+<h3>3. Optional field with <code>default(omit)</code></h3>
+<pre><code>- name: Ensure tenants
+  cisco.aci.aci_tenant:
+    tenant: "{{ item.name }}"
+    description: "{{ item.descr | default(omit) }}"
+    state: "{{ baseline_state }}"
+  loop: "{{ baseline_tenants }}"
+  delegate_to: localhost</code></pre>
+<p class="small">aci_tenant parameters <code>tenant</code>, <code>description</code>, <code>state</code> (absent, present, query; default present), plus <code>host</code>, <code>username</code>, <code>password</code>, <code>validate_certs</code> with environment fallbacks such as <code>ACI_HOST</code>. Docs are cisco.aci 2.13.0; lab has 2.12.0.</p>
+<h3>4. Template whitespace under the module defaults</h3>
+<pre><code>{# templates/summary.txt.j2 #}
+{% for t in baseline_tenants %}
+tenant {{ t.name }}
+{% if t.descr is defined %}
+  description {{ t.descr }}
+{% endif %}
+{% endfor %}</code></pre>
+<p class="small">With <code>trim_blocks</code> true and non-indented block tags, the tag lines leave no blank lines. Indent the tags and you get stray leading spaces until <code>lstrip_blocks: true</code>.</p>
+<h3>5. Argument spec</h3>
+<pre><code># roles/tenant_baseline/meta/argument_specs.yml
+argument_specs:
+  main:
+    options:
+      baseline_state:
+        type: str
+        choices: [present, absent, query]
+        default: present
+      baseline_tenants:
+        type: list
+        elements: dict
+        required: true</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Changing <code>group_vars</code> has no effect on a role variable</td><td>Same name in role <code>vars/main.yml</code> (rank 15) beats <code>group_vars</code> (6-7)</td><td><code>grep -rn baseline_state roles/ group_vars/</code>; <code>ansible-inventory --host h -y</code> shows inventory side only</td><td>Move the value to <code>defaults/</code>, or rename the internal constant</td></tr>
+<tr><td><code>-e count=5</code> breaks <code>when: count &gt; 3</code> or a typed module option</td><td><code>key=value</code> gives a string</td><td><code>-e</code> then <code>- debug: msg="{{ count | type_debug }}"</code></td><td><code>-e '{"count": 5}'</code> or <code>-e @vars.yml</code></td></tr>
+<tr><td>YAML parse error on <code>description: {{ x }}</code></td><td>A value that starts with <code>{{</code> must be quoted</td><td><code>ansible-playbook --syntax-check</code></td><td><code>description: "{{ x }}"</code></td></tr>
+<tr><td>Rendered file has blank lines or stray indent</td><td>Block-tag whitespace; <code>trim_blocks</code> true, <code>lstrip_blocks</code> false by default</td><td><code>--check --diff</code> on the template task</td><td>Un-indent tags, set <code>lstrip_blocks: true</code>, or Jinja whitespace control ⚠</td></tr>
+<tr><td>2.19 fails: <code>Conditionals must have a boolean result.</code> on <code>when: tenants</code></td><td>A list used as a condition</td><td>Error names the task; <code>-v</code> shows the value</td><td><code>when: tenants | length &gt; 0</code> or <code>is truthy</code></td></tr>
+</tbody></table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>Resolve a host’s inventory variables: <code>ansible-inventory --host h1 -y</code> (add <code>-i</code> and <code>--playbook-dir</code> so <code>group_vars/</code> and <code>roles/</code> resolve). <code>--graph --vars</code> shows groups with variables. This does not show play vars, role vars or <code>-e</code>.</li>
+<li>Resolve the final value as the task sees it: add a <code>debug</code> task with <code>var: baseline_state</code> and run with <code>-e</code> variants. The facts page shows <code>debug</code> with <code>var: ansible_facts</code> and <code>ansible h -m ansible.builtin.setup</code> for all facts.</li>
+<li>Module syntax offline: <code>ansible-doc ansible.builtin.template</code>, <code>ansible-doc -s ansible.builtin.template</code> for a snippet, <code>-l</code> to list, <code>-j</code> for JSON. <code>-t role</code> and <code>-t keyword</code> are valid types per the CLI page (output not verified). <a href="https://docs.ansible.com/projects/ansible/latest/cli/ansible-doc.html" target="_blank" rel="noopener">ansible-doc</a>.</li>
+<li>Pre-flight: <code>ansible-playbook --syntax-check</code>, <code>--list-tasks</code>, <code>--list-hosts</code>, <code>--check --diff</code>, <code>--start-at-task</code>, <code>--step</code>.</li>
+<li>Filter lookup: Ansible filter and test names are in <a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_filters.html" target="_blank" rel="noopener">Using filters</a> online; offline, use <code>ansible-doc -t filter -l</code> ⚠ (not verified on the workstation).</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<div class="card">
+<p><b>Target:</b> localhost for rendering; DevNet Sandbox APIC for the optional <code>aci_tenant</code> step. No IOS devices needed.</p>
+<p><b>Requirement.</b> Build role <code>tenant_baseline</code> that creates a list of tenants and writes a one-line-per-tenant summary file. Rules:</p>
+<ul>
+<li>Input <code>baseline_tenants</code> is a list of dicts with <code>name</code> and optional <code>descr</code>.</li>
+<li><code>baseline_state</code> defaults to <code>present</code>, and the role must reject any value outside <code>present</code>, <code>absent</code>, <code>query</code> before any task runs.</li>
+<li>A tenant without <code>descr</code> must not send an empty description.</li>
+<li>The summary must have no blank lines and no leading spaces on <code>tenant</code> lines.</li>
+<li>Prove that <code>-e baseline_state=query</code> overrides a <code>group_vars</code> value of <code>absent</code>.</li>
+</ul>
+<p><b>Reference fields and paths.</b> <code>meta/argument_specs.yml</code> keys <code>type</code>, <code>choices</code>, <code>default</code>, <code>elements</code>, <code>required</code>. Module <code>cisco.aci.aci_tenant</code> keys <code>tenant</code>, <code>description</code>, <code>state</code>. Module <code>ansible.builtin.template</code> keys <code>src</code>, <code>dest</code>, <code>trim_blocks</code>, <code>lstrip_blocks</code>.</p>
+<p><b>Verify.</b></p>
+<ul>
+<li><code>ansible-playbook site.yml --syntax-check</code> passes.</li>
+<li>Run with <code>-e baseline_state=bogus</code>: fails at the validation task, no tenant task runs.</li>
+<li><code>--check --diff</code> on the template task shows the exact summary text; <code>cat -A</code> on the output shows no trailing spaces.</li>
+<li>Run with <code>-e baseline_state=query</code> and confirm every <code>aci_tenant</code> result is a query, whatever <code>group_vars</code> says.</li>
+</ul>
+<details><summary>Hint</summary>
+<p>Validation lives in <code>meta/</code>, not in <code>tasks/</code>. The missing-description case needs a filter argument, not a <code>when</code>. For the whitespace, check where your block tags start on the line.</p>
+</details>
+<details><summary>Solution</summary>
+<pre><code># meta/argument_specs.yml: options baseline_state (type str, choices, default present),
+#   baseline_tenants (type list, elements dict, required true)
+# tasks/main.yml
+- name: Ensure tenants
+  cisco.aci.aci_tenant:
+    tenant: "{{ item.name }}"
+    description: "{{ item.descr | default(omit) }}"
+    state: "{{ baseline_state }}"
+  loop: "{{ baseline_tenants }}"
+  delegate_to: localhost
+
+- name: Render summary
+  ansible.builtin.template:
+    src: summary.txt.j2
+    dest: /tmp/tenant_summary.txt
+    mode: "0644"
+  delegate_to: localhost
+# templates/summary.txt.j2
+{% for t in baseline_tenants %}
+tenant {{ t.name }}{{ ' - ' ~ t.descr if t.descr is defined else '' }}
+{% endfor %}
+# group_vars/all.yml: baseline_state: absent
+# run: ansible-playbook site.yml -e baseline_state=query</code></pre>
+<p class="small">⚠ unverified: <code>ACI_HOST</code>-style environment fallbacks on the workstation, sandbox APIC release, and the exact output of the summary template. Test in lab.</p>
+</details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p class="small">Questions 5 and 6 come from history entries 3-10 days old (2026-10-06 and 2026-10-07).</p>
+<ol>
+<li>A role has <code>port: 80</code> in <code>defaults/</code>, <code>port: 8080</code> in <code>vars/</code>, and <code>group_vars</code> sets <code>9090</code>. Which value does the task see, and what happens with <code>-e port=443</code>, including the type?
+<details><summary>Answer</summary><p>8080 (role vars rank 15 beat group_vars 6-7 and defaults 2). With <code>-e port=443</code> the task sees <code>"443"</code> as a string, since <code>-e</code> wins at rank 22 and key=value is a string.</p></details></li>
+<li>A task ran <code>set_fact: mode=a</code>, then a later <code>include_role</code> passes <code>mode: b</code> as a param. Which wins, and why?
+<details><summary>Answer</summary><p><code>b</code>. Role and include_role params are rank 20, above registered vars and set_facts at 19.</p></details></li>
+<li>A template task output has a blank line after every <code>{% for %}</code> body and a leading space before <code>interface</code> lines. Name the module defaults involved and two fixes.
+<details><summary>Answer</summary><p><code>trim_blocks</code> defaults true and <code>lstrip_blocks</code> defaults false. Block tags that are indented keep their leading whitespace. Fixes: set <code>lstrip_blocks: true</code>, or put block tags at column 0. Use <code>--check --diff</code> to see it.</p></details></li>
+<li>On core 2.19, <code>when: interfaces</code> (a list) fails. Give the message and two fixes.
+<details><summary>Answer</summary><p><code>Conditionals must have a boolean result.</code> Fix with <code>interfaces | length &gt; 0</code> or <code>interfaces is truthy</code>. <code>ALLOW_BROKEN_CONDITIONALS</code> only downgrades the error to a warning.</p></details></li>
+<li>(from 2026-10-06) You change the receiver port on a live IOS XE subscription and the collector never sees the new port. Why, and what is the minimum correct sequence?
+<details><summary>Answer</summary><p>Receivers cannot be modified in place on IOS XE 17.5, so the existing receiver and subscription keep the old port. Remove the subscription, delete and recreate the receiver with the new port, then recreate the subscription. Restated from the 10-06 page; not re-verified today.</p></details></li>
+<li>(from 2026-10-07) An XPath filter returns success and empty data. List the two most likely causes and how you tell them apart.
+<details><summary>Answer</summary><p>(1) The path, key predicate or namespace prefix does not match anything in the model. (2) The path is valid but no such data exists on the device. Tell them apart by sending the same request with a broader path or no filter and checking whether the node appears. Restated from the 10-07 page; not re-verified today.</p></details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/cisco/aci/aci_tenant_module.html" target="_blank" rel="noopener">cisco.aci.aci_tenant module – Manage tenants (fv:Tenant)</a> — cisco.aci 2.13.0 (lab 2.12.0); verified 2026-10-12. Best for: the module in the drill.</li>
+</ul>
+<h3>Standards</h3>
+<ul><li>No RFC applies to this unit.</li></ul>
+<h3>Third-party (Ansible project docs)</h3>
+<ul>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_variables.html" target="_blank" rel="noopener">Using variables — Ansible Community Documentation</a> — docs “latest”; verified 2026-10-12. Best for: the 22-rung precedence list.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_reuse_roles.html" target="_blank" rel="noopener">Roles — Ansible Community Documentation</a> — docs “latest”; verified 2026-10-12. Best for: directory layout, argument_specs, public scope, dependencies.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/template_module.html" target="_blank" rel="noopener">ansible.builtin.template module – Template a file out to a target host</a> — docs “latest”; verified 2026-10-12. Best for: trim_blocks defaults and validate.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/porting_guides/porting_guide_core_2.19.html" target="_blank" rel="noopener">Ansible-core 2.19 Porting Guide</a> — core 2.19; verified 2026-10-12. Best for: the templating changes in the table above.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/playbook_guide/playbooks_templating.html" target="_blank" rel="noopener">Templating (Jinja2) — Ansible Community Documentation</a> — docs “latest”; verified 2026-10-12. Best for: where rendering happens.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/restconf_config_module.html" target="_blank" rel="noopener">ansible.netcommon.restconf_config module</a> — netcommon 8.7.1 (lab 8.4.0); verified 2026-10-12. Best for: templated RESTCONF payloads on Cat8000V.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/cli/ansible-inventory.html" target="_blank" rel="noopener">ansible-inventory — Ansible Community Documentation</a> — docs “latest”; verified 2026-10-12. Best for: inspecting inventory-side variables fast.</li>
+</ul>
+
+<footer id="foot">
+<p><b>Links: 14 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>Version flags.</b> Docs are “latest”. Porting guide is the only 2.19-specific source. Register projections (2.21) and play-level argument validation (2.20) are newer than your pin and were not used as exam content. netcommon pages are 8.7.1 and cisco.aci pages are 2.13.0 versus 8.4.0 and 2.12.0 in the lab. The 22-rung precedence list is from the latest docs; assumed unchanged in 2.19.</p>
+<p><b>⚠ Unverified claims — test in lab:</b></p>
+<ul>
+<li>Domain 2 exam weight (not checked this run).</li>
+<li>Argument spec entry-point key <code>main</code> (roles page describes entry points, not the key name in the text read).</li>
+<li><code>ansible-doc -t role</code>, <code>-t keyword</code>, <code>-t filter -l</code> output on the Candidate Workstation.</li>
+<li>cli_config without <code>cisco.ios</code>: needs a platform cliconf plugin; confirm with <code>ansible-doc -t cliconf -l</code>.</li>
+<li>That <code>ansible.builtin.template</code> is unsuitable for network devices (inference: <code>dest</code> is a path on a managed host); the drill uses <code>delegate_to: localhost</code>.</li>
+<li>Jinja whitespace control (<code>{%- -%}</code>): Jinja2 docs not fetched.</li>
+<li><code>ACI_HOST</code> environment fallback, sandbox APIC release, and the drill template output.</li>
+<li>Debug-task variants (<code>type_debug</code>, <code>var:</code>) work as written on the workstation.</li>
+<li>Recall answers 5-6 are restated from earlier pages, not re-verified.</li>
+</ul>
+<p><b>Tomorrow (Tue 2026-10-13):</b> Unit 10 of 49, 3.5.a-b, YANG telemetry subscriptions: identify model elements and cadence, on-change versus event-driven (Tier 1).</p>
+</footer>
+</div>
+
+</body></html>

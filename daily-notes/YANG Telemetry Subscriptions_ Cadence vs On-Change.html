@@ -1,0 +1,227 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YANG Telemetry Subscriptions: Cadence vs On-Change</title>
+<style>
+:root{--bg:#fff;--fg:#1d2330;--mut:#5b6475;--card:#f4f6fa;--bd:#d5dae4;--ac:#0b6bcb;--ok:#177a3c;--wn:#a45a00;--bad:#b3261e;--c1:#0b6bcb;--c2:#7a3fc4;--c3:#177a3c;--c4:#c26a00;--code:#eef1f6}
+@media (prefers-color-scheme:dark){:root{--bg:#12151c;--fg:#e4e8f0;--mut:#9aa3b5;--card:#1b2030;--bd:#333b52;--ac:#6db0ff;--ok:#5fcf84;--wn:#ffb454;--bad:#ff8a80;--c1:#6db0ff;--c2:#b895f0;--c3:#5fcf84;--c4:#ffb454;--code:#222839}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 60px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 16px;font-size:13px;z-index:5;overflow-x:auto;white-space:nowrap}
+nav a{margin-right:12px;color:var(--ac);text-decoration:none}
+h1{font-size:1.6rem;margin:.6em 0 .2em}h2{margin-top:2em;border-bottom:1px solid var(--bd);padding-bottom:4px;font-size:1.3rem}h3{margin-top:1.4em}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;margin:12px 0}
+.meta span{display:inline-block;margin:2px 10px 2px 0;font-size:14px;color:var(--mut)}.meta b{color:var(--fg)}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--card)}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px;overflow-x:auto;font-size:13px;line-height:1.4}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+svg{width:100%;height:auto;display:block;margin:10px 0}svg text{fill:var(--fg);font:12px system-ui,sans-serif}svg .m{fill:var(--mut)}svg .box{fill:var(--card);stroke:var(--bd)}
+.b{font-size:12px;border-radius:4px;padding:1px 6px;border:1px solid var(--bd);margin-left:6px}.ok{color:var(--ok)}.wn{color:var(--wn)}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 12px;margin:8px 0}summary{cursor:pointer;font-weight:600}
+a{color:var(--ac)}ul{padding-left:1.2em}.fl{color:var(--wn)}
+</style></head><body>
+<nav><a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main id="top">
+<h1>YANG Telemetry Subscriptions: Cadence vs On-Change</h1>
+<div class="card meta">
+<span><b>Date</b> 2026-10-13</span><span><b>Blueprint</b> 3.5.a-b</span><span><b>Domain 3</b> (Network Automation / telemetry)</span><span><b>Tier</b> 1 (gap)</span><span><b>Read</b> ~18 min</span><span><b>Unit</b> 10 of 49</span>
+<div style="margin-top:6px;color:var(--mut);font-size:14px">3.5.a: identify YANG model elements and cadence for a subscription. 3.5.b: choose on-change vs event-driven delivery. Builds on 3.4 dial-in/dial-out; the transport is already done, this is the <em>what</em> and <em>when</em>.</div>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>A subscription = <b>what</b> (stream + XPath filter on a YANG node) + <b>when</b> (periodic or on-change) + <b>where</b> (receiver / session). Today is what and when.</li>
+<li>Cadence is a property of the subscription, not of the data. A given IOS XE yang-push subscription is periodic <i>or</i> on-change, never both.</li>
+<li>IOS XE periodic units are <b>centiseconds</b>: 1000 = 10 s, minimum 100 = 1 s, no default. NX-OS <code>sample-interval</code> is <b>milliseconds</b>. gNMI <code>sample_interval</code> is <b>nanoseconds</b>. Three platforms, three units.</li>
+<li>On-change is a publisher capability per node, not a property of the model file. The Cisco guide says YANG itself does not mark it. You must ask the box.</li>
+<li>"Event-driven" has two meanings here: on-change data pushes (yang-push) and notification streams (yang-notif-native, RFC 5277-style events). Know which one a task wants.</li>
+<li>IOS XE on-change: dampening-period must be 0; granularity is a table row; not hierarchical.</li>
+<li>Subscription state "Valid" proves syntax and support, not that data flows. Check receiver and collector next (3.5.f, later unit).</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 760 250" role="img" aria-label="Blueprint position of 3.5.a-b between 3.4 transport and 3.5.c-g operations">
+<rect class="box" x="10" y="20" width="170" height="70" rx="8"/><text x="22" y="42">3.4 Telemetry design</text><text class="m" x="22" y="60">dial-in / dial-out</text><text class="m" x="22" y="76">done 10-01, 10-06</text>
+<rect x="295" y="20" width="190" height="70" rx="8" fill="none" stroke="var(--c1)" stroke-width="2.5"/><text x="307" y="42" style="font-weight:600">3.5.a-b (today)</text><text class="m" x="307" y="60">which nodes, what cadence,</text><text class="m" x="307" y="76">periodic vs on-change</text>
+<rect class="box" x="600" y="20" width="150" height="70" rx="8"/><text x="612" y="42">3.5.c-g later</text><text class="m" x="612" y="60">tune, dial-out cfg,</text><text class="m" x="612" y="76">TLS, verify, fix</text>
+<path d="M180 55H295M485 55H600" stroke="var(--mut)" stroke-width="1.5" fill="none"/>
+<text class="m" x="10" y="125">Tool chain to build one subscription</text>
+<rect class="box" x="10" y="140" width="130" height="50" rx="6"/><text x="20" y="160">YANG Suite / pyang</text><text class="m" x="20" y="176">find node + XPath</text>
+<rect class="box" x="170" y="140" width="130" height="50" rx="6"/><text x="180" y="160">ndbman models</text><text class="m" x="180" y="176">on-change capable?</text>
+<rect class="box" x="330" y="140" width="130" height="50" rx="6"/><text x="340" y="160">CLI / mdt-cfg</text><text class="m" x="340" y="176">stream, policy, period</text>
+<rect class="box" x="490" y="140" width="120" height="50" rx="6"/><text x="500" y="160">show telemetry</text><text class="m" x="500" y="176">Valid? Connected?</text>
+<rect class="box" x="640" y="140" width="110" height="50" rx="6"/><text x="650" y="160">Collector</text><text class="m" x="650" y="176">data arrives</text>
+<path d="M140 165H170M300 165H330M460 165H490M610 165H640" stroke="var(--mut)" stroke-width="1.5" fill="none"/>
+<text class="m" x="10" y="225">Lab target: Cat8000V (IOS XE 17.16) for IOS XE; N9Kv 9.3(8) for NX-OS contrast.</text>
+</svg>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+<h3>L1: concept</h3>
+<p>Polling asks the device "what is it now?" on your schedule. Subscriptions invert that: you tell the device which data and when, and it pushes. The "when" has two shapes. <b>Periodic</b>: send a full snapshot every N time units, regardless of change. <b>On-change</b>: send once at start (optionally), then only when something changes. Periodic costs steady bandwidth and gives regular time series (graphs, rates). On-change costs almost nothing when quiet and gives immediate edge detection (link down, neighbor change), but you lose a heartbeat unless you add one.</p>
+<p>The "what" is a YANG node, addressed by an XPath filter. You find the XPath by walking the model (YANG Suite tree, or <code>pyang -f tree</code>). The model type matters: <code>-oper</code> modules hold state; <code>-cfg</code> hold config.</p>
+
+<h3>L2: mechanics (RFC 8639 / 8641 behind the CLI)</h3>
+<p>RFC 8639 defines the subscription machinery: streams, filters, dynamic subscriptions (created by RPC, tied to the session) and configured subscriptions (in config, survive reboot, valid / invalid / concluded). RFC 8641 adds the datastore stream "yang-push" with the two triggers: <code>periodic</code> (a <code>period</code> and optional <code>anchor-time</code>) and <code>on-change</code> (optional <code>dampening-period</code>, <code>sync-on-start</code>, and excluded change types). Periodic updates carry a full filtered snapshot (push-update). On-change updates carry only deltas as YANG Patch (push-change-update); a sync-on-start sends the initial full push-update.</p>
+<p>RFC 8641 section 3.3 is explicit that a publisher may not support on-change for every object. It may reject the subscription, or accept and silently send updates only for supported parts; for configured subscriptions it may suspend. Section 3.10 notes that fast counters and similar nodes are poor on-change candidates and that clients need a way to discover support; no standard model existed then, so vendors provide their own. That is why IOS XE has the platform command below.</p>
+
+<svg viewBox="0 0 760 270" role="img" aria-label="Timeline comparing periodic and on-change delivery for one leaf">
+<text class="m" x="10" y="18">Leaf value over time (changes at t3 and t7). Dots = messages pushed to the collector.</text>
+<path d="M10 80H750" stroke="var(--bd)"/><text x="10" y="74" class="m">value</text>
+<path d="M30 70H210V50H450V70H620V50H740" stroke="var(--mut)" fill="none" stroke-width="2"/>
+<text class="m" x="210" y="44">t3</text><text class="m" x="620" y="44">t7</text>
+<text x="10" y="120" style="font-weight:600">Periodic (period = P)</text>
+<g fill="var(--c1)"><circle cx="60" cy="140" r="6"/><circle cx="170" cy="140" r="6"/><circle cx="280" cy="140" r="6"/><circle cx="390" cy="140" r="6"/><circle cx="500" cy="140" r="6"/><circle cx="610" cy="140" r="6"/><circle cx="720" cy="140" r="6"/></g>
+<text class="m" x="10" y="165">Full snapshot every P, changed or not. Edge seen up to P late.</text>
+<text x="10" y="195" style="font-weight:600">On-change (dampening 0)</text>
+<g fill="var(--c4)"><circle cx="60" cy="215" r="6"/><circle cx="210" cy="215" r="6"/><circle cx="620" cy="215" r="6"/></g>
+<text class="m" x="75" y="219">sync-on-start</text>
+<text class="m" x="10" y="245">Deltas only, immediate. Silence = no change OR dead subscription. Cannot tell which.</text>
+<text class="m" x="10" y="262">Fix the ambiguity with a slow periodic subscription alongside, or a gNMI heartbeat.</text>
+</svg>
+
+<h3>L3: exam detail</h3>
+<div class="tw"><table>
+<tr><th>Aspect</th><th>IOS XE 17.5 MDT (yang-push)</th><th>IOS XE yang-notif-native</th><th>NX-OS 9.3(x) MDT</th><th>gNMI Subscribe</th></tr>
+<tr><td>Cadence knob</td><td><code>update-policy periodic N</code> (centiseconds)</td><td>on-change only</td><td><code>sample-interval N</code> (ms)</td><td><code>sample_interval</code> (ns)</td></tr>
+<tr><td>On-change</td><td><code>update-policy on-change</code>; dampening must be 0</td><td>only mode; dampening must be 0</td><td><code>sample-interval 0</code> = event-based</td><td>sub-mode <code>ON_CHANGE</code></td></tr>
+<tr><td>Minimum</td><td>100 cs (1 s); no default</td><td>n/a</td><td>docs: 5 s for depth 0</td><td>0 = lowest the target offers</td></tr>
+<tr><td>Both at once?</td><td>No, one per subscription</td><td>n/a</td><td>No, interval picks</td><td>Per-subscription sub-mode, several per request</td></tr>
+<tr><td>Find nodes</td><td>XPath, exact keys, no ranges/wildcards, no subtree</td><td>same filter limits</td><td>DME dn, YANG <code>module:path</code>, or NX-API show</td><td>gNMI paths</td></tr>
+<tr><td>On-change discovery</td><td><code>show platform software ndbman ... models</code></td><td>-</td><td>DME event; <code>filter-condition</code> DME only</td><td>target decides; TARGET_DEFINED picks per leaf</td></tr>
+</table></div>
+<ul>
+<li><b>IOS XE on-change limits:</b> not hierarchical (a filter on a container does not give you everything under it as on-change); change granularity is a row; unsupported data makes a dynamic subscription fail and a configured one go Invalid.</li>
+<li><b>Union (|) in XPath</b> works with NETCONF only, not gRPC, and not on yang-notif-native.</li>
+<li><b>Configured gRPC dial-out</b>: yang-push with kvGPB encoding only (per the 217427 article, tested on 17.3.3).</li>
+<li><b>Configured on-change via mdt-cfg</b>: the article sets the <code>no-sync-on-start</code> leaf to false. Read that literally and test it; the name reads inverted.</li>
+<li><b>gNMI</b>: SAMPLE has <code>sample_interval</code>, <code>suppress_redundant</code> (per leaf) and <code>heartbeat_interval</code>; TARGET_DEFINED rejects a client-set interval with InvalidArgument; ON_CHANGE sends current state first, then changes, with an optional heartbeat.</li>
+<li><b>Event-driven as notifications</b>: a stream like yang-notif-native carries YANG notification records (RFC 8639 streams), not datastore values. Pick it when the blueprint verb is "react to an event", pick yang-push on-change when it is "track a value".</li>
+</ul>
+
+<svg viewBox="0 0 760 300" role="img" aria-label="Decision flow for choosing periodic or on-change">
+<rect class="box" x="250" y="10" width="260" height="40" rx="8"/><text x="262" y="35">Need a time series or rate?</text>
+<rect class="box" x="30" y="95" width="210" height="46" rx="8"/><text x="42" y="116">Periodic, P = sample need</text><text class="m" x="42" y="132">IOS XE: period in cs, >= 100</text>
+<rect class="box" x="290" y="95" width="200" height="46" rx="8"/><text x="302" y="116">Need edge / state change?</text><text class="m" x="302" y="132">link, neighbor, config</text>
+<path d="M310 50L160 95M450 50L390 95" stroke="var(--mut)" fill="none"/><text class="m" x="200" y="68">yes</text><text class="m" x="430" y="68">no</text>
+<rect class="box" x="290" y="185" width="200" height="46" rx="8"/><text x="302" y="206">Is node on-change capable?</text><text class="m" x="302" y="222">ndbman models / vendor docs</text>
+<path d="M390 141V185" stroke="var(--mut)"/>
+<rect x="30" y="250" width="215" height="42" rx="8" fill="none" stroke="var(--c3)" stroke-width="2"/><text x="42" y="268">On-change, dampening 0</text><text class="m" x="42" y="283">sync-on-start for baseline</text>
+<rect x="515" y="250" width="215" height="42" rx="8" fill="none" stroke="var(--c4)" stroke-width="2"/><text x="527" y="268">Not capable: periodic fallback</text><text class="m" x="527" y="283">or notification stream</text>
+<path d="M330 231L140 250M450 231L620 250" stroke="var(--mut)" fill="none"/><text class="m" x="200" y="243">yes</text><text class="m" x="560" y="243">no</text>
+</svg>
+
+<h2 id="anat">Anatomy</h2>
+<p>Snippets pinned to IOS XE 17.5 guide syntax. The first is the guide's own periodic example; the second is the same shape as on-change (<span class="fl">⚠ unverified — test in lab</span> on 17.16).</p>
+<pre><code>! periodic: 6000 cs = 60 s
+telemetry ietf subscription 101
+  encoding encode-kvgpb
+  filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic
+  stream yang-push
+  update-policy periodic 6000
+  source-vrf Mgmt-intf
+  receiver ip address 10.28.35.45 57555 protocol grpc-tcp
+
+! on-change shape (no period; confirm accepted keyword form on 17.16)
+telemetry ietf subscription 102
+  encoding encode-kvgpb
+  filter xpath /interfaces-ios-xe-oper:interfaces/interface
+  stream yang-push
+  update-policy on-change
+  receiver ip address 10.28.35.45 57555 protocol grpc-tcp</code></pre>
+<pre><code>show platform software ndbman switch active models   ! which models can do on-change
+show telemetry ietf subscription all detail          ! state, filter, period/trigger
+show telemetry ietf subscription 102 receiver        ! receiver state (wording varies)</code></pre>
+<p>Dynamic variant (dial-in, RFC 8639 <code>establish-subscription</code>): per the 217427 article you pick stream yang-push, the XPath filter, and the update trigger (period for periodic, dampening-period 0 for on-change). NX-OS contrast:</p>
+<pre><code>telemetry
+  sensor-group 1
+    data-source DME
+    path sys/intf/phys-[eth1/1] depth 0
+  destination-group 1
+    ip address 10.0.0.5 port 50001 protocol gRPC encoding GPB
+  subscription 1
+    snsr-grp 1 sample-interval 0       ! 0 = event-based; 15000 = every 15 s
+    dst-grp 1</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>On-change subscription Invalid</td><td>Node not on-change capable, or dampening not 0</td><td><code>show telemetry ietf subscription all detail</code>; <code>show platform software ndbman switch active models</code></td><td>Pick a supported node/model, set dampening 0, or fall back to periodic</td></tr>
+<tr><td>Updates 100x too slow or fast</td><td>Unit mix-up (cs vs ms vs ns)</td><td>Detail output period; config line</td><td>IOS XE 6000 = 60 s; NX-OS 15000 = 15 s; gNMI ns</td></tr>
+<tr><td>Valid but nothing arrives on a quiet node</td><td>On-change with no change and no sync-on-start</td><td>Force a change; check initial snapshot setting</td><td>Enable sync-on-start (mdt-cfg flag, see note), or add periodic backup</td></tr>
+<tr><td>Subscription Invalid right after config</td><td>XPath malformed (stray slash after prefix), wildcard, range, or subtree filter</td><td>Detail shows filter; compare to YANG Suite Properties Xpath + Prefix</td><td>Exact keys only, copy XPath from the tool</td></tr>
+<tr><td>On-change on container misses child changes</td><td>On-change not hierarchical; granularity is a row</td><td>Subscribe to the list node, test a leaf change</td><td>Point the XPath at the list or row</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>Model browse offline: <code>pyang -f tree -p &lt;yang-dir&gt; &lt;module&gt;.yang</code> (<span class="fl">⚠ unverified — test in lab</span>: pyang and IOS XE model files on the workstation).</li>
+<li><code>-oper</code> in the module name = state data; start there for telemetry.</li>
+<li>On the router: <code>show telemetry ietf subscription ?</code> and <code>telemetry ietf subscription 1</code> then <code>?</code> for each sub-command; the CLI help is the offline manual.</li>
+<li>Remember one rule set: IOS XE cs, NX-OS ms, gNMI ns. Write the unit as a comment next to every interval you type.</li>
+<li>NX-OS: <code>show telemetry control database sensor-groups</code> and <code>show telemetry transport</code> as first checks.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Requirement.</b> On Cat8000V, create two subscriptions to the same collector: (1) interface operational data every 30 s; (2) an on-change subscription for interface state. Show that the second is accepted and the first has the right period. Target: Cat8000V (17.16).</p>
+<p><b>Reference.</b> Module <code>Cisco-IOS-XE-interfaces-oper</code> (<span class="fl">⚠ unverified — confirm module/prefix with YANG Suite or pyang</span>); CLI <code>telemetry ietf subscription</code>; commands from the Anatomy section.</p>
+<p><b>Verification.</b> Both subscriptions show Valid in <code>show telemetry ietf subscription all detail</code>; period reads 3000 cs; the receiver is Connected; an <code>shutdown</code> / <code>no shutdown</code> on a spare loopback yields one on-change record.</p>
+<details><summary>Hint</summary>Convert 30 s to centiseconds first. Find the exact XPath in the YANG tree (Properties: Xpath + Prefix); mind the leading slash.</details>
+<details><summary>Solution</summary><pre><code>telemetry ietf subscription 201
+  encoding encode-kvgpb
+  filter xpath /&lt;prefix&gt;:interfaces/interface      ! confirm prefix/path
+  stream yang-push
+  update-policy periodic 3000                  ! 30 s
+  receiver ip address &lt;collector&gt; &lt;port&gt; protocol grpc-tcp
+telemetry ietf subscription 202
+  encoding encode-kvgpb
+  filter xpath /&lt;prefix&gt;:interfaces/interface
+  stream yang-push
+  update-policy on-change
+  receiver ip address &lt;collector&gt; &lt;port&gt; protocol grpc-tcp</code></pre>
+<p>If 202 goes Invalid, the node isn't on-change capable: check the ndbman models output, then pick a supported list.</p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<details><summary>1. A subscription uses <code>update-policy periodic 30</code>. What interval do you get, and what is the minimum allowed on IOS XE 17.5?</summary>30 centiseconds = 0.3 s, which is below the minimum of 100 cs (1 s). Expect rejection or an invalid subscription; 3000 gives 30 s.</details>
+<details><summary>2. Name three limits of IOS XE on-change subscriptions.</summary>Dampening must be 0; not hierarchical with row granularity; unsupported data makes dynamic fail and configured Invalid. Also: no wildcard/range/subtree XPath.</details>
+<details><summary>3. How do you learn which IOS XE models support on-change, and why can't you read it from the YANG?</summary><code>show platform software ndbman switch active models</code>. The guide says YANG models carry no indication of on-change support (RFC 8641 s3.10 says the same gap exists and vendors fill it).</details>
+<details><summary>4. In gNMI, what do TARGET_DEFINED, SAMPLE with suppress_redundant, and heartbeat_interval each do?</summary>TARGET_DEFINED: target picks ON_CHANGE or SAMPLE per leaf and a client interval should be rejected. suppress_redundant: skip unchanged leaves. heartbeat_interval: force one update per interval even if unchanged.</details>
+<p><b>From history (restated from earlier pages)</b></p>
+<details><summary>5. (2026-10-06) A subscription shows Valid. List the next three checks before calling it working.</summary>Receiver state is Connected; collector is listening and reachable (port, firewall, VRF source); records are actually arriving and decoding at the collector.</details>
+<details><summary>6. (2026-10-08) A job can't reach tcp://docker:2375. What changed and what's the second error with an old dind image?</summary>Docker-in-Docker TLS is on by default, so the daemon is on 2376 with DOCKER_TLS_CERTDIR set. An old dind (below 20.10) hits a cgroups error on newer hosts.</details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, IOS XE Bengaluru 17.5.x: Model-Driven Telemetry</a> <span class="b ok">✅</span> IOS XE 17.5, verified 2026-10-13. Best for: periodic/on-change rules, units, limits, ndbman command.</li>
+<li><a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a> <span class="b ok">✅</span> tested on 17.3.3 (older than pin), verified 2026-10-13. Best for: XPath from YANG Suite and the periodic vs on-change dial-in/dial-out recipes.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnmi.html" target="_blank" rel="noopener">Programmability Configuration Guide, IOS XE Bengaluru 17.5.x: gNMI Protocol</a> <span class="b ok">✅</span> IOS XE 17.5, verified 2026-10-13. Best for: gnxi enable commands and ports (50052 / 9339); it gives no subscribe-mode detail.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_0101001.html" target="_blank" rel="noopener">Model Driven Telemetry (Cisco Nexus 9000 NX-OS Programmability Guide, 9.3(x))</a> <span class="b ok">✅</span> NX-OS 9.3(x), verified 2026-10-13. Best for: sensor-group/subscription syntax and sample-interval 0 = event.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641: Subscription to YANG Notifications for Datastore Updates</a> <span class="b ok">✅</span> verified 2026-10-13. Best for: periodic vs on-change semantics, dampening (s3.3), on-change discovery (s3.10).</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8639" target="_blank" rel="noopener">RFC 8639: Subscription to YANG Notifications</a> <span class="b ok">✅</span> verified 2026-10-13. Best for: dynamic vs configured subscriptions, valid/invalid state (s2.5.1).</li>
+<li><a href="https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md" target="_blank" rel="noopener">gNMI specification (OpenConfig reference)</a> <span class="b ok">✅</span> spec, version not shown, verified 2026-10-13. Best for: s3.5.1 STREAM sub-modes and interval fields.</li>
+</ul>
+
+<div class="card" style="margin-top:2em">
+<p><b>Links:</b> 7 ✅ · 0 🔎 · 0 removed</p>
+<p><b>Unverified claims:</b></p>
+<ul>
+<li>On-change CLI keyword form and behavior on Cat8000V 17.16 (Anatomy second block).</li>
+<li><code>no-sync-on-start</code> flag meaning/direction in mdt-cfg.</li>
+<li>Interfaces-oper module name, prefix and path for the drill.</li>
+<li>Receiver show command wording on 17.16.</li>
+<li>Whether IOS XE gNMI on 17.5 supports ON_CHANGE (guide silent).</li>
+<li>pyang and model files on the workstation.</li>
+<li>NX-OS 5 s minimum and ms unit on 9.3(8) (taken from the 9.3(x) guide text).</li>
+<li>Recall answers 5 and 6 restated from earlier pages.</li>
+<li>Last ~8K of RFC 8639/8641 and ~10-20K of the gNMI spec and NX-OS page not read.</li>
+</ul>
+<p><b>Tomorrow:</b> Unit 11 of 49, 1.5: Diagnose application performance issues (AppDynamics / ThousandEyes).</p>
+</div>
+</main></body></html>
+
+</body></html>

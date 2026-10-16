@@ -1,0 +1,329 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NETCONF RESTCONF Config From Source of Truth</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single 860px reading column, sticky TOC strip, cards only for header, drill and recall */
+:root{
+  --bg:#f6f8f9; --fg:#14232b; --muted:#52646d; --line:#d3dde2; --card:#ffffff;
+  --accent:#0b6e83; --accent-soft:#dcedf1; --code-bg:#eaf0f3;
+  --ok:#1b7a43; --warn:#8a5a00; --bad:#a3262f;
+  --svg-a:#cfe5ea; --svg-b:#e3e9ed; --svg-c:#f3e3b8; --svg-line:#5b7480;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1a20; --fg:#e3ecf0; --muted:#9db0ba; --line:#2a3d47; --card:#162630;
+  --accent:#5cc3d8; --accent-soft:#17323b; --code-bg:#0b141a;
+  --ok:#59c27f; --warn:#e0b050; --bad:#f08088;
+  --svg-a:#1d4350; --svg-b:#22333c; --svg-c:#4a3d18; --svg-line:#86a1ad; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a20; --fg:#e3ecf0; --muted:#9db0ba; --line:#2a3d47; --card:#162630;
+  --accent:#5cc3d8; --accent-soft:#17323b; --code-bg:#0b141a;
+  --ok:#59c27f; --warn:#e0b050; --bad:#f08088;
+  --svg-a:#1d4350; --svg-b:#22333c; --svg-c:#4a3d18; --svg-line:#86a1ad; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--font);
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:1.7rem;line-height:1.2;margin:.2em 0 .3em;text-wrap:balance}
+h2{font-size:1.3rem;margin:2.2em 0 .5em;padding-top:.4em;border-top:1px solid var(--line);text-wrap:balance}
+h3{font-size:1.05rem;margin:1.6em 0 .3em}
+p,li{max-width:70ch}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 0;font-size:.82rem}
+nav.toc a{text-decoration:none;color:var(--muted)}
+nav.toc a:hover{color:var(--accent)}
+.hdr{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin-top:18px}
+.hdr .meta{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--muted);font-size:.85rem}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+pre{overflow-x:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:10px 12px;font-size:.82rem;line-height:1.45;margin:10px 0}
+code{font-family:var(--mono);font-size:.88em}
+p code,li code,td code{background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre code{font-size:inherit;background:none;padding:0}
+.fig{margin:14px 0;border:1px solid var(--line);border-radius:6px;background:var(--card);padding:8px}
+.fig svg{width:100%;height:auto;display:block}
+.fig figcaption{font-size:.8rem;color:var(--muted);padding:4px 6px 2px}
+svg text{fill:var(--fg);font-family:var(--font);font-size:12px}
+svg .s{fill:var(--muted);font-size:10.5px}
+svg .b{font-weight:700}
+svg .bx{fill:var(--svg-a);stroke:var(--svg-line);stroke-width:1.2}
+svg .bx2{fill:var(--svg-b);stroke:var(--svg-line);stroke-width:1.2}
+svg .bx3{fill:var(--svg-c);stroke:var(--svg-line);stroke-width:1.2}
+svg .ln{stroke:var(--svg-line);stroke-width:1.4;fill:none}
+svg .ar{fill:var(--svg-line)}
+.badge{display:inline-block;font-size:.72rem;padding:0 6px;border-radius:9px;border:1px solid var(--ok);color:var(--ok);margin-right:4px;white-space:nowrap}
+.layer{border-left:3px solid var(--accent);padding-left:12px;margin:14px 0}
+.layer b.l{color:var(--accent)}
+.flag{color:var(--warn);font-size:.82em}
+details{border:1px solid var(--line);border-radius:4px;padding:6px 10px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+.box{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:4px 16px 10px;margin:12px 0}
+ul.tight li{margin:3px 0}
+footer{margin-top:2.4em;border-top:1px solid var(--line);padding-top:12px;font-size:.88rem;color:var(--muted)}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Sections">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#fix">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<header class="hdr">
+<div class="eyebrow">Unit 12 of 49 · Tier 1 (gap)</div>
+<h1>2.6 Configure devices via NETCONF/RESTCONF using YANG analysis tools, driven by a source of truth</h1>
+<div class="meta"><span>Thursday 2026-10-15</span><span>Domain 2 (weight not verified <span class="flag">⚠</span>)</span><span>Read time ~18 min</span><span>Blueprint verb: Build</span></div>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul class="tight">
+<li>2.4 was "write one payload from YANG". 2.6 is "generate many payloads from data, push them, prove the result". The input is a data file, not you at a keyboard.</li>
+<li>The source of truth (SoT) holds intent in a neutral shape (YAML in <code>host_vars</code>, a database, NSO). The YANG model fixes the shape the device accepts. Your job is the mapping between them.</li>
+<li>YANG analysis tools answer three questions before you push: what is the path, what are the keys and types, what is config versus state. <code>pyang -f tree</code> and YANG Suite are the two named here.</li>
+<li>Render the payload as data (a dict, then <code>to_json</code>), not as text templated by hand. Types stay correct and quoting problems disappear.</li>
+<li>RESTCONF applies each request on its own. NETCONF with the candidate datastore lets you stage, lock, commit, or roll back. Choose by how much transaction control the task wants.</li>
+<li>A push is not done until you read back and compare to the SoT. "HTTP 204" proves the device accepted it, not that it matches intent.</li>
+<li>Lab reminder: only Cat8000V has NETCONF/RESTCONF, and the workstation has no <code>cisco.ios</code> collection. Everything below uses <code>ansible.netcommon</code>.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure class="fig">
+<svg viewBox="0 0 760 250" role="img" aria-label="Blueprint neighbors 2.4, 2.5, 2.6, 2.9 and the tool chain from source of truth to device">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="ar"/></marker></defs>
+<text x="10" y="18" class="b">Blueprint neighbors (Domain 2)</text>
+<rect x="10" y="28" width="150" height="48" rx="4" class="bx2"/><text x="85" y="49" text-anchor="middle" class="b">2.4 Payload</text><text x="85" y="65" text-anchor="middle" class="s">one body from YANG</text>
+<rect x="190" y="28" width="150" height="48" rx="4" class="bx2"/><text x="265" y="49" text-anchor="middle" class="b">2.5 XPath filter</text><text x="265" y="65" text-anchor="middle" class="s">read a subset</text>
+<rect x="370" y="28" width="170" height="48" rx="4" class="bx3"/><text x="455" y="49" text-anchor="middle" class="b">2.6 Today</text><text x="455" y="65" text-anchor="middle" class="s">push from a SoT, verify</text>
+<rect x="570" y="28" width="180" height="48" rx="4" class="bx2"/><text x="660" y="49" text-anchor="middle" class="b">2.9 NSO (later)</text><text x="660" y="65" text-anchor="middle" class="s">SoT lives inside the tool</text>
+<path d="M160 52H188" class="ln" marker-end="url(#a1)"/><path d="M340 52H368" class="ln" marker-end="url(#a1)"/><path d="M540 52H568" class="ln" marker-end="url(#a1)"/>
+<text x="10" y="110" class="b">Tool chain for 2.6</text>
+<rect x="10" y="122" width="120" height="56" rx="4" class="bx"/><text x="70" y="145" text-anchor="middle" class="b">Source of truth</text><text x="70" y="161" text-anchor="middle" class="s">host_vars YAML in git</text>
+<rect x="160" y="122" width="120" height="56" rx="4" class="bx"/><text x="220" y="145" text-anchor="middle" class="b">Map to model</text><text x="220" y="161" text-anchor="middle" class="s">dict shaped like YANG</text>
+<rect x="310" y="122" width="120" height="56" rx="4" class="bx"/><text x="370" y="145" text-anchor="middle" class="b">Check shape</text><text x="370" y="161" text-anchor="middle" class="s">pyang, YANG Suite</text>
+<rect x="460" y="122" width="120" height="56" rx="4" class="bx"/><text x="520" y="145" text-anchor="middle" class="b">Push</text><text x="520" y="161" text-anchor="middle" class="s">RESTCONF or NETCONF</text>
+<rect x="610" y="122" width="140" height="56" rx="4" class="bx"/><text x="680" y="145" text-anchor="middle" class="b">Verify</text><text x="680" y="161" text-anchor="middle" class="s">read back, compare</text>
+<path d="M130 150H158" class="ln" marker-end="url(#a1)"/><path d="M280 150H308" class="ln" marker-end="url(#a1)"/><path d="M430 150H458" class="ln" marker-end="url(#a1)"/><path d="M580 150H608" class="ln" marker-end="url(#a1)"/>
+<path d="M680 180V215H70V182" class="ln" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+<text x="375" y="232" text-anchor="middle" class="s">drift found: fix the SoT, not the device</text>
+</svg>
+<figcaption>2.4 and 2.5 supply the pieces; 2.6 wraps them in a loop driven by data.</figcaption>
+</figure>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+
+<div class="layer"><b class="l">L1 Concept.</b> A source of truth is the one place that says what the network should look like. A device CLI is a result, not the truth. Automation reads the SoT, turns each record into the structure the device's YANG model defines, and sends it with NETCONF or RESTCONF. The YANG model is the contract: it names every node, its type, which nodes are keys, and which nodes are writable. Analysis tools exist so you read that contract in seconds instead of guessing at payloads.</div>
+
+<div class="layer"><b class="l">L2 Mechanics.</b>
+<p><b>Read the model.</b> <code>pyang -f tree</code> prints the schema as a tree in the notation from RFC 8340. <code>rw</code> is configuration, <code>ro</code> is state, <code>?</code> is optional, <code>*</code> is a list or leaf-list, <code>[keys]</code> follow a list name, and <code>!</code> marks a presence container. Anything <code>ro</code> must never appear in a payload. Every list key must.</p>
+<p><b>Map the SoT.</b> Each key in the tree becomes a field your data must carry. A list key also becomes part of the RESTCONF URI as <code>list=value</code>; several keys are comma-separated in key order, and reserved characters are percent-encoded (RFC 8040 section 3.5.3). The module prefix appears on the first node and wherever the module changes.</p>
+<p><b>Render.</b> Build a dict in the model's shape in Jinja or Python, then serialize with <code>to_json</code>. Hand-templating JSON text fails on booleans, quotes and trailing commas.</p>
+<p><b>Push.</b> RESTCONF methods per the IOS XE guide: PUT creates or replaces, PATCH updates, POST creates or invokes an operation, DELETE removes. The guide's logging examples return 201 for POST and 204 for PUT, PATCH and DELETE. NETCONF <code>edit-config</code> against the candidate stages the change; <code>commit</code> copies candidate to running; <code>discard</code> reverts candidate to running.</p>
+<p><b>Verify.</b> Read the same path back (<code>restconf_get</code> or <code>netconf_get</code>), then compare the result with the dict you sent. Compare parsed data, not text.</p></div>
+
+<figure class="fig">
+<svg viewBox="0 0 760 330" role="img" aria-label="Sequence: RESTCONF applies a request at once, NETCONF with candidate stages then commits">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" class="ar"/></marker></defs>
+<text x="60" y="18" text-anchor="middle" class="b">Controller</text><text x="330" y="18" text-anchor="middle" class="b">Cat8000V (RESTCONF)</text>
+<line x1="60" y1="26" x2="60" y2="150" class="ln"/><line x1="330" y1="26" x2="330" y2="150" class="ln"/>
+<path d="M60 48H326" class="ln" marker-end="url(#a2)"/><text x="195" y="42" text-anchor="middle" class="s">PUT /restconf/data/...interface=Loopback100</text>
+<path d="M326 78H64" class="ln" stroke-dasharray="4 3" marker-end="url(#a2)"/><text x="195" y="72" text-anchor="middle" class="s">204 No Content (applied)</text>
+<path d="M60 108H326" class="ln" marker-end="url(#a2)"/><text x="195" y="102" text-anchor="middle" class="s">GET same path (read back)</text>
+<path d="M326 136H64" class="ln" stroke-dasharray="4 3" marker-end="url(#a2)"/><text x="195" y="130" text-anchor="middle" class="s">200 + JSON, compare to SoT</text>
+<text x="500" y="18" text-anchor="middle" class="b">Controller</text><text x="700" y="18" text-anchor="middle" class="b">Cat8000V (NETCONF)</text>
+<line x1="500" y1="26" x2="500" y2="320" class="ln"/><line x1="700" y1="26" x2="700" y2="320" class="ln"/>
+<path d="M500 46H696" class="ln" marker-end="url(#a2)"/><text x="600" y="40" text-anchor="middle" class="s">lock candidate</text>
+<path d="M500 80H696" class="ln" marker-end="url(#a2)"/><text x="600" y="74" text-anchor="middle" class="s">edit-config (target candidate)</text>
+<path d="M500 114H696" class="ln" marker-end="url(#a2)"/><text x="600" y="108" text-anchor="middle" class="s">validate (optional)</text>
+<path d="M500 148H696" class="ln" marker-end="url(#a2)"/><text x="600" y="142" text-anchor="middle" class="s">commit (or confirmed commit)</text>
+<path d="M500 182H696" class="ln" marker-end="url(#a2)"/><text x="600" y="176" text-anchor="middle" class="s">unlock candidate</text>
+<path d="M500 216H696" class="ln" marker-end="url(#a2)"/><text x="600" y="210" text-anchor="middle" class="s">get-config running (read back)</text>
+<rect x="470" y="236" width="270" height="74" rx="4" class="bx3"/>
+<text x="480" y="254" class="s">Failure before commit: discard, nothing reached running.</text>
+<text x="480" y="270" class="s">Confirmed commit: default rollback timer 600 s,</text>
+<text x="480" y="286" class="s">send a plain commit before it expires. RESTCONF</text>
+<text x="480" y="302" class="s">has no confirmed commit (IOS XE 17.5 guide).</text>
+<rect x="10" y="236" width="400" height="74" rx="4" class="bx2"/>
+<text x="20" y="254" class="s">Each RESTCONF request is its own change. A loop of 20</text>
+<text x="20" y="270" class="s">PUTs that fails on item 12 leaves 11 applied. Plan the</text>
+<text x="20" y="286" class="s">recovery: re-run from the SoT is safe if PUT is used,</text>
+<text x="20" y="302" class="s">because PUT replaces the target with the same data.</text>
+</svg>
+<figcaption>Left: RESTCONF per-request. Right: NETCONF candidate workflow. Note that the Ansible <code>netconf_config</code> module performs lock, edit, commit for you.</figcaption>
+</figure>
+
+<div class="layer"><b class="l">L3 Exam detail.</b>
+<ul class="tight">
+<li><b>Candidate on IOS XE.</b> Enable with <code>netconf-yang feature candidate-datastore</code>. Once enabled, running is not writable through NETCONF. The candidate is shared, so lock it before editing (IOS XE 17.5 NETCONF guide). Confirm with <code>show netconf-yang datastores</code>.</li>
+<li><b>netconf_config defaults.</b> <code>target: auto</code> uses candidate and falls back to running. <code>commit: true</code>, <code>lock: always</code>, <code>validate: false</code>, <code>default_operation</code> is merge, replace or none, with no listed default. Format is guessed if unset and falls back to XML.</li>
+<li><b>Per-node operations.</b> The module's own example removes an NTP server with <code>operation="remove"</code> on the element. That is how you delete one list entry inside a merge.</li>
+<li><b>restconf_config defaults.</b> <code>method: post</code>, <code>format: json</code>, <code>path</code> required, <code>content</code> required unless method is delete. Default POST means rerunning a create fails if the resource exists. Set <code>method: put</code> or <code>patch</code> for repeatable pushes.</li>
+<li><b>Check mode and diff.</b> Neither module page documents check mode. <code>netconf_config</code> returns a <code>diff</code> key when diff is on. Plan on your own compare step. <span class="flag">⚠ unverified: check-mode behavior on 8.4.0, test in lab</span></li>
+<li><b>YANG Patch.</b> RFC 8072 defines an ordered list of edits applied atomically with <code>application/yang-patch+json</code>. The IOS XE 17.5 RESTCONF page lists YANG Patch in its restrictions and also in its feature history (17.1.1). Do not rely on it on the lab device without testing.</li>
+</ul></div>
+
+<div class="tbl"><table>
+<caption style="text-align:left;font-weight:600;padding:4px 0">NETCONF vs RESTCONF for a data-driven push (IOS XE 17.5 guides, lab runs 17.16)</caption>
+<tr><th>Aspect</th><th>RESTCONF</th><th>NETCONF</th></tr>
+<tr><td>Transport and port</td><td>HTTPS, requires <code>restconf</code> and <code>ip http secure-server</code></td><td>SSH, 830 default, <code>netconf-yang</code></td></tr>
+<tr><td>Auth</td><td>AAA, privilege 15; token auth not supported on RESTCONF per NETCONF guide</td><td>Privilege 15, default AAA methods only; RSA via <code>ip ssh pubkey-chain</code></td></tr>
+<tr><td>Transaction scope</td><td>One request, one change</td><td>Whole edit-config, optionally staged in candidate</td></tr>
+<tr><td>Rollback aid</td><td>None built in; re-push desired state</td><td><code>discard</code>, confirmed commit (17.1.1+)</td></tr>
+<tr><td>Replace semantics</td><td>PUT replaces target; PATCH merges</td><td><code>default_operation</code> and per-node <code>operation</code></td></tr>
+<tr><td>Encoding</td><td>JSON or XML (<code>application/yang-data+json</code>)</td><td>XML with namespaces</td></tr>
+<tr><td>Ansible module</td><td><code>ansible.netcommon.restconf_config</code> over <code>httpapi</code></td><td><code>ansible.netcommon.netconf_config</code> over <code>netconf</code></td></tr>
+<tr><td>Best for</td><td>Many small independent objects (interfaces, VLAN-like lists)</td><td>Multi-node changes that must land together</td></tr>
+</table></div>
+
+<div class="tbl"><table>
+<caption style="text-align:left;font-weight:600;padding:4px 0">YANG analysis tools: what each answers</caption>
+<tr><th>Tool</th><th>Answers</th><th>Notes</th></tr>
+<tr><td><code>pyang -f tree</code></td><td>Shape, keys, rw/ro, optional</td><td>Notation is RFC 8340. Offline, fast. Availability on the workstation <span class="flag">⚠ unverified</span></td></tr>
+<tr><td>YANG Suite (yangtree)</td><td>Browse a model; select nodes to build a request</td><td>Plugins: filemanager, devices, yangtree, netconf, restconf. Docker or pip install.</td></tr>
+<tr><td>YANG Suite (netconf, restconf)</td><td>Download models from a device, build and send RPCs or RESTCONF calls</td><td>Needs a device profile. RESTCONF on 443 if enabled in the profile.</td></tr>
+<tr><td>NETCONF <code>get-schema</code></td><td>The exact model revision the device runs</td><td>The NETCONF guide references <code>ietf-netconf-monitoring</code> and <code>get-schema</code>.</td></tr>
+<tr><td>Cisco YANG repo</td><td>Models by release</td><td>The RESTCONF guide points to the YangModels repo, <code>vendor/cisco</code>. (Search: YangModels yang vendor cisco xe)</td></tr>
+<tr><td><code>ansible-doc</code></td><td>Module options, defaults, examples</td><td>Works offline once the collection is installed.</td></tr>
+</table></div>
+
+<h2 id="anat">Anatomy</h2>
+<p>Short pieces, pinned to what the sources show. They are not a full solution to the drill.</p>
+
+<h3>1. Read the model (shape from RFC 8340's example)</h3>
+<pre><code>+--rw interfaces
+   +--rw interface* [name]
+      +--rw name           string
+      +--rw description?   string
+      +--rw type           identityref
+      +--rw enabled?       boolean</code></pre>
+<p><code>interface*</code> is a list with key <code>name</code>. <code>type</code> has no <code>?</code>, so it is mandatory in the payload. Your SoT record needs <code>name</code> and <code>type</code>; description and enabled are optional.</p>
+
+<h3>2. Source of truth record</h3>
+<pre><code># host_vars/r1.yml
+loopbacks:
+  - { name: Loopback100, description: "SoT: mgmt anchor", enabled: true, ip: 10.100.0.1, mask: 255.255.255.255 }
+  - { name: Loopback101, description: "SoT: test",        enabled: false, ip: 10.100.0.2, mask: 255.255.255.255 }</code></pre>
+<p>Ansible reads <code>host_vars/&lt;host&gt;</code> files in YAML or JSON and merges them with group variables; <code>group_vars</code> or <code>host_vars</code> next to the playbook override those next to the inventory.</p>
+
+<h3>3. Connection variables for RESTCONF</h3>
+<pre><code># group_vars/cat8k.yml
+ansible_connection: ansible.netcommon.httpapi
+ansible_network_os: ansible.netcommon.restconf
+ansible_httpapi_use_ssl: true          # ⚠ unverified on the fetched pages
+ansible_httpapi_validate_certs: false  # ⚠ lab self-signed cert; unverified name
+# ansible_httpapi_restconf_root: /restconf   (default per the httpapi plugin page)</code></pre>
+
+<h3>4. Push with RESTCONF (module options from the 8.7.1 page)</h3>
+<pre><code>- ansible.netcommon.restconf_config:
+    path: "/data/ietf-interfaces:interfaces/interface={{ lo.name }}"   # ⚠ path prefix: module page example uses /config/..., IOS XE guide uses /restconf/data/...
+    method: put
+    format: json
+    content: "{{ {'ietf-interfaces:interface': [body]} | to_json }}"
+  loop: "{{ loopbacks }}"
+  loop_control: { loop_var: lo, label: "{{ lo.name }}" }</code></pre>
+<p><span class="flag">⚠ unverified:</span> whether the httpapi plugin prepends <code>/restconf</code> so <code>path</code> starts at <code>/data/...</code>. The module example uses <code>/config/...</code> and the IOS XE guide uses <code>/restconf/data/...</code>. Test with one GET before looping.</p>
+
+<h3>5. Push with NETCONF (module options from the 8.7.1 page)</h3>
+<pre><code>- ansible.netcommon.netconf_config:
+    target: candidate
+    default_operation: merge
+    lock: always
+    validate: true
+    content: "{{ lookup('ansible.builtin.template', 'interfaces.xml.j2') }}"</code></pre>
+<p>The module commits by default (<code>commit: true</code>) when the candidate capability exists. With <code>commit: false</code> you own the commit or discard.</p>
+
+<h2 id="fix">Break/fix</h2>
+<div class="tbl"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>400 on PUT</td><td>Body key does not match URI key, or a node name lacks its module prefix at the top</td><td><code>pyang -f tree</code> for the list key; compare URI <code>=Loopback100</code> with body <code>name</code></td><td>Make body key equal URI key; prefix the first node with <code>module:</code></td></tr>
+<tr><td>401 or no response from RESTCONF</td><td>User below privilege 15, AAA not set for the default methods, or <code>restconf</code> / <code>ip http secure-server</code> missing</td><td><code>show platform software yang-management process</code>; <code>curl -k https://host/.well-known/host-meta</code></td><td>Fix AAA and privilege; enable both commands; rerun</td></tr>
+<tr><td>NETCONF edit succeeds, running unchanged</td><td>Candidate enabled and no commit happened (<code>commit: false</code> or raw RPC without <code>&lt;commit/&gt;</code>)</td><td><code>show netconf-yang datastores</code>; get-config on running</td><td>Commit, or leave <code>commit: true</code>; discard stale candidate first</td></tr>
+<tr><td>Edit rejected, lock error</td><td>Another session holds the global lock or candidate lock</td><td><code>show netconf-yang sessions detail</code></td><td>Wait or kill the session; locks are meant to be short-lived</td></tr>
+<tr><td>Task reports changed every run, read-back differs</td><td>Types differ (string "true" vs boolean) from hand-templated JSON, or you compare to a device that normalizes values</td><td>Diff parsed <code>restconf_get</code> output against your dict</td><td>Build a dict and use <code>to_json</code>; compare only fields you own</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline, on the workstation)</h2>
+<ul class="tight">
+<li><code>ansible-doc ansible.netcommon.restconf_config</code> and <code>ansible-doc ansible.netcommon.netconf_config</code>: options, defaults, examples. <code>ansible-doc -t httpapi -l</code> lists httpapi plugins <span class="flag">⚠ unverified output</span>.</li>
+<li><code>ansible-inventory --host r1</code>: shows the merged host variables your tasks will see. Use it before blaming a template.</li>
+<li><code>pyang -f tree ietf-interfaces.yang</code>, then <code>pyang --help</code> for the depth and path flags. <span class="flag">⚠ unverified: pyang and model files present offline</span></li>
+<li><code>curl -k -u user:pass -H 'Accept: application/yang-data+json' https://host/restconf/data/ietf-interfaces:interfaces</code> as a one-line GET to prove the path before automating.</li>
+<li>Pull the exact model from the device with NETCONF <code>get-schema</code> if the repo revision is in doubt. <span class="flag">⚠ unverified: client tooling on the workstation</span></li>
+<li>Start a YANG Suite container only if the exam image provides Docker. Do not count on it.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<div class="box">
+<p><b>Target:</b> Cat8000V. <b>Requirement:</b> from the SoT file above, create Loopback100 and Loopback101 with their descriptions and enabled state using RESTCONF. Then change Loopback101's description in the SoT only, rerun, and prove only that field changed on the device. Finish by reading both interfaces back and comparing to the SoT.</p>
+<p><b>Reference:</b> model <code>ietf-interfaces</code>; list <code>interface</code>, key <code>name</code>; leaves <code>description</code>, <code>type</code>, <code>enabled</code>. Loopback type identity <code>iana-if-type:softwareLoopback</code> <span class="flag">⚠ unverified on 17.16</span>. IPv4 under <code>ietf-ip:ipv4</code> <span class="flag">⚠ unverified</span>.</p>
+<p><b>Verify:</b> <code>show ip interface brief | include Loopback10</code>; <code>show running-config interface Loopback101</code>; a <code>restconf_get</code> on the interface path and an <code>assert</code> on the description.</p>
+<details><summary>Hint</summary><p>Use <code>method: put</code> so reruns converge. Build the body dict once in <code>set_fact</code>, serialize it with <code>to_json</code> in the task. Check the exact path with a single GET first.</p></details>
+<details><summary>Solution outline</summary>
+<pre><code>- hosts: cat8k
+  gather_facts: false
+  tasks:
+    - ansible.netcommon.restconf_config:
+        path: "/data/ietf-interfaces:interfaces/interface={{ lo.name }}"
+        method: put
+        content: &gt;-
+          {{ {'ietf-interfaces:interface': [{'name': lo.name, 'description': lo.description,
+               'type': 'iana-if-type:softwareLoopback', 'enabled': lo.enabled}]} | to_json }}
+      loop: "{{ loopbacks }}"
+      loop_control: { loop_var: lo, label: "{{ lo.name }}" }
+    - ansible.netcommon.restconf_get:
+        path: "/data/ietf-interfaces:interfaces/interface={{ lo.name }}"
+      loop: "{{ loopbacks }}"
+      loop_control: { loop_var: lo, label: "{{ lo.name }}" }
+      register: rb
+    # assert on rb.results[*].response after confirming the response key name with a debug task  ⚠ unverified</code></pre>
+<p>If the path form fails, try the <code>/restconf/data/...</code> form noted in Anatomy 4. Skip IPv4 first, add it after the base push works.</p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<div class="box">
+<ol>
+<li>Your payload passes pyang but the device returns 400. Name two mismatches between the URI and the body of a RESTCONF PUT on a list entry.
+<details><summary>Answer</summary><p>The list key value in the URI differs from the key leaf in the body, or the body's top node lacks the <code>module:</code> prefix (or is not wrapped as the single list entry). Also a mandatory leaf like <code>type</code> missing.</p></details></li>
+<li>Why does <code>restconf_config</code> with its defaults fail on the second run of a create, and what two settings make the run repeatable?
+<details><summary>Answer</summary><p>Default <code>method</code> is post, which creates and fails when the resource exists. Use <code>put</code> (replace) or <code>patch</code> (merge).</p></details></li>
+<li>On a device with candidate enabled, <code>netconf_config</code> returns ok but <code>show run</code> is unchanged. List two causes.
+<details><summary>Answer</summary><p><code>commit: false</code> with no manual commit; or another session's lock and a failed earlier run left a stale candidate. Also check you did not target a different datastore. Verify with <code>show netconf-yang datastores</code> and get-config on running.</p></details></li>
+<li>Give the confirmed-commit default timer on IOS XE 17.5 and say whether RESTCONF supports it.
+<details><summary>Answer</summary><p>600 seconds; RESTCONF does not support confirmed commit.</p></details></li>
+<li>(from 2026-10-07) An XPath filter returns success and empty data. List the two most likely causes and how you tell them apart.
+<details><summary>Answer</summary><p>Path, key or namespace prefix does not match the model, versus the data genuinely has no matching entry. Fetch the parent node without a filter: if the entry is there, the filter is wrong; if not, the data is absent. <i>Answer reconstructed from earlier pages.</i></p></details></li>
+<li>(from 2026-10-12) On ansible-core 2.19, <code>when: interfaces</code> with a list fails. What is the fix?
+<details><summary>Answer</summary><p>Conditionals must yield a boolean in 2.19. Use an explicit test such as <code>interfaces | length &gt; 0</code>. Exact error text <span class="flag">⚠ unverified</span>; reconstructed from earlier pages.</p></details></li>
+</ol>
+</div>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="tight">
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - RESTCONF Protocol</a> · IOS XE 17.5 · verified 2026-10-15. Best for: enable commands, method table, logging examples with status codes.</li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - NETCONF Protocol</a> · IOS XE 17.5 · verified 2026-10-15. Best for: candidate datastore, locks, confirmed commit, show commands.</li>
+<li><span class="badge">✅</span><a href="https://developer.cisco.com/docs/yangsuite/" target="_blank" rel="noopener">Welcome to Cisco YANG Suite!</a> · older docs (Python 3.6 to 3.8 install; GitHub README says 3.9+) · verified 2026-10-15. Best for: plugin list and install options.</li>
+</ul>
+<h3>Standards</h3>
+<ul class="tight">
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8340" target="_blank" rel="noopener">RFC 8340: YANG Tree Diagrams</a> · RFC · verified 2026-10-15. Best for: decoding <code>pyang -f tree</code> output.</li>
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8072" target="_blank" rel="noopener">RFC 8072: YANG Patch Media Type</a> · RFC · verified 2026-10-15. Best for: atomic ordered edits and the seven edit operations.</li>
+</ul>
+<h3>Third-party (official)</h3>
+<ul class="tight">
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_config_module.html" target="_blank" rel="noopener">ansible.netcommon.netconf_config module – netconf device configuration</a> · netcommon 8.7.1 (lab 8.4.0) · verified 2026-10-15. Best for: target, commit, lock, default_operation tables and the fetch-modify-reapply example.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/restconf_config_module.html" target="_blank" rel="noopener">ansible.netcommon.restconf_config module – Handles create, update, read and delete of configuration data on RESTCONF enabled devices.</a> · netcommon 8.7.1 (lab 8.4.0) · verified 2026-10-15. Best for: method defaults and connection settings.</li>
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/inventory_guide/intro_inventory.html" target="_blank" rel="noopener">How to build your inventory — Ansible Community Documentation</a> · latest · verified 2026-10-15. Best for: host_vars/group_vars layout and precedence.</li>
+</ul>
+
+<footer>
+<p><b>Links:</b> 8 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims, test in lab:</b> Domain 2 weight; pyang flags and presence on the workstation; RESTCONF <code>path</code> prefix handling by the httpapi plugin (<code>/data/...</code> vs <code>/restconf/data/...</code>); <code>ansible_httpapi_use_ssl</code> and <code>validate_certs</code> names; check-mode behavior of both modules; <code>ietf-interfaces</code>, <code>ietf-ip</code> and <code>iana-if-type:softwareLoopback</code> on Cat8000V 17.16; <code>restconf_get</code> response key; NETCONF <code>get-schema</code> client on the workstation; YANG Patch support on the lab device; <code>ansible-doc -t httpapi</code> output; 17.16 differences from the 17.5 guides; recall answers 5 and 6; RFC 6241 edit-config attribute details (not fetched this run).</p>
+<p><b>Version flags:</b> Cisco guides are 17.5, lab is 17.16. netcommon docs 8.7.1 (httpapi plugin page 8.6.2) versus lab 8.4.0. The module page example tested on IOS XE 16.12.</p>
+<p><b>Tomorrow:</b> Friday weekly review 3 (units 9 to 12: 2.7.c, 3.5.a-b, 1.5, 2.6).</p>
+</footer>
+</div>
+
+</body></html>

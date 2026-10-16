@@ -1,0 +1,192 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Weekly Review 2</title>
+<style>
+:root{--bg:#fafafa;--fg:#1d2330;--mut:#5b6577;--card:#fff;--bd:#d9dee8;--acc:#0b6bcb;--ok:#1a7f4b;--warn:#b35c00;--code:#f0f2f6;--s1:#dbeafe;--s2:#dcfce7;--s3:#fef3c7;--s4:#fce7f3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--fg:#e6e9f0;--mut:#9aa4b8;--card:#1a1f2b;--bd:#2d3546;--acc:#6cb2ff;--ok:#4cc38a;--warn:#f0a050;--code:#0e1118;--s1:#1e3a5f;--s2:#1d4a35;--s3:#5a4510;--s4:#5a2444;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#12151c;--fg:#e6e9f0;--mut:#9aa4b8;--card:#1a1f2b;--bd:#2d3546;--acc:#6cb2ff;--ok:#4cc38a;--warn:#f0a050;--code:#0e1118;--s1:#1e3a5f;--s2:#1d4a35;--s3:#5a4510;--s4:#5a2444;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 60px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 0;z-index:5;font-size:13px;display:flex;flex-wrap:wrap;gap:4px 12px}
+nav a{color:var(--acc);text-decoration:none}
+h1{font-size:26px;margin:18px 0 6px}h2{font-size:20px;margin:34px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:16px;margin:18px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:14px}.meta b{display:block;color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--code)}
+pre{background:var(--code);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+details{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:6px 0}summary{cursor:pointer;font-weight:600}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--fg);font:12px system-ui,sans-serif}svg .b{stroke:var(--bd);stroke-width:1.2}svg .l{stroke:var(--mut);stroke-width:1.5;fill:none}svg .m{fill:var(--mut)}
+.badge{font-size:12px;padding:1px 6px;border-radius:10px;border:1px solid var(--ok);color:var(--ok);white-space:nowrap}
+.warn{color:var(--warn)}li{margin:3px 0}.mut{color:var(--mut);font-size:14px}
+label{display:block;margin:4px 0}
+</style>
+<main>
+<nav><a href="#top">Top</a><a href="#map">Week map</a><a href="#recall">Recall (12)</a><a href="#drill">Integration drill</a><a href="#check">Self-check</a><a href="#deeper">Go deeper</a><a href="#foot">Footer</a></nav>
+<h1 id="top">Weekly Review 2: REST/GraphQL, dial-out telemetry, NETCONF XPath, CI/CD troubleshooting</h1>
+<div class="card meta">
+<div><b>Date</b>Fri 2026-10-09</div><div><b>Blueprint</b>2.3 · 3.4 (dial-out) · 2.5 · 1.4</div><div><b>Domains</b>2 Automation (2.3, 2.5), 3 Telemetry (3.4), 1 Pipelines (1.4)</div><div><b>Tier</b>Review (T1 ×2, T2 ×2)</div><div><b>Read time</b>~18 min</div><div><b>Position</b>Review 2 · units 5–8 of 49 done</div></div>
+
+<h2>Snapshot</h2>
+<ul>
+<li>This week's four units share one failure pattern: a call succeeds (HTTP 200, "Valid", pipeline green-ish, empty reply) and the real problem sits one layer down.</li>
+<li>Telemetry and NETCONF both depend on exact YANG paths; telemetry adds units (centiseconds) and receiver immutability.</li>
+<li>APIC and Catalyst Center share a shape: authenticate, call, then poll or page. GraphQL moves error reporting into the body.</li>
+<li>CI/CD triage starts from the pipeline type (branch vs MR) and the executor, not the script.</li>
+<li>Below: 12 recall questions, one integration drill, and a checklist for marking <code>weak:</code> in topic-queue.md.</li>
+</ul>
+
+<h2 id="map">Week map</h2>
+<div class="card"><svg viewBox="0 0 760 250" role="img" aria-label="Week map">
+<rect class="b" x="10" y="20" width="170" height="90" rx="8" style="fill:var(--s1)"/><text x="20" y="42" font-weight="700">Mon 2.3 REST + GraphQL</text><text x="20" y="62">auth → call → task/page</text><text x="20" y="80">GraphQL: data / errors</text><text x="20" y="98">200 ≠ success</text>
+<rect class="b" x="200" y="20" width="170" height="90" rx="8" style="fill:var(--s2)"/><text x="210" y="42" font-weight="700">Tue 3.4 dial-out</text><text x="210" y="62">device → collector (gRPC)</text><text x="210" y="80">period = centiseconds</text><text x="210" y="98">receivers immutable</text>
+<rect class="b" x="390" y="20" width="170" height="90" rx="8" style="fill:var(--s3)"/><text x="400" y="42" font-weight="700">Wed 2.5 XPath</text><text x="400" y="62">exact keys, no wildcards*</text><text x="400" y="80">union: NETCONF only*</text><text x="400" y="98">empty data ≠ error</text>
+<rect class="b" x="580" y="20" width="170" height="90" rx="8" style="fill:var(--s4)"/><text x="590" y="42" font-weight="700">Thu 1.4 CI/CD triage</text><text x="590" y="62">duplicate pipelines</text><text x="590" y="80">dind TLS 2375→2376</text><text x="590" y="98">logs → config → runner</text>
+<path class="l" d="M95 110 V150 H665 V110"/><path class="l" d="M285 110 V150 M475 110 V150"/>
+<rect class="b" x="170" y="160" width="420" height="70" rx="8" style="fill:var(--code)"/><text x="180" y="182" font-weight="700">Shared lesson: verify one layer below the "success" signal</text><text x="180" y="202">2.3 task isError · 3.4 receiver state · 2.5 capability + path · 1.4 pipeline type</text><text x="180" y="220" class="m">*telemetry XPath rules (3.4/3.5 guide), not general NETCONF get</text>
+</svg></div>
+
+<h2 id="recall">Recall check: 12 questions (3 per topic)</h2>
+<p class="mut">Answer aloud first. Answers marked ⚠ are not backed by a source fetched this run.</p>
+
+<h3>2.3 REST and GraphQL</h3>
+<details><summary>1. Catalyst Center: what happens between getting a token and confirming a config change?</summary>
+<p>Send the token in the <code>X-Auth-Token</code> header. PUT/POST/DELETE return a <code>taskId</code> and task URL. GET the task and check <code>isError</code>; <code>false</code> means success. The token comes from a POST to the auth endpoint with basic auth, under the key <code>Token</code>.</p></details>
+<details><summary>2. An APIC class query returns fewer objects than expected. What two parameters do you check?</summary>
+<p><code>page</code> (starts at 0) and <code>page-size</code>. Each query builds a new result set, so unrequested pages can't be fetched later. Log record classes cap at 2,000 objects per page unless <code>page=0</code> (5.2(3)+). ⚠ Default page size for non-log classes: not stated on the page; test on the sandbox APIC.</p></details>
+<details><summary>3. GraphQL returns HTTP 200 and <code>data.field</code> is null. Where do you look?</summary>
+<p>The <code>errors</code> array in the body. A field error during execution yields a partial response: other fields return values, the failed one is null, and both <code>data</code> and <code>errors</code> appear. The transport worked, so the status says nothing about field success. Request errors (syntax/validation) omit <code>data</code>.</p></details>
+
+<h3>3.4 Dial-out telemetry</h3>
+<details><summary>4. You change the receiver port on a live subscription and the collector never sees it. Why, and what is the fix?</summary>
+<p>Receivers can't be modified. Delete the receiver and create a new one. Rewriting a receiver with identical settings forces a reconnect to a disconnected one. Configured subscriptions are removed only through configuration (<code>no telemetry ietf subscription N</code>), not RPCs.</p></details>
+<details><summary>5. What does <code>update-policy periodic 30</code> do?</summary>
+<p>The period is in centiseconds (RFC 8641 and the IOS XE guide), so 30 means 0.3 s, not 30 s. The 17.5 guide's minimum is 100 (1 s). 30 s is <code>3000</code>. ⚠ Whether 17.16 rejects 30 or accepts it: test in lab.</p></details>
+<details><summary>6. The subscription says <code>Valid</code>. Name the next three checks.</summary>
+<p>(1) Receiver state: is it connected, not connecting/disconnected (NETCONF get on <code>Cisco-IOS-XE-mdt-oper</code> mdt-subscriptions, per guide). (2) Reachability from the right VRF (<code>source-vrf</code>) and a listener on the receiver port. (3) Data actually arriving at the collector. "Valid" only means the device accepted the subscription; subtree filters make it invalid.</p></details>
+
+<h3>2.5 NETCONF XPath</h3>
+<details><summary>7. An XPath filter returns success and empty data. Two likely causes?</summary>
+<p>Path/namespace/prefix doesn't match the model (wrong module or key), or the path is right and there's simply no matching data. Tell them apart by running the parent path with no key predicate and by checking the YANG model. ⚠ Prefix declaration behavior for plain <code>get</code> on IOS XE: RFC 6241 s8.9 was unreadable via the fetch tool; test in lab.</p></details>
+<details><summary>8. Where is XPath restricted in the guides?</summary>
+<p>IOS XE 17.5 telemetry guide: key names and values must be exact (no ranges/wildcards), union works only for NETCONF transport not gRPC, subtree filters unsupported (subscription goes invalid). NX-OS 9.3(x) NETCONF Agent chapter: XPath unsupported, subtree filter only (from the 10-07 fetch of that chapter, not re-fetched today).</p></details>
+<details><summary>9. Which Ansible module takes an XPath filter, and what must the device support?</summary>
+<p><code>ansible.netcommon.netconf_get</code> (<code>filter</code> accepts XML, XPath, JSON or dict). The server must support the XPath capability or the call fails. Datastore via <code>source</code>: running/candidate/startup.</p></details>
+
+<h3>1.4 CI/CD troubleshooting</h3>
+<details><summary>10. A push to an MR branch creates two pipelines. Cause and fix?</summary>
+<p>The config runs for both branches and merge requests. Adjust job <code>rules</code>, or add <code>workflow:rules</code> to switch from branch pipelines to MR pipelines once an MR is open.</p></details>
+<details><summary>11. Job can't reach <code>tcp://docker:2375</code>. What changed and what's the second error?</summary>
+<p>Docker-in-Docker 19.03+ starts with TLS automatically, so clients use 2376 with the certs (<code>DOCKER_TLS_CERTDIR</code>, <code>DOCKER_HOST</code>, <code>DOCKER_TLS_VERIFY</code>). If the host runs Docker Engine 20.10+ and the dind service is older than 20.10, builds fail with a cgroups mountpoint error. Use dind 20.10.x or newer.</p></details>
+<details><summary>12. You fixed the YAML but retrying the failed job fails the same way. Why?</summary>
+<p>⚠ Not stated on the debugging page fetched today. From general GitLab behavior, retrying a job reuses the pipeline's existing configuration; run a new pipeline to pick up the change. Verify on your GitLab instance. Where to look first: the debugging page's "Verify syntax" (pipeline editor / CI Lint) and "Verify job output" sections.</p></details>
+
+<h2 id="drill">Integration drill (~25 min): NETCONF read-back gate for a telemetry change</h2>
+<div class="card">
+<p><b>Combines:</b> 2.5 (XPath), 3.4 (dial-out subscription), 1.4 (CI triage), 2.3 (checking by API response, not by status code).</p>
+<p><b>Requirement.</b> On Cat8000V, a dial-out subscription streams <code>memory-statistics</code> every 60 s to a collector. A pipeline job must prove the subscription exists and its receiver is connected before reporting success. The job must also not run twice per push.</p>
+<p><b>Reference (from this week's pages, ⚠ verify names on the box):</b> subscription CLI <code>telemetry ietf subscription</code>, <code>filter xpath</code>, <code>update-policy periodic</code> (centiseconds), <code>receiver ip address &lt;ip&gt; &lt;port&gt; protocol grpc-tcp</code>; state read via <code>Cisco-IOS-XE-mdt-oper</code> mdt-subscriptions; Ansible <code>ansible.netcommon.netconf_get</code> with <code>filter</code>; GitLab <code>workflow:rules</code>.</p>
+<p><b>Target.</b> Cat8000V (NETCONF enabled with <code>netconf-yang</code>, port 830). No cisco.ios collection on the workstation; use netcommon modules only.</p>
+<ol>
+<li>Configure the subscription with a 60 s period (get the unit right) and a receiver in the management VRF.</li>
+<li>Write a play that runs <code>netconf_get</code> against the mdt-oper subscription data with an XPath filter narrowed to your subscription id, and asserts the receiver state.</li>
+<li>Add a pipeline with the job rules so it runs once per push whether or not an MR is open.</li>
+<li>Break it on purpose: change the period to 60 and see what the device reports.</li>
+</ol>
+<p><b>Verify:</b> <code>show telemetry ietf subscription all detail</code> shows <code>Valid</code>; the play's assert fails when the receiver is not connected; only one pipeline appears per push.</p>
+<details><summary>Hint</summary><p>XPath keys must be exact: filter on the subscription id, not a wildcard. Check <code>ansible-doc ansible.netcommon.netconf_get</code> for how a namespace/prefix is passed. For the pipeline, the MR-vs-branch switch lives in <code>workflow:rules</code>.</p></details>
+<details><summary>Solution skeleton (⚠ unverified — test in lab)</summary>
+<pre><code># IOS XE (Cat8000V)
+telemetry ietf subscription 101
+ encoding encode-kvgpb
+ filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic
+ stream yang-push
+ update-policy periodic 6000
+ source-vrf Mgmt-intf
+ receiver ip address 10.28.35.45 57555 protocol grpc-tcp
+
+# Play (names unverified)
+- ansible.netcommon.netconf_get:
+    source: running
+    filter: "&lt;your XPath to mdt-subscriptions entry with exact id&gt;"
+    display: json
+  register: sub
+- ansible.builtin.assert:
+    that: "'connected' in (sub | to_json)"   # confirm real state string on the box
+
+# .gitlab-ci.yml (rule shape, see MR troubleshooting page)
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH &amp;&amp; $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH</code></pre>
+<p class="warn">The first snippet follows the 17.5 guide's sample; the <code>$CI_OPEN_MERGE_REQUESTS</code> rule was not on today's fetched MR troubleshooting page, so test it. State string "connected" is a guess; the guide shows <code>rcvr-state-connecting</code>.</p></details>
+</div>
+
+<h2>Cross-topic triage flow</h2>
+<div class="card"><svg viewBox="0 0 760 230" role="img" aria-label="Triage flow">
+<rect class="b" x="10" y="85" width="120" height="50" rx="8" style="fill:var(--s1)"/><text x="22" y="108">"It worked"</text><text x="22" y="124" class="m">200 / Valid / green</text>
+<path class="l" d="M130 110 H165"/>
+<rect class="b" x="165" y="85" width="130" height="50" rx="8" style="fill:var(--s3)"/><text x="175" y="108">Which layer lies?</text>
+<path class="l" d="M295 100 L350 35 H400"/><path class="l" d="M295 108 L350 85 H400"/><path class="l" d="M295 112 L350 140 H400"/><path class="l" d="M295 120 L350 195 H400"/>
+<rect class="b" x="400" y="15" width="350" height="40" rx="6" style="fill:var(--s2)"/><text x="410" y="40">API: body errors / task isError / page parameters</text>
+<rect class="b" x="400" y="65" width="350" height="40" rx="6" style="fill:var(--s2)"/><text x="410" y="90">Telemetry: receiver state, period units, VRF</text>
+<rect class="b" x="400" y="120" width="350" height="40" rx="6" style="fill:var(--s2)"/><text x="410" y="145">NETCONF: capability, namespace, exact keys</text>
+<rect class="b" x="400" y="175" width="350" height="40" rx="6" style="fill:var(--s2)"/><text x="410" y="200">CI: pipeline type, executor, TLS port, retry vs new run</text>
+</svg></div>
+
+<h2>Break/fix table</h2>
+<div class="card tw"><table><tr><th>Symptom</th><th>Cause</th><th>Check</th><th>Fix</th></tr>
+<tr><td>Subscription ok, collector silent</td><td>Receiver not connected or wrong VRF</td><td>Receiver state in mdt-oper; <code>show telemetry ietf subscription all detail</code></td><td>Delete/recreate receiver; set <code>source-vrf</code></td></tr>
+<tr><td>Updates arrive at 0.3 s intervals</td><td>Period in centiseconds</td><td>Config value</td><td>Use 6000 for 60 s</td></tr>
+<tr><td>GET filter returns empty</td><td>Wrong prefix/key, or no data</td><td>Run parent path without predicate</td><td>Fix path to match model</td></tr>
+<tr><td>HTTP 200, field null</td><td>GraphQL field error</td><td><code>errors</code> array</td><td>Fix query/permissions per error</td></tr>
+<tr><td>Two pipelines per push</td><td>Branch and MR pipelines both run</td><td>Pipeline list for the commit</td><td><code>workflow:rules</code> / job rules</td></tr></table></div>
+
+<h2>Speed notes</h2>
+<ul>
+<li><code>ansible-doc ansible.netcommon.netconf_get</code> for filter/source/display options offline.</li>
+<li><code>pyang -f tree</code> on the Cisco model files to confirm keys before writing an XPath (⚠ pyang and model files on the workstation not confirmed).</li>
+<li><code>show telemetry ietf subscription all detail</code> on the router; the Mgmt VRF name is lab-specific.</li>
+<li>Re-run a pipeline, not a job, after changing YAML (⚠ see Q12).</li>
+</ul>
+
+<h2 id="check">Self-assessment: flag <code>weak:</code> in topic-queue.md</h2>
+<div class="card">
+<label><input type="checkbox"> 2.3: I can walk Catalyst Center auth → task poll without notes.</label>
+<label><input type="checkbox"> 2.3: I know where GraphQL reports errors and what a partial response looks like.</label>
+<label><input type="checkbox"> 3.4: I can write a dial-out subscription with the right period units from memory.</label>
+<label><input type="checkbox"> 3.4: I can say what "Valid" does and does not prove, and where receiver state lives.</label>
+<label><input type="checkbox"> 2.5: I can build an XPath with exact keys and know which restrictions come from telemetry versus NETCONF.</label>
+<label><input type="checkbox"> 1.4: I can diagnose duplicate pipelines and the dind 2375/2376 error in under two minutes.</label>
+<p class="mut">Any unchecked box: add <code>weak:</code> to that unit's line in daily-notes/topic-queue.md. Two or more unchecked in 3.4/2.5 means rebuild them in the Tier-1 second pass first.</p></div>
+
+<h2 id="deeper">Go deeper (verified 2026-10-09)</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Model-Driven Telemetry (Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x)</a> <span class="badge">✅ IOS XE 17.5</span> verified 2026-10-09. Best for dial-out CLI, centisecond period, receiver immutability, XPath limits.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">NETCONF Protocol (Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x)</a> <span class="badge">✅ IOS XE 17.5</span> verified 2026-10-09. Best for enabling NETCONF and the candidate datastore.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/dcn/aci/apic/all/apic-rest-api-configuration-guide/cisco-apic-rest-api-configuration-guide-42x-and-later/m_using_the_rest_api.html" target="_blank" rel="noopener">Cisco APIC REST API Configuration Guide, Release 4.2(x) and Later - Using the REST API</a> <span class="badge">✅ APIC 4.2(x)+</span> verified 2026-10-09. Best for paging, aaaLogin and APIC-cookie.</li>
+<li><a href="https://developer.cisco.com/docs/catalyst-center/api-quick-start/" target="_blank" rel="noopener">API Quick Start - Cisco Catalyst Center API 3.1.6 - Cisco DevNet</a> <span class="badge">✅ 3.1.6</span> verified 2026-10-09. Best for token → taskId → isError flow.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641: Subscription to YANG Notifications for Datastore Updates</a> <span class="badge">✅ RFC</span> verified 2026-10-09. Best for period and dampening-period semantics.</li>
+<li><a href="https://graphql.org/learn/response/" target="_blank" rel="noopener">Response | GraphQL</a> <span class="badge">✅ current</span> verified 2026-10-09. Best for data/errors/extensions and partial responses.</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_get_module.html" target="_blank" rel="noopener">ansible.netcommon.netconf_get module – Fetch configuration/state data from NETCONF enabled network devices</a> <span class="badge">✅ netcommon 8.6.2 (lab 8.4.0)</span> verified 2026-10-09. Best for filter, source, display, lock.</li>
+<li><a href="https://docs.gitlab.com/ci/pipelines/mr_pipeline_troubleshooting/" target="_blank" rel="noopener">Troubleshooting merge request pipelines | GitLab Docs</a> <span class="badge">✅ GitLab 19.x (pin 18.4)</span> verified 2026-10-09. Best for duplicate pipelines and workflow:rules.</li>
+<li><a href="https://docs.gitlab.com/ci/docker/docker_build_troubleshooting/" target="_blank" rel="noopener">Troubleshooting Docker Build | GitLab Docs</a> <span class="badge">✅ GitLab 19.x (pin 18.4)</span> verified 2026-10-09. Best for dind TLS and cgroups errors.</li>
+<li><a href="https://docs.gitlab.com/ci/debugging/" target="_blank" rel="noopener">Debugging CI/CD pipelines | GitLab Docs</a> <span class="badge">✅ GitLab 19.x (pin 18.4)</span> verified 2026-10-09. Best for syntax validation and job-output checks.</li>
+</ul>
+
+<h2 id="foot">Footer</h2>
+<div class="card">
+<p><b>Links: 10 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims:</b> default APIC page size outside log classes; 17.16 behavior for period 30 and receiver state strings; <code>$CI_OPEN_MERGE_REQUESTS</code> rule (not on today's MR page); retry-uses-old-config behavior (Q12); NX-OS XPath statement (from 10-07 fetch); namespace/prefix handling in <code>netconf_get</code>; pyang and model files on the workstation; mdt-oper XPath for the drill; Docker-in-Docker pin vs docs 19.x.</p>
+<p><b>Version flags:</b> Cisco telemetry/NETCONF pages are 17.5 (lab 17.16); GitLab docs are 19.x (pin 18.4); netcommon docs 8.6.2 vs lab 8.4.0.</p>
+<p><b>Tomorrow:</b> none (weekend). Monday 2026-10-12: Unit 9, 2.7.c Ansible role variables and templating.</p></div>
+</main>
+
+</body></html>

@@ -1,0 +1,280 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagnosing App Performance: AppDynamics and ThousandEyes</title>
+<style>
+:root{--bg:#f7f8fa;--fg:#1c2330;--muted:#5b6678;--card:#ffffff;--line:#d5dbe5;--accent:#0b66c3;--accent2:#c2410c;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--code:#eef1f6;--svg-a:#dbeafe;--svg-b:#fde7d3;--svg-c:#dcfce7;--svg-d:#fee2e2;--svg-line:#4b5870}
+@media (prefers-color-scheme:dark){:root{--bg:#10141b;--fg:#e5e9f0;--muted:#97a3b6;--card:#171c26;--line:#2c3544;--accent:#6aa9f0;--accent2:#f0a36a;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--code:#1d2431;--svg-a:#1e3a5f;--svg-b:#5a3318;--svg-c:#17452b;--svg-d:#5b2222;--svg-line:#9aa8bf}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+nav.toc{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);padding:6px 12px;overflow-x:auto;white-space:nowrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none;margin-right:12px}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:.2em 0}
+h2{font-size:1.25rem;margin:1.8em 0 .4em;border-bottom:1px solid var(--line);padding-bottom:4px}
+h3{font-size:1.05rem;margin:1.2em 0 .3em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:.9rem}
+.meta b{color:var(--fg)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+.tw{overflow-x:auto;margin:10px 0}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-x:auto;font-size:.82rem;line-height:1.4}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+svg{width:100%;height:auto;display:block;margin:10px 0}
+svg text{fill:var(--fg);font-family:-apple-system,"Segoe UI",Roboto,sans-serif}
+svg .box{stroke:var(--svg-line);stroke-width:1.5}
+svg .ln{stroke:var(--svg-line);stroke-width:1.8;fill:none}
+svg .ah{fill:var(--svg-line)}
+.fa{fill:var(--svg-a)}.fb{fill:var(--svg-b)}.fc{fill:var(--svg-c)}.fd{fill:var(--svg-d)}.fn{fill:none}
+.b{display:inline-block;font-size:.72rem;padding:1px 6px;border-radius:9px;border:1px solid var(--line);margin-right:4px;vertical-align:1px}
+.ok{color:var(--ok);border-color:var(--ok)}.warnb{color:var(--warn);border-color:var(--warn)}
+details{border:1px solid var(--line);border-radius:8px;padding:6px 10px;margin:6px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+a{color:var(--accent)}
+.flag{color:var(--warn)}
+ul{padding-left:1.2em}li{margin:.2em 0}
+.small{font-size:.85rem;color:var(--muted)}
+.l{border-left:4px solid var(--accent);padding-left:10px;margin:10px 0}
+</style>
+</head>
+<body>
+<nav class="toc">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Fundamentals→exam</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a><a href="#foot">Footer</a>
+</nav>
+<main>
+
+<div class="card">
+<h1>1.5 Diagnose application performance issues (AppDynamics, ThousandEyes)</h1>
+<div class="meta">
+<span><b>Date</b> Wed 2026-10-14</span>
+<span><b>Domain</b> 1 (weight <span class="flag">⚠ unverified</span>)</span>
+<span><b>Tier</b> 2</span>
+<span><b>Read</b> ~18 min</span>
+<span><b>Unit</b> 11 of 49</span>
+</div>
+<p class="small">Honest framing: neither product is in your CML lab, so this one is pattern recognition, not keystrokes. Spend 18 minutes, do the paper drill, move on. Whether the exam gives you live AppDynamics or ThousandEyes access, or only screenshots and dashboards, is <span class="flag">⚠ unverified</span>; plan for reading evidence and naming the failing segment.</p>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li><b>Two vantage points.</b> AppDynamics sits inside the application (agents on tiers and nodes). ThousandEyes sits outside it (synthetic probes from agents, with path visibility).</li>
+<li><b>The task is localization.</b> User, network path, web tier, app tier, backend. Name the failing segment and hand it off with evidence.</li>
+<li><b>AppDynamics unit of work is the business transaction.</b> Each one is classed normal, slow, very slow, stall or error against thresholds; flow-map colors depend on baselines.</li>
+<li><b>ThousandEyes HTTP response time is time to first byte, starting before DNS.</b> Split it into DNS, connect, SSL, wait, receive to find the phase that grew.</li>
+<li><b>Path Visualization gives the verdict on loss.</b> Red ring mid-path means the network between agent and target. Red ring on the destination node means the target itself.</li>
+<li><b>The products talk to each other.</b> Browser RUM can ingest ThousandEyes loss, latency and jitter; ThousandEyes can take AppDynamics services and recommend tests.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 560 300" role="img" aria-label="Blueprint neighbors in Domain 1 above, and the request chain with the two instruments below">
+<text x="10" y="20" font-size="15" font-weight="700">Domain 1 neighbors</text>
+<rect class="box fa" x="10" y="30" width="125" height="50" rx="6"/><text x="72" y="52" font-size="13" text-anchor="middle">1.1 Design</text><text x="72" y="70" font-size="12" text-anchor="middle">observability</text>
+<rect class="box fa" x="150" y="30" width="125" height="50" rx="6"/><text x="212" y="52" font-size="13" text-anchor="middle">1.3 Git in</text><text x="212" y="70" font-size="12" text-anchor="middle">CI/CD</text>
+<rect class="box fa" x="290" y="30" width="125" height="50" rx="6"/><text x="352" y="52" font-size="13" text-anchor="middle">1.4 Troubleshoot</text><text x="352" y="70" font-size="12" text-anchor="middle">pipelines</text>
+<rect class="box fb" x="430" y="30" width="120" height="50" rx="6"/><text x="490" y="52" font-size="13" text-anchor="middle" font-weight="700">1.5 App perf</text><text x="490" y="70" font-size="12" text-anchor="middle">(today)</text>
+<text x="10" y="118" font-size="15" font-weight="700">Request chain and who sees what</text>
+<rect class="box fc" x="10" y="130" width="90" height="46" rx="6"/><text x="55" y="158" font-size="13" text-anchor="middle">User/browser</text>
+<rect class="box fc" x="140" y="130" width="90" height="46" rx="6"/><text x="185" y="158" font-size="13" text-anchor="middle">Net path</text>
+<rect class="box fc" x="270" y="130" width="90" height="46" rx="6"/><text x="315" y="158" font-size="13" text-anchor="middle">Web/app tier</text>
+<rect class="box fc" x="400" y="130" width="90" height="46" rx="6"/><text x="445" y="158" font-size="13" text-anchor="middle">DB/remote</text>
+<path class="ln" d="M100 153H140"/><path class="ln" d="M230 153H270"/><path class="ln" d="M360 153H400"/>
+<rect class="box fa" x="10" y="210" width="220" height="44" rx="6"/><text x="120" y="229" font-size="13" text-anchor="middle" font-weight="700">ThousandEyes</text><text x="120" y="246" font-size="12" text-anchor="middle">probes, loss/latency, path, HTTP phases</text>
+<rect class="box fb" x="270" y="210" width="280" height="44" rx="6"/><text x="410" y="229" font-size="13" text-anchor="middle" font-weight="700">AppDynamics</text><text x="410" y="246" font-size="12" text-anchor="middle">BTs, snapshots, flow map, backend calls</text>
+<path class="ln" d="M55 176V210"/><path class="ln" d="M185 176L150 210"/><path class="ln" d="M315 176L360 210"/><path class="ln" d="M445 176V210"/>
+<text x="10" y="284" font-size="12">Overlap at the browser and web tier: Browser RUM carries ThousandEyes network metrics.</text>
+</svg>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+
+<h3>L1: concept</h3>
+<p>"Slow" has three possible owners: the network, the application, or what the application calls. You have spent 20 years separating the first from the rest with ping, traceroute and packet captures. These two products do that at the application layer and keep history.</p>
+<p>AppDynamics instruments the running application. You see tiers, nodes, message queues and databases on a flow map, with the business transactions that cross them (<a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/26.1.0/business-applications/flow-maps/flow-map-overview" target="_blank" rel="noopener">Flow Map Overview</a> <span class="b ok">✅</span>). A business transaction is the request type being measured end to end. It answers "which request, in which tier, calling which backend, got slow".</p>
+<p>ThousandEyes does not look inside the application. Agents run tests from chosen locations: <a href="https://docs.thousandeyes.com/product-documentation/tests" target="_blank" rel="noopener">Tests</a> <span class="b ok">✅</span> lists agent-to-server (network), HTTP server and page load and transaction (web), BGP (routing) and DNS. It answers "does the path to the app look healthy from where the user is, and which phase of the request got slow".</p>
+
+<h3>L2: mechanics</h3>
+<p><b>AppDynamics classification.</b> Thresholds are boundaries of normal performance, defaults apply to every business transaction, and each one lands in normal, slow, very slow, stall or error (<a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/26.8.0/business-transactions/monitor-the-business-transaction-performance/transaction-thresholds" target="_blank" rel="noopener">Transaction Thresholds</a> <span class="b ok">✅</span>). Baselines are computed from hourly data, with daily, weekly or monthly seasonality. A deviation is counted in standard deviations; the page's example warns at 2 and goes critical at 4 (<a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/26.1.0/business-transactions/monitor-the-business-transaction-performance/dynamic-baselines" target="_blank" rel="noopener">Dynamic Baselines</a> <span class="b ok">✅</span>). Baselines are not instant: hours with no seasonality, days for daily, weeks for weekly, and by default no baseline for a metric under 20 calls per minute.</p>
+<p><b>AppDynamics workflow.</b> The docs give a six-step slow-response procedure (<a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/25.6.0/troubleshooting-applications/slow-response-times" target="_blank" rel="noopener">Slow Response Times</a> <span class="b ok">✅</span>). Start at Troubleshoot &gt; Slow Response Times and the Slow Transactions tab (<a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/25.6.0/troubleshooting-applications/slow-response-times/step-1-check-for-slow-or-stalled-business-transactions" target="_blank" rel="noopener">Step 1</a> <span class="b ok">✅</span>). Snapshots present means drill in for root cause; none means go check slow backends.</p>
+<div class="tw"><table>
+<tr><th>Step</th><th>Question</th><th>Source status</th></tr>
+<tr><td>1</td><td>Any slow or stalled BTs / slow snapshots?</td><td>page read</td></tr>
+<tr><td>2</td><td>Drill into them for root cause</td><td>title only <span class="flag">⚠</span></td></tr>
+<tr><td>3</td><td>Slow database or remote-service calls on the backend?</td><td>title only <span class="flag">⚠</span></td></tr>
+<tr><td>4</td><td>Drill into the SQL or remote call for root cause</td><td>title only <span class="flag">⚠</span></td></tr>
+<tr><td>5</td><td>Does it affect all nodes in the slow tier?</td><td>title only <span class="flag">⚠</span></td></tr>
+<tr><td>6</td><td>Does it affect most BTs? Check the BT health pane; if not, find the one BT, sort by health or score, and open its dashboard</td><td><a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/25.6.0/troubleshooting-applications/slow-response-times/step-6-check-to-see-whether-the-problem-affects-most-business-transactions" target="_blank" rel="noopener">page read</a> <span class="b ok">✅</span></td></tr>
+</table></div>
+<p class="small">Fetches of steps 2, 3 and 5 failed twice this run; only their titles (from the parent page) are used. Read them yourself.</p>
+
+<p><b>Flow map reading.</b> Solid lines are synchronous calls, dashed lines asynchronous. The numbers on a line are calls per minute and average round-trip time. Line color (green, yellow, red) compares to baseline, but the default view does not compare against a baseline and new installs need time to build one. That is why a flow map can look healthy while users complain.</p>
+
+<svg viewBox="0 0 560 560" role="img" aria-label="Decision flow: user reports slow, check ThousandEyes HTTP test, branch to network, then AppDynamics branches to backend or tier">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+<rect class="box fa" x="150" y="8" width="260" height="38" rx="6"/><text x="280" y="32" font-size="14" text-anchor="middle">Users in one location report slow</text>
+<path class="ln" d="M280 46V70" marker-end="url(#ar)"/>
+<rect class="box fa" x="120" y="72" width="320" height="50" rx="6"/><text x="280" y="92" font-size="13" text-anchor="middle">TE HTTP server test from that location</text><text x="280" y="110" font-size="12" text-anchor="middle">availability, response time, phase split</text>
+<path class="ln" d="M280 122V150" marker-end="url(#ar)"/>
+<rect class="box fa" x="120" y="152" width="320" height="50" rx="6"/><text x="280" y="172" font-size="13" text-anchor="middle">Network layer clean?</text><text x="280" y="190" font-size="12" text-anchor="middle">loss, latency, jitter, connect time</text>
+<path class="ln" d="M120 177H60V240" marker-end="url(#ar)"/><text x="66" y="168" font-size="12">no</text>
+<path class="ln" d="M440 177H500V240" marker-end="url(#ar)"/><text x="470" y="168" font-size="12">yes</text>
+<rect class="box fd" x="10" y="242" width="200" height="62" rx="6"/><text x="110" y="263" font-size="13" text-anchor="middle">Path Visualization</text><text x="110" y="281" font-size="12" text-anchor="middle">ring mid-path: transit</text><text x="110" y="297" font-size="12" text-anchor="middle">ring at dest: target</text>
+<rect class="box fb" x="300" y="242" width="250" height="62" rx="6"/><text x="425" y="263" font-size="13" text-anchor="middle">Wait time large?</text><text x="425" y="281" font-size="12" text-anchor="middle">AppD: Troubleshoot &gt;</text><text x="425" y="297" font-size="12" text-anchor="middle">Slow Response Times</text>
+<path class="ln" d="M425 304V330" marker-end="url(#ar)"/>
+<rect class="box fb" x="300" y="332" width="250" height="50" rx="6"/><text x="425" y="352" font-size="13" text-anchor="middle">Slow snapshots?</text><text x="425" y="370" font-size="12" text-anchor="middle">yes: drill in. no: check backends</text>
+<path class="ln" d="M425 382V410" marker-end="url(#ar)"/>
+<rect class="box fb" x="300" y="412" width="250" height="50" rx="6"/><text x="425" y="432" font-size="13" text-anchor="middle">One node, whole tier,</text><text x="425" y="450" font-size="12" text-anchor="middle">or most BTs?</text>
+<path class="ln" d="M110 304V490H300" marker-end="url(#ar)"/>
+<path class="ln" d="M425 462V490" marker-end="url(#ar)"/>
+<rect class="box fc" x="300" y="492" width="250" height="52" rx="6"/><text x="425" y="513" font-size="13" text-anchor="middle">Name the segment, attach</text><text x="425" y="531" font-size="12" text-anchor="middle">evidence, hand off</text>
+</svg>
+
+<p><b>ThousandEyes phases.</b> HTTP response time starts before DNS and ends at the first byte. Wait time is request-sent to first byte. Receive is first to last byte, and availability is 100% for a 2xx or 3xx and 0% otherwise (<a href="https://docs.thousandeyes.com/product-documentation/tests/thousandeyes-metrics-what-do-your-results-mean" target="_blank" rel="noopener">ThousandEyes Metrics: What Do Your Results Mean?</a> <span class="b ok">✅</span>). The test breaks failures down by phase: DNS, connect, SSL, send, receive, validation (<a href="https://docs.thousandeyes.com/product-documentation/tests/http-server-tests" target="_blank" rel="noopener">HTTP Server Tests</a> <span class="b ok">✅</span>).</p>
+
+<svg viewBox="0 0 560 220" role="img" aria-label="Illustrative HTTP request timeline: DNS, connect, SSL, send, wait, receive, with response time spanning DNS to first byte">
+<text x="10" y="18" font-size="14" font-weight="700">HTTP server test phases (illustrative widths, not measurements)</text>
+<rect class="box fa" x="10" y="60" width="50" height="30" rx="3"/><text x="35" y="80" font-size="12" text-anchor="middle">DNS</text>
+<rect class="box fa" x="60" y="60" width="60" height="30" rx="3"/><text x="90" y="80" font-size="12" text-anchor="middle">Connect</text>
+<rect class="box fa" x="120" y="60" width="50" height="30" rx="3"/><text x="145" y="80" font-size="12" text-anchor="middle">SSL</text>
+<rect class="box fa" x="170" y="60" width="40" height="30" rx="3"/><text x="190" y="80" font-size="12" text-anchor="middle">Send</text>
+<rect class="box fb" x="210" y="60" width="200" height="30" rx="3"/><text x="310" y="80" font-size="12" text-anchor="middle">Wait (server think + backend)</text>
+<rect class="box fc" x="410" y="60" width="130" height="30" rx="3"/><text x="475" y="80" font-size="12" text-anchor="middle">Receive</text>
+<path class="ln" d="M10 112H410"/><path class="ln" d="M10 106V118"/><path class="ln" d="M410 106V118"/>
+<text x="210" y="134" font-size="12" text-anchor="middle">Response time (time to first byte)</text>
+<path class="ln" d="M210 156H410"/><path class="ln" d="M210 150V162"/><path class="ln" d="M410 150V162"/>
+<text x="310" y="178" font-size="12" text-anchor="middle">Wait time</text>
+<text x="10" y="205" font-size="12">Big DNS/connect/SSL: path or resolver. Big wait: server side. Big receive: payload or bandwidth.</text>
+</svg>
+
+<h3>L3: exam detail</h3>
+<div class="tw"><table>
+<tr><th></th><th>AppDynamics</th><th>ThousandEyes</th></tr>
+<tr><td>Vantage</td><td>Agents inside the app</td><td>Synthetic agents; Cloud for frontend, Enterprise for backend services (per test-recs page)</td></tr>
+<tr><td>Traffic</td><td>Real transactions</td><td>Scheduled test rounds</td></tr>
+<tr><td>Strength</td><td>Which BT, tier, node, backend call</td><td>Which hop, which request phase, BGP/DNS</td></tr>
+<tr><td>Blind spot</td><td>Network between user and app</td><td>Anything behind the web server</td></tr>
+<tr><td>Normal vs abnormal</td><td>Baselines and thresholds</td><td>Alert rules on metrics</td></tr>
+<tr><td>Key clue</td><td>Slow snapshots, slow exit call</td><td>Wait vs connect vs receive; ring position</td></tr>
+</table></div>
+<p><b>Path Visualization.</b> The page explains the verdict on loss: a red ring mid-path points to the network between agent and target, a red ring on the destination points to the target (an application, firewall or load balancer). Set loss and delay thresholds with Highlight so suspect hops stand out (<a href="https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/path-visualization" target="_blank" rel="noopener">Path Visualization</a> <span class="b ok">✅</span>).</p>
+<p><b>Integration 1: ThousandEyes into AppDynamics.</b> Browser RUM ingests packet loss, latency and jitter from agent-to-server, HTTP server, page load and transaction tests. Requirements: SaaS Controller 23.4.0 or later, a browser application, an active Network and App Synthetics subscription, and a ThousandEyes OAuth bearer token. You paste the token in AppDynamics and click Sync with ThousandEyes; data shows in the Network Insights widget on the Browser App Dashboard. Ingestion is capped at 9 million network metrics per RUM Peak Edition unit (<a href="https://help.splunk.com/en/appdynamics-saas/end-user-monitoring/25.11.0/end-user-monitoring/thousandeyes-integration-with-browser-real-user-monitoring/thousandeyes-network-metrics-in-browser-rum" target="_blank" rel="noopener">ThousandEyes Network Metrics in Browser RUM</a> <span class="b ok">✅</span>). The stated use is separating network cause from app cause per domain, location and time window (<a href="https://help.splunk.com/en/appdynamics-saas/end-user-monitoring/26.3.0/end-user-monitoring/thousandeyes-integration-with-browser-real-user-monitoring/use-cases" target="_blank" rel="noopener">Use Cases</a> <span class="b ok">✅</span>).</p>
+<p><b>Integration 2: AppDynamics into ThousandEyes.</b> In ThousandEyes: Manage &gt; Integrations &gt; New integration &gt; AppDynamics, Basic or OAuth client credentials, tick "Activate test recommendations", Test, Save. You then pick applications and dependent services, and ThousandEyes proposes tests. Prerequisites include an AppDynamics End User Monitoring license and cSaaS build 23.4.x. The page does not say whether this is GA or supported (<a href="https://docs.thousandeyes.com/product-documentation/integration-guides/custom-built-integrations/appdynamics-for-test-recs" target="_blank" rel="noopener">AppDynamics for Test Recommendations</a> <span class="b ok">✅</span>).</p>
+
+<svg viewBox="0 0 560 250" role="img" aria-label="Two-way integration between ThousandEyes and AppDynamics">
+<rect class="box fa" x="10" y="20" width="160" height="90" rx="8"/><text x="90" y="46" font-size="14" text-anchor="middle" font-weight="700">ThousandEyes</text><text x="90" y="66" font-size="12" text-anchor="middle">agent-to-server, HTTP,</text><text x="90" y="82" font-size="12" text-anchor="middle">page load, transaction</text><text x="90" y="98" font-size="12" text-anchor="middle">tests</text>
+<rect class="box fb" x="390" y="20" width="160" height="90" rx="8"/><text x="470" y="46" font-size="14" text-anchor="middle" font-weight="700">AppDynamics</text><text x="470" y="66" font-size="12" text-anchor="middle">Browser RUM app</text><text x="470" y="82" font-size="12" text-anchor="middle">Network Insights</text><text x="470" y="98" font-size="12" text-anchor="middle">widget</text>
+<path class="ln" d="M170 50H390" marker-end="url(#ar2)"/>
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+<text x="280" y="42" font-size="12" text-anchor="middle">loss, latency, jitter</text>
+<text x="280" y="68" font-size="12" text-anchor="middle">TE bearer token + Sync</text>
+<path class="ln" d="M390 90H170" marker-end="url(#ar2)"/>
+<text x="280" y="84" font-size="12" text-anchor="middle">services to monitor</text>
+<text x="280" y="106" font-size="12" text-anchor="middle">Basic / OAuth, test recs</text>
+<rect class="box fc" x="10" y="150" width="540" height="84" rx="8"/>
+<text x="280" y="176" font-size="13" text-anchor="middle" font-weight="700">Result</text>
+<text x="280" y="196" font-size="12" text-anchor="middle">AppD view: network metrics beside browser metrics per domain/location.</text>
+<text x="280" y="214" font-size="12" text-anchor="middle">TE view: Dependent Applications tab with app health from AppD.</text>
+</svg>
+
+<p><b>Task shapes consistent with the blueprint verb "diagnose".</b> Given dashboards, metrics or a flow map, identify the failing segment; choose the next screen or test; explain why two views disagree (flow map green, users unhappy: baseline not built); or wire the integration between the two products. These are inferred, not known exam content.</p>
+
+<h2 id="anat">Anatomy</h2>
+<p>No code here; the artifacts are configuration decisions. Pinned to the pages above, <span class="flag">⚠ unverified — test in lab</span> as exact UI wording may differ by release.</p>
+<pre><code># AppDynamics health-rule intent (Dynamic Baselines page, example only)
+condition : response time deviation from baseline
+warning   : 2 standard deviations
+critical  : 4 standard deviations
+note      : no baseline until it has had time to build (hours/days/weeks by seasonality);
+            none by default under 20 calls/min
+
+# ThousandEyes HTTP server test (HTTP Server Tests page; field names as on the page)
+target URL      : https://app.example.test/checkout   # placeholder, not a real host
+interval        : 1-60 min
+timeout         : default 5 s, max 60 s
+desired status  : e.g. 200
+network layer   : enable "Perform network measurements" + "Collect BGP data"
+agents          : Cloud for frontend, Enterprise for backend (test-recs page)
+</code></pre>
+<p class="small">The ThousandEyes REST API was not verified this run, so no payloads are shown. Search: ThousandEyes API documentation.</p>
+
+<h2 id="bf">Break/fix table</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>BT flagged slow, Slow Transactions tab shows no snapshots</td><td>Delay is not in the code path you can snapshot; likely a slow backend</td><td>Troubleshoot &gt; Slow Response Times &gt; Slow Transactions</td><td>Go to step 3: check slow DB or remote-service calls</td></tr>
+<tr><td>Flow map all green, users complain</td><td>No baseline compare in default view, baseline still building, or metric under 20 calls/min</td><td>Flow map baseline setting; baseline age</td><td>Compare against baseline; wait for baseline; use thresholds for sparse metrics <span class="flag">⚠</span></td></tr>
+<tr><td>TE HTTP availability 0%, network clean</td><td>Status code outside 2xx/3xx, or failure in one phase</td><td>HTTP test error and phase detail</td><td>Fix the server response or the desired-status setting</td></tr>
+<tr><td>Red ring on the destination node in Path Viz</td><td>Terminal loss: the target (app, firewall, load balancer)</td><td>Path Viz with Highlight loss threshold</td><td>Hand off to the app/security owner; confirm in AppDynamics</td></tr>
+<tr><td>Network Insights widget empty in Browser RUM</td><td>No token, Sync not run, domains not matched, controller below 23.4.0, or metric cap hit</td><td>Network Monitoring settings in the browser app</td><td>Add token, Sync with ThousandEyes, add tests manually</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>No CLI discovery exists for either product. Speed is navigation memory: Troubleshoot &gt; Slow Response Times (AppD); Test Settings, Views, Path Visualization (TE).</li>
+<li>Memorize the order: ThousandEyes first (is the path clean, which phase), then AppDynamics (which BT, snapshot, backend).</li>
+<li>Know the three numbers: 20 calls/min (no baseline), 2 and 4 SD (example thresholds), 9 million metrics per unit (RUM cap).</li>
+<li>Whether product docs are reachable offline on the Candidate Workstation is <span class="flag">⚠ unverified</span>; do not count on it.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min, paper only)</h2>
+<div class="card">
+<p><b>Target device:</b> none. Neither product is in your CML lab (Cat8000V, IOSv, N9Kv). All numbers below are invented for the drill.</p>
+<p><b>Requirement:</b> Frankfurt users report checkout is slow since 14:00. Name the failing segment and the team you hand off to, citing three data points.</p>
+<div class="tw"><table>
+<tr><th>Source</th><th>Observation</th></tr>
+<tr><td>TE HTTP server test, Frankfurt Cloud Agent</td><td>availability 100%; response time 3.1 s; DNS 20 ms; connect 35 ms; SSL 60 ms; wait 2.8 s; receive 40 ms</td></tr>
+<tr><td>TE network layer, same agent</td><td>loss 0%; latency 22 ms; jitter 2 ms</td></tr>
+<tr><td>AppDynamics</td><td>Checkout BT 4 SD over baseline; other BTs green; all nodes in OrderSvc tier slow; slow snapshots spend most time in an exit call to one database backend</td></tr>
+</table></div>
+<p><b>Reference fields:</b> TE: response time, wait, connect, loss, latency, jitter. AppD: BT health, deviation from baseline, tier nodes, backend call.</p>
+<p><b>Verify:</b> your answer must explain why it is not the network and why it is not one node.</p>
+<details><summary>Hint</summary>Compare wait time to the rest of response time, then look at which AppD step covers "all nodes in the tier".</details>
+<details><summary>Solution</summary>Segment: the database backend behind the OrderSvc tier. Wait is 2.8 s of 3.1 s; DNS, connect and SSL are small; loss, latency and jitter are clean, so not the path. All OrderSvc nodes slow and snapshots point to one backend call, so not a single node. Handoff: database owner. Variation: if connect were 900 ms with 6% loss on a mid-path hop, the answer flips to the transit network.</details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<details><summary>1. A BT is slow but Step 1 finds no slow snapshots. Where next?</summary>Step 3: check for slow database or remote-service calls on the backend.</details>
+<details><summary>2. In an HTTP server test, which metric is time to first byte, what is wait time, and what does availability 0% mean?</summary>Response time is time to first byte, starting before DNS. Wait is request sent to first byte. Availability is 0% when the status code is not 2xx or 3xx.</details>
+<details><summary>3. Path Viz shows a red ring mid-path versus on the destination node. What does each mean?</summary>Mid-path: loss in the network between agent and target. On the destination: loss at the target itself (app, firewall, load balancer).</details>
+<details><summary>4. A new deployment's flow map is green but users complain. Give two reasons.</summary>The default view does not compare to a baseline, and baselines take hours to weeks to build. Also, a metric under 20 calls per minute gets no baseline by default.</details>
+<p><b>From history</b></p>
+<details><summary>5. (2026-10-06) Give two reasons dial-out telemetry suits a collector behind a firewall, and one thing the device needs.</summary>The device initiates the connection outbound, so no inbound hole to the device is needed, and the collector only has to accept sessions. The device needs reachability to the receiver address and port (plus the right VRF/source if applicable). Answer reconstructed from earlier pages <span class="flag">⚠</span>.</details>
+<details><summary>6. (2026-10-07) Where does the xpath capability show up and what do you do if it is absent?</summary>In the NETCONF capabilities the device advertises; if absent, use a subtree filter instead. Restated from earlier pages; RFC 6241 s8.9 was not readable via the fetch tool <span class="flag">⚠</span>.</details>
+
+<h2 id="deeper">Go deeper</h2>
+<p class="small">All entries are Cisco-owned products. AppDynamics docs are hosted on help.splunk.com; ThousandEyes docs on docs.thousandeyes.com. No cisco.com or standards links used this run (no relevant RFC).</p>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/25.6.0/troubleshooting-applications/slow-response-times" target="_blank" rel="noopener">Slow Response Times | AppDynamics SaaS</a> <span class="b ok">✅</span> v25.6.0, verified 2026-10-14. Best for the six-step procedure.</li>
+<li><a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/26.1.0/business-transactions/monitor-the-business-transaction-performance/dynamic-baselines" target="_blank" rel="noopener">Dynamic Baselines | AppDynamics SaaS</a> <span class="b ok">✅</span> v26.1.0, verified 2026-10-14. Best for baseline timing and SD thresholds.</li>
+<li><a href="https://help.splunk.com/en/appdynamics-saas/application-performance-monitoring/26.1.0/business-applications/flow-maps/flow-map-overview" target="_blank" rel="noopener">Flow Map Overview</a> <span class="b ok">✅</span> v26.1.0, verified 2026-10-14. Best for reading lines and colors.</li>
+<li><a href="https://help.splunk.com/en/appdynamics-saas/end-user-monitoring/25.11.0/end-user-monitoring/thousandeyes-integration-with-browser-real-user-monitoring/thousandeyes-network-metrics-in-browser-rum" target="_blank" rel="noopener">ThousandEyes Network Metrics in Browser RUM</a> <span class="b ok">✅</span> v25.11.0, verified 2026-10-14. Best for the integration prerequisites and cap.</li>
+<li><a href="https://docs.thousandeyes.com/product-documentation/tests/http-server-tests" target="_blank" rel="noopener">HTTP Server Tests</a> <span class="b ok">✅</span> undated, verified 2026-10-14. Best for test settings and phases.</li>
+<li><a href="https://docs.thousandeyes.com/product-documentation/internet-and-wan-monitoring/path-visualization" target="_blank" rel="noopener">Path Visualization</a> <span class="b ok">✅</span> undated, verified 2026-10-14. Best for ring and color meanings.</li>
+<li><a href="https://docs.thousandeyes.com/product-documentation/tests/thousandeyes-metrics-what-do-your-results-mean" target="_blank" rel="noopener">ThousandEyes Metrics: What Do Your Results Mean?</a> <span class="b ok">✅</span> undated, verified 2026-10-14. Best for metric definitions.</li>
+</ul>
+<h3>Standards</h3>
+<p class="small">None this unit.</p>
+<h3>Third-party</h3>
+<p class="small">None this unit.</p>
+
+<h2 id="foot">Footer</h2>
+<p><b>Links: 13 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims</b></p>
+<ul>
+<li>Domain 1 exam weight; whether the lab exposes live AppDynamics/ThousandEyes or only screenshots.</li>
+<li>Exact slow/very slow/stall definitions and default values (thresholds page fetch returned only the introduction).</li>
+<li>Steps 2, 3, 4 and 5 of the slow-response procedure: fetches failed, titles only.</li>
+<li>Definition wording of "business transaction" (not defined on fetched pages).</li>
+<li>Docs versions: AppDynamics pages span 25.6.0 to 26.8.0, no exam pin; ThousandEyes pages undated. Path Visualization and Metrics pages were requested at slightly different URLs and the fetch tool reported the URLs linked here as final.</li>
+<li>Recall answers 5-6 restated from earlier pages; drill numbers are invented; config blocks are illustrative; ThousandEyes API not checked.</li>
+</ul>
+<p><b>Tomorrow:</b> Thu 2026-10-15, unit 12 of 49: 2.6 Configure devices via NETCONF/RESTCONF using YANG analysis tools, driven by a source of truth. Friday is weekly review 3.</p>
+</main>
+</body>
+</html>
+
+</body></html>
