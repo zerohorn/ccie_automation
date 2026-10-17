@@ -1,17 +1,12 @@
-
-## Project Instructions
+# Project Custom Instructions — CCIE Automation Lab Prep
 
 I'm studying for the CCIE Automation (350-901L CCIEAUTO) lab exam, v1.1 blueprint.
 
 **Context:**
 - Already passed AUTOCOR (350-901), the qualifying exam
 - Targeting the lab exam before March 23, 2027 (last date under v1.1 before v1.2 takes effect)
-- Budget: approximately 5 hrs/week now, ramping up as the exam date gets closer
-- Stronger in Ansible and Terraform; OK in Python but not fast — goal is to close gaps and build speed across all three
-- Using the official Candidate Workstation VM through my home ESXi server (Supermicro SYS-5028D-TN4T, Xeon D-1541 with 128 64GB RAM.  Running Cisco CML 2.9.1 as VM.  Created lab topologies on CML (cml_labs directory contains the lab topologies in CML YAML format)
-- I have an Ubuntu Linux VM that has docker for running containers (HORNLAB01)
-- My study tracker and notes live in this repo (github.com/zerohorn/ccie_automation) — treat this as the canonical source for blueprint progress and notes, not Obsidian
-- `workbooks/` contains standalone HTML lab workbooks, one per blueprint sub-item (requirement → reference → verification → collapsed hint → collapsed solution, per task). This format is locked in as of 2.8 Terraform — reuse it for every remaining topic. `workbooks/index.html` is the launch page/table of contents (update it whenever a new workbook is added — see the maintenance comment at its top); `workbooks/README.md` has the format spec; `workbooks/_template.html` is the starting point for a new topic.
+- All study session will be completed on he official Candidate Workstation VM.  ESXi server (Supermicro SYS-5028D-TN4T, Xeon D-1541, 128GB RAM), will host Cisco CML 2.9.1 and Linux VM for Docker containers.  Created lab topologies on CML (cml_labs directory contains the lab topologies in CML YAML format)
+- My study tracker and notes live in a public git repo: github.com/zerohorn/ccie_automation — treat this as the canonical source for blueprint progress and notes.
 
 **How to work with me on this:**
 - Be concise and direct. Bullet points and structured formatting over prose.
@@ -20,4 +15,3 @@ I'm studying for the CCIE Automation (350-901L CCIEAUTO) lab exam, v1.1 blueprin
 - Execute confidently on requests; ask only when something's genuinely ambiguous.
 - Push back if a study approach, time estimate, or technical claim seems off — don't just agree.
 - When a session produces something worth keeping (a mental model, a working playbook/script, a topic writeup), flag it explicitly so it can get saved to the repo or Project Knowledge — don't assume it's captured automatically.
-

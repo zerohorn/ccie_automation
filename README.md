@@ -1,31 +1,29 @@
-# CCIE Automation (v1.1) Exam
+# Overview
+This is my working repository for all CCIE Automation preparation.  
+
+## CCIE Automation (v1.1) Exam
 350-901L CCIEAUTO
 480 minutes
 
-## Practical Exam Topics
-https://learningnetwork.cisco.com/s/ccie-automation-exam-topics
+### [Practical Exam Topics](https://learningnetwork.cisco.com/s/ccie-automation-exam-topics)
 
-## Release Notes for v1.1
-https://learningcontent.cisco.com/documents/marketing/exam-topics/CCIE-Automation-rel-notes-minor-rev.pdf
+### [Release Notes for v1.1](https://learningcontent.cisco.com/documents/marketing/exam-topics/CCIE-Automation-rel-notes-minor-rev.pdf)
 
-## Equipment and Software List
-https://learningnetwork.cisco.com/s/article/ccie-automation-v1-1-equipment-and-software-list
-CWA Password
-1234QWer!
+### [Equipment and Software List](https://learningnetwork.cisco.com/s/article/ccie-automation-v1-1-equipment-and-software-list)
+* CWA Username: expert
+* CWA Password: 1234QWer!
 
+### [Devnet Sandboxes](https://developer.cisco.com/site/sandbox/)
 
-## Resources for Preparing
-
-### Devnet Sandboxes
-https://developer.cisco.com/site/sandbox/
+### [CCIE Automation Training Course](https://learn.ccie-automation.com/ccie)
 
 ###  Blogs/Websites/Misc Resources
-https://mateuszfrak.com/tags/devnetexpert/
-https://docs.devnetexperttraining.com/index.html
-https://doc-search.devnetexperttraining.com
-https://gitlab.com/lintvedt/ccie-automation
-https://devnet-academy.com/blog/devnet-expert-blueprint/
-https://devnet-academy.com/blog/
-https://devnet-academy.com/blog/build-a-free-lab-for-the-devnet-expert-exam/
-https://github.com/lucagubler/DevNet-VAULT
-https://github.com/lucagubler/DevNet-TIG
+* https://mateuszfrak.com/tags/devnetexpert/
+* https://docs.devnetexperttraining.com/index.html
+* https://doc-search.devnetexperttraining.com
+* https://gitlab.com/lintvedt/ccie-automation
+* https://devnet-academy.com/blog/devnet-expert-blueprint/
+* https://devnet-academy.com/blog/
+* https://devnet-academy.com/blog/build-a-free-lab-for-the-devnet-expert-exam/
+* https://github.com/lucagubler/DevNet-VAULT
+* https://github.com/lucagubler/DevNet-TIG
