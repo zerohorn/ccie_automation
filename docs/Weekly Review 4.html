@@ -1,0 +1,195 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<style>
+:root{--bg:#fafafa;--fg:#1b1f23;--mut:#5b6670;--card:#fff;--bd:#d5dbe1;--ac:#0b6bcb;--ok:#1a7f37;--idx:#9a6700;--c1:#dbeafe;--c2:#dcfce7;--c3:#fef3c7;--c4:#fce7f3;--code:#f1f3f5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141a;--fg:#e6eaee;--mut:#9aa6b2;--card:#171d25;--bd:#2c3642;--ac:#6cb2ff;--ok:#56d364;--idx:#e3b341;--c1:#14325c;--c2:#12391f;--c3:#4a3a0c;--c4:#4a1d3a;--code:#1e2630}}
+:root[data-theme="dark"]{--bg:#10141a;--fg:#e6eaee;--mut:#9aa6b2;--card:#171d25;--bd:#2c3642;--ac:#6cb2ff;--ok:#56d364;--idx:#e3b341;--c1:#14325c;--c2:#12391f;--c3:#4a3a0c;--c4:#4a1d3a;--code:#1e2630}
+html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 0;font-size:13px;z-index:5;display:flex;flex-wrap:wrap;gap:4px 12px}
+nav a{color:var(--ac);text-decoration:none}
+h1{font-size:26px;margin:20px 0 4px}h2{font-size:20px;margin:32px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:16px;margin:18px 0 4px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px 16px;margin:12px 0}
+.meta{color:var(--mut);font-size:14px}.tbl{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--code)}
+pre{background:var(--code);padding:10px;border-radius:8px;overflow-x:auto;font-size:13px}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--fg);font-family:system-ui,sans-serif}
+details{margin:6px 0;border:1px solid var(--bd);border-radius:8px;padding:6px 10px;background:var(--card)}summary{cursor:pointer;color:var(--ac)}
+.b{font-size:12px;border-radius:10px;padding:1px 7px;border:1px solid var(--bd);margin-right:4px}.ok{color:var(--ok)}.idx{color:var(--idx)}
+ul{padding-left:20px}li{margin:3px 0}.warn{color:var(--idx)}
+</style>
+<main>
+<h1>Weekly Review 4</h1>
+<div class="card meta">Friday 2026-10-23 · Review of units 13–16 · Domains 2/3/4 · Tier mix: T1 ×2, T2, T3 · ~18 min · Unit 17 of 49 is next (this page is the week-4 review, not a new unit)</div>
+<nav><a href="#snap">Snapshot</a><a href="#map">Map</a><a href="#tel">3.5.c-d + 3.5.e</a><a href="#k8s">4.3.a</a><a href="#conn">2.7.d</a><a href="#break">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a></nav>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li><b>Telemetry frequency (3.5.c):</b> IOS XE <code>update-policy periodic</code> is in centiseconds. 6000 = 60 s, minimum 100 = 1 s. NX-OS <code>sample-interval</code> is milliseconds; 0 means event-based.</li>
+<li><b>Dial-out (3.5.d):</b> receivers can't be edited in place; only the first valid receiver is used. Change = remove and recreate the subscription.</li>
+<li><b>Security (3.5.e):</b> dial-in, the device is the TLS server (gNMI <code>gnxi secure-*</code>). Dial-out, the collector is the server and the device checks its cert. The cert has to match how you address the peer (SAN IP vs DNS).</li>
+<li><b>Kubernetes (4.3.a):</b> Deployment owns ReplicaSets which own Pods. Selectors are immutable. Service routes by label selector, <code>targetPort</code> must match the container port. Secrets: env var vs volume behave differently.</li>
+<li><b>Ansible connections (2.7.d):</b> network_cli = SSH CLI, httpapi = HTTP(S) API plugin (RESTCONF), netconf = ncclient on 830. Defaults bite: httpapi <code>use_ssl</code> false and <code>validate_certs</code> true; network_cli timeout 30 s.</li>
+<li>Common thread: a "config accepted" result is not "working". Verify the state on the device or target, every time.</li>
+</ul>
+
+<h2 id="map">Where this fits</h2>
+<svg viewBox="0 0 820 250" role="img" aria-label="Week 4 topics and how they connect">
+<rect x="10" y="20" width="240" height="90" rx="8" fill="var(--c1)" stroke="var(--bd)"/><text x="130" y="48" text-anchor="middle" font-size="15" font-weight="600">Domain 3 · Telemetry</text><text x="130" y="70" text-anchor="middle" font-size="13">3.5.c frequency</text><text x="130" y="88" text-anchor="middle" font-size="13">3.5.d dial-out · 3.5.e TLS</text>
+<rect x="290" y="20" width="240" height="90" rx="8" fill="var(--c2)" stroke="var(--bd)"/><text x="410" y="48" text-anchor="middle" font-size="15" font-weight="600">Domain 2 · Ansible</text><text x="410" y="70" text-anchor="middle" font-size="13">2.7.d connection plugins</text><text x="410" y="88" text-anchor="middle" font-size="13">network_cli / httpapi / netconf</text>
+<rect x="570" y="20" width="240" height="90" rx="8" fill="var(--c3)" stroke="var(--bd)"/><text x="690" y="48" text-anchor="middle" font-size="15" font-weight="600">Domain 4 · Platform</text><text x="690" y="70" text-anchor="middle" font-size="13">4.3.a Kubernetes core objects</text><text x="690" y="88" text-anchor="middle" font-size="13">Deployment · Service · Secret · PVC</text>
+<rect x="150" y="150" width="520" height="80" rx="8" fill="var(--c4)" stroke="var(--bd)"/><text x="410" y="178" text-anchor="middle" font-size="15" font-weight="600">Cat8000V (IOS XE 17.16 lab) · exam guides are 17.5</text><text x="410" y="200" text-anchor="middle" font-size="13">Ansible pushes the subscription (netconf) → device streams (TLS) → collector may run in a container</text>
+<path d="M130 110 L300 150 M410 110 L410 150 M690 110 L520 150" stroke="var(--fg)" stroke-width="1.5" fill="none"/>
+</svg>
+
+<h2 id="tel">3.5.c-d + 3.5.e: telemetry frequency, dial-out, TLS</h2>
+<h3>L1 concept</h3>
+<p>A subscription says what (XPath/path), how often (period or on-change) and where (receiver). Dial-out means the device opens the connection to the collector. TLS wraps that stream, or the gNMI server port on dial-in.</p>
+<h3>L2 mechanics</h3>
+<svg viewBox="0 0 820 230" role="img" aria-label="Dial-in versus dial-out TLS roles">
+<text x="10" y="20" font-size="14" font-weight="600">Dial-in (gNMI)</text>
+<rect x="10" y="30" width="150" height="50" rx="6" fill="var(--c2)" stroke="var(--bd)"/><text x="85" y="60" text-anchor="middle" font-size="13">Collector (client)</text>
+<rect x="320" y="30" width="170" height="50" rx="6" fill="var(--c1)" stroke="var(--bd)"/><text x="405" y="52" text-anchor="middle" font-size="13">Device (TLS server)</text><text x="405" y="70" text-anchor="middle" font-size="11">cert on device trustpoint</text>
+<path d="M160 55 L320 55" stroke="var(--fg)" stroke-width="2" marker-end="url(#a)"/><text x="240" y="48" text-anchor="middle" font-size="11">connects to :9339</text>
+<text x="10" y="130" font-size="14" font-weight="600">Dial-out (gRPC)</text>
+<rect x="10" y="140" width="170" height="50" rx="6" fill="var(--c1)" stroke="var(--bd)"/><text x="95" y="162" text-anchor="middle" font-size="13">Device (TLS client)</text><text x="95" y="180" text-anchor="middle" font-size="11">trusts collector CA</text>
+<rect x="320" y="140" width="190" height="50" rx="6" fill="var(--c2)" stroke="var(--bd)"/><text x="415" y="162" text-anchor="middle" font-size="13">Collector (TLS server)</text><text x="415" y="180" text-anchor="middle" font-size="11">cert SAN must match address</text>
+<path d="M180 165 L320 165" stroke="var(--fg)" stroke-width="2" marker-end="url(#a)"/>
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8z" fill="var(--fg)"/></marker></defs>
+<text x="540" y="60" font-size="12">gnxi secure-client-auth</text><text x="540" y="76" font-size="12">adds client-cert check (mTLS)</text>
+<text x="540" y="165" font-size="12">TLS dial-out: feature row 17.1.1;</text><text x="540" y="181" font-size="12">guide is inconsistent (see below)</text>
+</svg>
+<div class="tbl"><table><tr><th></th><th>IOS XE 17.5</th><th>NX-OS 9.3(x)</th></tr>
+<tr><td>Frequency unit</td><td>centiseconds, min 100 (1 s), no default; 6000 = 60 s</td><td><code>sample-interval</code> in ms; 0 = event-based; 5 s minimum was recorded on 10-19 for depth 0</td></tr>
+<tr><td>Receivers</td><td>can't be modified; only first valid receiver used</td><td>up to 5 per the 10-19 notes</td></tr>
+<tr><td>TLS</td><td><code>gnxi secure-trustpoint</code>, <code>secure-client-auth</code>, ports 50052 insecure / 9339 secure; <code>show gnxi state</code></td><td><code>certificate &lt;path&gt; &lt;hostname&gt;</code> on the destination; wrong cert counts toward the 20-error disable</td></tr></table></div>
+<h3>L3 exam detail</h3>
+<ul>
+<li>The 17.5 MDT chapter lists TLS auth as a gRPC restriction and also as a 17.1.1 feature. Don't trust either reading blindly: test <code>grpc-tls</code> vs <code>grpc_tls</code> spelling on the lab device.</li>
+<li>Device private key import: the guide's OpenSSL recipe needs a des3-encrypted key, imported with <code>crypto pki import … pem terminal</code> and a password.</li>
+<li>Certificate checks: <code>openssl s_client -connect</code> plus <code>-verify_hostname</code> (DNS SAN or CN) or <code>-verify_ip</code> (SAN IP only).</li>
+</ul>
+
+<h2 id="k8s">4.3.a: Kubernetes core objects</h2>
+<div class="tbl"><table><tr><th>Object</th><th>Does</th><th>Gotcha</th></tr>
+<tr><td>Deployment</td><td>declares replicas + pod template; creates ReplicaSets</td><td>selector immutable; rolling update 25%/25% by default</td></tr>
+<tr><td>Service</td><td>stable virtual IP/DNS; selector → endpoints</td><td><code>port</code> vs <code>targetPort</code> vs <code>nodePort</code> (30000–32767)</td></tr>
+<tr><td>Ingress</td><td>HTTP routing via a controller</td><td>no controller = no effect; <code>ingressClassName</code>, <code>pathType</code></td></tr>
+<tr><td>Secret</td><td>small sensitive data (1 MiB), <code>data</code> base64 or <code>stringData</code></td><td>base64 is not encryption; env vs volume differ</td></tr>
+<tr><td>PV/PVC</td><td>storage request bound to a volume</td><td>PVC Pending = nothing to bind</td></tr></table></div>
+<svg viewBox="0 0 820 150" role="img" aria-label="Kubernetes ownership and traffic path">
+<rect x="10" y="50" width="130" height="44" rx="6" fill="var(--c3)" stroke="var(--bd)"/><text x="75" y="77" text-anchor="middle" font-size="13">Deployment</text>
+<rect x="190" y="50" width="130" height="44" rx="6" fill="var(--c3)" stroke="var(--bd)"/><text x="255" y="77" text-anchor="middle" font-size="13">ReplicaSet</text>
+<rect x="370" y="50" width="100" height="44" rx="6" fill="var(--c3)" stroke="var(--bd)"/><text x="420" y="77" text-anchor="middle" font-size="13">Pods</text>
+<rect x="540" y="50" width="120" height="44" rx="6" fill="var(--c1)" stroke="var(--bd)"/><text x="600" y="77" text-anchor="middle" font-size="13">Service</text>
+<rect x="700" y="50" width="110" height="44" rx="6" fill="var(--c1)" stroke="var(--bd)"/><text x="755" y="77" text-anchor="middle" font-size="13">Ingress</text>
+<path d="M140 72 L190 72 M320 72 L370 72 M540 72 L470 72 M700 72 L660 72" stroke="var(--fg)" stroke-width="1.5"/>
+<text x="505" y="40" text-anchor="middle" font-size="11">label selector → endpoints</text>
+<text x="410" y="130" text-anchor="middle" font-size="11">Secret / PVC mount into the Pod spec (env or volume)</text>
+</svg>
+
+<h2 id="conn">2.7.d: Ansible connection plugins</h2>
+<div class="tbl"><table><tr><th></th><th>network_cli</th><th>httpapi</th><th>netconf</th></tr>
+<tr><td>Transport</td><td>SSH, CLI text</td><td>HTTP(S) via httpapi plugin</td><td>SSH subsystem via ncclient</td></tr>
+<tr><td>Defaults</td><td>port 22, timeout 30 s, <code>become_method</code> sudo (set <code>enable</code> for IOS), <code>ssh_type</code> auto</td><td><code>use_ssl</code> false, <code>validate_certs</code> true, port 80/443 by use_ssl</td><td>port 830, <code>network_os</code> auto-guessed, falls back to default</td></tr>
+<tr><td>Lab target</td><td>IOSv / IOSvL2 (legacy KEX may be needed)</td><td>Cat8000V RESTCONF; ACI via cisco.aci httpapi</td><td>Cat8000V</td></tr>
+<tr><td>Gap</td><td colspan="3">No <code>cisco.ios</code> on the workstation, so network_cli tasks use <code>ansible.netcommon.cli_command</code>/<code>cli_config</code> and need a working cliconf for the platform. <span class="warn">⚠ unverified: whether that works on IOSv without cisco.ios; test in lab.</span></td></tr></table></div>
+
+<h2 id="break">Break/fix across the week</h2>
+<div class="tbl"><table><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Subscription Valid, collector sees nothing</td><td>receiver port/address changed in place or first receiver unreachable</td><td><code>show telemetry ietf subscription all</code> ⚠ output wording on 17.16</td><td>remove and recreate subscription</td></tr>
+<tr><td>Telemetry way too frequent</td><td>period read as seconds</td><td>check unit: centiseconds</td><td>use 6000 for 60 s</td></tr>
+<tr><td>TLS import fails / handshake fails</td><td>key not des3-encrypted; SAN doesn't match address</td><td><code>openssl s_client -verify_ip</code></td><td>re-encrypt key; reissue cert with right SAN</td></tr>
+<tr><td>Service up, no response</td><td><code>targetPort</code> ≠ container port</td><td><code>kubectl get endpoints</code> ⚠ test in lab</td><td>fix targetPort</td></tr>
+<tr><td>httpapi task fails TLS or connect</td><td><code>use_ssl</code> false default / self-signed with validate_certs true</td><td><code>ansible-config dump --only-changed</code> ⚠</td><td>set <code>ansible_httpapi_use_ssl</code>, <code>ansible_httpapi_validate_certs</code></td></tr></table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>ansible-doc -t connection -l</code> then <code>ansible-doc -t connection ansible.netcommon.httpapi</code> for defaults and variable names.</li>
+<li><code>ansible-doc ansible.netcommon.netconf_config</code>: <code>commit</code>, <code>confirm</code>, <code>lock</code>.</li>
+<li><code>kubectl explain deployment.spec.selector</code>, <code>kubectl api-resources</code> ⚠ cluster presence on workstation not confirmed.</li>
+<li>IOS XE: <code>show gnxi state</code>, <code>show telemetry ietf subscription all</code>.</li>
+<li><code>openssl s_client -connect host:port -showcerts</code>, then <code>openssl x509 -noout -text</code> for SAN.</li>
+</ul>
+
+<h2 id="drill">Integration drill (~15 min): TLS dial-out subscription pushed by Ansible</h2>
+<p><b>Requirement.</b> On Cat8000V, create a periodic subscription (60 s) to a TLS collector, pushed with <code>netconf_config</code> over a netconf connection, then prove it, and prove the collector cert fits.</p>
+<ul>
+<li><b>Fields:</b> <code>Cisco-IOS-XE-mdt-cfg:mdt-config-data</code>; period unit centiseconds. Target: Cat8000V. ⚠ element names/namespace unverified: check with <code>pyang -f tree</code> on the model.</li>
+<li><b>Connection:</b> <code>ansible_connection=ansible.netcommon.netconf</code>, port 830, set <code>ansible_network_os</code> explicitly.</li>
+<li><b>Verify:</b> <code>show telemetry ietf subscription all</code> shows Valid; <code>openssl s_client -connect &lt;collector&gt;:&lt;port&gt; -verify_ip &lt;collector-ip&gt;</code> succeeds; second playbook run reports changed=0 ⚠.</li>
+<li><b>Bonus:</b> run the collector as a Deployment + Service in the cluster, cert in a Secret mounted as a volume ⚠ cluster not built in lab.</li>
+</ul>
+<details><summary>Hint</summary><p>Receivers can't be edited. For a receiver change, delete then create. The period is 6000, not 60.</p></details>
+<details><summary>Solution outline</summary><pre><code>- hosts: cat8000v
+  gather_facts: false
+  vars:
+    ansible_connection: ansible.netcommon.netconf
+    ansible_network_os: default   # ⚠ confirm value on workstation
+  tasks:
+    - ansible.netcommon.netconf_config:
+        content: "{{ lookup('template', 'sub.xml.j2') }}"   # mdt-config-data, period 6000
+    - ansible.netcommon.cli_command: ...  # not usable without cliconf: verify via NETCONF get instead</code></pre><p>⚠ unverified — test in lab. The template body is the exercise.</p></details>
+
+<h2 id="recall">Recall check (3 per topic; answers collapsed)</h2>
+<ol>
+<li><b>(3.5.c-d)</b> The guide example says <code>update-policy periodic 6000</code>. Interval, and smallest legal value?
+<details><summary>Answer</summary>60 s; 100 (1 s).</details></li>
+<li><b>(3.5.c-d)</b> Two receivers on one subscription, first unreachable. What does the second get?
+<details><summary>Answer</summary>Per the 17.5 guide only the first valid receiver is used, so the second can receive data. ⚠ test in lab.</details></li>
+<li><b>(3.5.c-d)</b> N9Kv <code>sample-interval 10000</code>: how often, and what does 0 mean?
+<details><summary>Answer</summary>Every 10 s (ms unit); 0 = event-based.</details></li>
+<li><b>(4.3.a)</b> You edit a Deployment's selector and apply. Result, and two ways forward?
+<details><summary>Answer</summary>Rejected, selector is immutable. Delete and recreate the Deployment (mind the Pods), or create a new Deployment with the new selector and shift traffic. ⚠ the exact error text is untested.</details></li>
+<li><b>(4.3.a)</b> Service targetPort doesn't match the container port. Symptom, and how do you confirm endpoints still exist?
+<details><summary>Answer</summary>Connection refused/timeouts while the Service exists; endpoints still populate because selection is by label. Check with <code>kubectl get endpoints</code>. ⚠</details></li>
+<li><b>(4.3.a)</b> Three differences, Secret as env vars vs as a volume?
+<details><summary>Answer</summary>Env values are fixed at container start while volume files can update; volumes expose keys as files with a mode; env needs valid variable names. ⚠ refresh behavior to be confirmed.</details></li>
+<li><b>(2.7.d)</b> httpapi task to Cat8000V fails to connect: which two vars first, defaults?
+<details><summary>Answer</summary><code>ansible_httpapi_use_ssl</code> (false), <code>ansible_httpapi_validate_certs</code> (true).</details></li>
+<li><b>(2.7.d)</b> network_cli default <code>become_method</code>, and default command timeout?
+<details><summary>Answer</summary>sudo (use enable for IOS); 30 s.</details></li>
+<li><b>(2.7.d)</b> netconf connection: port, library, unset network_os?
+<details><summary>Answer</summary>830; ncclient on the controller; Ansible tries to guess, then falls back to default.</details></li>
+<li><b>(3.5.e)</b> Dial-in vs dial-out: who is the TLS server?
+<details><summary>Answer</summary>Dial-in: the device (cert on its trustpoint). Dial-out: the collector.</details></li>
+<li><b>(3.5.e)</b> What does <code>gnxi secure-client-auth</code> add, and the default ports?
+<details><summary>Answer</summary>Checks the client certificate; 9339 secure, 50052 insecure.</details></li>
+<li><b>(3.5.e)</b> Collector reached by IP but its cert only has a DNS SAN. What fails, which openssl option reproduces it?
+<details><summary>Answer</summary>IP verification; <code>-verify_ip</code> matches SAN IP only (<code>-verify_hostname</code> covers DNS SAN or CN).</details></li>
+</ol>
+
+<h2 id="self">Self-assessment: flag weak units</h2>
+<p>Add <code>weak:</code> to the unit line in topic-queue.md if you can't do the item cold.</p>
+<ul>
+<li>☐ 13 · 3.5.c-d: I can state units and limits for IOS XE and NX-OS without looking.</li>
+<li>☐ 14 · 4.3.a: I can write a Deployment + Service from <code>kubectl create … --dry-run=client -o yaml</code>. ⚠</li>
+<li>☐ 15 · 2.7.d: I can set the three connection types' vars from memory.</li>
+<li>☐ 16 · 3.5.e: I can run the OpenSSL CA/device/client recipe and import it.</li>
+</ul>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Model-Driven Telemetry (Programmability Configuration Guide, IOS XE Bengaluru 17.5.x)</a> <span class="b ok">✅</span>IOS XE 17.5 · verified 2026-10-23. Best for period units, receiver limits, restrictions.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnmi.html" target="_blank" rel="noopener">gNMI Protocol (Programmability Configuration Guide, IOS XE Bengaluru 17.5.x)</a> <span class="b ok">✅</span>IOS XE 17.5 · verified 2026-10-23. Best for gnxi secure commands and ports.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">Subscription to YANG Notifications for Datastore Updates (RFC 8641)</a> <span class="b ok">✅</span>RFC · verified 2026-10-23. Best for centisecond period definition.</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/network_cli_connection.html" target="_blank" rel="noopener">ansible.netcommon.network_cli connection</a> <span class="b ok">✅</span>netcommon 8.7.1 docs (lab 8.4.0) · verified 2026-10-23. Best for timeout/become defaults.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/httpapi_connection.html" target="_blank" rel="noopener">ansible.netcommon.httpapi connection</a> <span class="b ok">✅</span>netcommon 8.7.1 docs · verified 2026-10-23. Best for use_ssl/validate_certs.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_connection.html" target="_blank" rel="noopener">ansible.netcommon.netconf connection</a> <span class="b ok">✅</span>netcommon 8.7.1 docs · verified 2026-10-23. Best for port 830/ncclient/network_os.</li>
+<li><a href="https://kubernetes.io/docs/concepts/services-networking/service/" target="_blank" rel="noopener">Service | Kubernetes</a> <span class="b ok">✅</span>docs main (newer than 1.33) · verified 2026-10-23. Best for port/targetPort/nodePort.</li>
+<li><a href="https://kubernetes.io/docs/concepts/configuration/secret/" target="_blank" rel="noopener">Secrets | Kubernetes</a> <span class="b ok">✅</span>docs main · verified 2026-10-23. Best for env vs volume use.</li>
+<li><a href="https://docs.openssl.org/3.1/man1/openssl-verification-options/" target="_blank" rel="noopener">openssl-verification-options</a> <span class="b ok">✅</span>OpenSSL 3.1 · verified 2026-10-23. Best for -verify_ip vs -verify_hostname.</li>
+</ul>
+
+<h2>Footer</h2>
+<p><b>Links: 9 ✅ · 0 🔎 · 0 removed</b></p>
+<p class="warn"><b>⚠ Unverified claims:</b> Deployment selector rejection error text; Secret env-var refresh behavior; endpoints command output; <code>kubectl</code>/cluster on the workstation; cliconf behavior without cisco.ios; netconf <code>network_os</code> value; mdt-cfg element names; <code>show telemetry ietf subscription all</code> wording on 17.16; second-receiver behavior; <code>grpc-tls</code> vs <code>grpc_tls</code>; PVC reclaim policy not covered. Kubernetes docs are main-branch (pin 1.33); netcommon docs 8.7.1 (lab 8.4.0).</p>
+<p><b>Tomorrow:</b> none (weekend). Monday 2026-10-26: unit 17, 4.3.b-d, Kubernetes pod lifecycle, health checks, kubectl.</p>
+</main>
+
+</body></html>

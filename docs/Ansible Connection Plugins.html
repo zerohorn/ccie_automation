@@ -1,0 +1,208 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ansible Connection Plugins</title>
+<style>
+:root{--bg:#fafaf7;--fg:#1d2327;--mut:#5b6670;--card:#fff;--bd:#d9dde0;--ac:#0b6e99;--ac2:#b4540a;--ok:#1a7f45;--warn:#a15c00;--code:#f1f3f4;--svgfill:#e8f1f6;--svgfill2:#fdf0e3;--svgfill3:#e6f4ea}
+@media (prefers-color-scheme:dark){:root{--bg:#14181b;--fg:#e4e8ea;--mut:#9aa6af;--card:#1b2024;--bd:#333b41;--ac:#5cb8e0;--ac2:#f0a35e;--ok:#5fcf8a;--warn:#e8b04d;--code:#101315;--svgfill:#1f3340;--svgfill2:#3a2b1c;--svgfill3:#1d3326}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 16px;overflow-x:auto;white-space:nowrap;font-size:13px}
+nav a{margin-right:12px;color:var(--ac);text-decoration:none}
+h1{font-size:1.6rem;margin:.4rem 0}h2{font-size:1.25rem;margin:2rem 0 .5rem;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:1.05rem;margin:1.2rem 0 .3rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--mut);font-size:14px}
+.tag{display:inline-block;padding:1px 8px;border:1px solid var(--bd);border-radius:99px;font-size:12px;color:var(--mut)}
+.badge{display:inline-block;font-size:12px;border:1px solid var(--ok);color:var(--ok);border-radius:4px;padding:0 5px;margin-left:4px}
+.wrap{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--code)}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px;overflow-x:auto;font-size:13px;line-height:1.4}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code);padding:0 4px;border-radius:3px}
+a{color:var(--ac)}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font-family:system-ui,sans-serif}
+.b1{fill:var(--svgfill);stroke:var(--ac)}.b2{fill:var(--svgfill2);stroke:var(--ac2)}.b3{fill:var(--svgfill3);stroke:var(--ok)}
+.ln{stroke:var(--mut);stroke-width:1.5;fill:none}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:6px 0;background:var(--card)}summary{cursor:pointer;font-weight:600}
+.warn{color:var(--warn)}
+ul{padding-left:1.2rem}li{margin:3px 0}
+</style>
+</head>
+<body>
+<nav><a href="#hdr">Header</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main>
+<section id="hdr" class="card">
+<h1>Ansible connection plugins: network_cli, httpapi, netconf</h1>
+<div class="meta"><span>2026-10-21 (Wed)</span><span>Blueprint 2.7.d</span><span>Domain 2 (weight unverified)</span><span class="tag">Tier 3</span><span>~18 min read</span><span>Unit 15 of 49</span></div>
+</section>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>A connection plugin is only the transport from controller to device. Modules decide what to do; the connection decides how bytes get there.</li>
+<li>Three network transports: <code>ansible.netcommon.network_cli</code> (CLI over SSH), <code>ansible.netcommon.netconf</code> (XML over SSH, ncclient), <code>ansible.netcommon.httpapi</code> (REST over HTTP/S).</li>
+<li>For network gear, modules run on the controller, not on the device. The connection is held open by a persistent background process, so credentials live in inventory vars, not per task.</li>
+<li><code>ansible_network_os</code> picks the sub-plugin (cliconf/terminal for CLI, httpapi plugin for HTTP). Wrong or missing value is the most common failure.</li>
+<li>Defaults that bite: httpapi <code>use_ssl</code> is false; persistent command timeout is 30 s; netconf port is 830; network_cli <code>become</code> is false.</li>
+<li>Lab gap: workstation has <code>cisco.aci</code> only, no <code>cisco.ios</code>. You can exercise httpapi against APIC and netconf/httpapi against Cat8000V with netcommon modules, but IOS-specific CLI modules are not there.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 600 250" role="img" aria-label="Playbook to connection plugin to device">
+<rect class="b1" x="10" y="20" width="150" height="70" rx="8"/><text x="85" y="48" font-size="15" text-anchor="middle">Role / play</text><text x="85" y="68" font-size="12" text-anchor="middle">2.7.a-c loops, when, vars</text>
+<rect class="b2" x="225" y="20" width="150" height="70" rx="8"/><text x="300" y="48" font-size="15" text-anchor="middle">Connection</text><text x="300" y="68" font-size="12" text-anchor="middle">2.7.d (today)</text>
+<rect class="b3" x="440" y="10" width="150" height="40" rx="8"/><text x="515" y="35" font-size="14" text-anchor="middle">IOSv: SSH CLI</text>
+<rect class="b3" x="440" y="60" width="150" height="40" rx="8"/><text x="515" y="85" font-size="14" text-anchor="middle">Cat8000V: 830 / 443</text>
+<rect class="b3" x="440" y="110" width="150" height="40" rx="8"/><text x="515" y="135" font-size="14" text-anchor="middle">APIC: HTTPS</text>
+<path class="ln" d="M160 55H225M375 55L440 30M375 55L440 80M375 55L440 130"/>
+<rect class="b1" x="10" y="170" width="580" height="70" rx="8"/>
+<text x="300" y="195" font-size="14" text-anchor="middle">Modules that ride on it: cli_command / cli_config, netconf_get / netconf_config,</text>
+<text x="300" y="215" font-size="14" text-anchor="middle">restconf_get / restconf_config, cisco.aci.* (2.4, 2.5, 2.6, 3.2 reuse these)</text>
+</svg>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+<h3>L1: concept</h3>
+<p>Normal Ansible copies a Python module to the target over SSH and runs it there. Network devices cannot run Python, so the module runs on the controller and the connection plugin carries commands or API calls to the device. Because logging in over SSH or opening a TLS session for every task is slow, the connection is kept in a long-lived process and reused across tasks. This is why you set <code>ansible_connection</code>, <code>ansible_network_os</code>, <code>ansible_user</code> and <code>ansible_password</code> once in <code>group_vars</code>.</p>
+<h3>L2: mechanics</h3>
+<svg viewBox="0 0 600 300" role="img" aria-label="Layer stack from task to device">
+<rect class="b1" x="20" y="10" width="560" height="38" rx="6"/><text x="300" y="34" font-size="14" text-anchor="middle">Task: module + args (e.g. netconf_get, cli_command, restconf_get)</text>
+<rect class="b1" x="20" y="62" width="560" height="38" rx="6"/><text x="300" y="86" font-size="14" text-anchor="middle">ansible_connection = network_cli | netconf | httpapi</text>
+<rect class="b2" x="20" y="114" width="270" height="52" rx="6"/><text x="155" y="136" font-size="13" text-anchor="middle">ansible_network_os selects:</text><text x="155" y="155" font-size="13" text-anchor="middle">cliconf + terminal | httpapi plugin</text>
+<rect class="b2" x="310" y="114" width="270" height="52" rx="6"/><text x="445" y="136" font-size="13" text-anchor="middle">netconf: network_os auto-detected,</text><text x="445" y="155" font-size="13" text-anchor="middle">falls back to default</text>
+<rect class="b1" x="20" y="180" width="560" height="38" rx="6"/><text x="300" y="204" font-size="14" text-anchor="middle">Persistent process (ansible-connection) + socket in ~/.ansible/pc</text>
+<rect class="b3" x="20" y="232" width="170" height="52" rx="6"/><text x="105" y="255" font-size="13" text-anchor="middle">SSH 22</text><text x="105" y="272" font-size="12" text-anchor="middle">paramiko or libssh</text>
+<rect class="b3" x="215" y="232" width="170" height="52" rx="6"/><text x="300" y="255" font-size="13" text-anchor="middle">SSH 830</text><text x="300" y="272" font-size="12" text-anchor="middle">ncclient</text>
+<rect class="b3" x="410" y="232" width="170" height="52" rx="6"/><text x="495" y="255" font-size="13" text-anchor="middle">HTTP 80 / HTTPS 443</text><text x="495" y="272" font-size="12" text-anchor="middle">use_ssl decides</text>
+</svg>
+<p><b>network_cli.</b> Opens an interactive SSH shell and drives it like a person: the terminal plugin knows the prompt and error patterns, the cliconf plugin knows how to enter config mode and fetch the running config. <code>ssh_type</code> defaults to <code>auto</code>: ansible-pylibssh if installed, else paramiko. The docs mark paramiko as deprecated, with removal after 2028-02-01. <code>host_key_checking</code> defaults to true, and <code>host_key_auto_add</code> defaults to true. Enable mode is <code>become: true</code> plus <code>become_method: enable</code>; the plugin's own default <code>become_method</code> is <code>sudo</code>, so forgetting the method is a real error source.</p>
+<p><b>netconf.</b> Needs ncclient on the controller. Port default 830. Unlike the other two, <code>network_os</code> can be left out (it is auto-detected) but set it anyway to keep behavior predictable. The tracker maps this to Cat8000V.</p>
+<p><b>httpapi.</b> A generic HTTP client; the httpapi sub-plugin chosen by <code>network_os</code> supplies login, headers and response handling. Defaults: <code>use_ssl: false</code> (so port 80), <code>validate_certs: true</code>. For a lab device on 443 with a self-signed cert you need both overridden. For RESTCONF, the restconf httpapi plugin adds <code>root_path</code> (default <code>/restconf</code>, var <code>ansible_httpapi_restconf_root</code>). For APIC, the <code>cisco.aci.aci</code> httpapi plugin handles the controller login.</p>
+<h3>L3: exam detail</h3>
+<div class="wrap"><table>
+<tr><th></th><th>network_cli</th><th>netconf</th><th>httpapi</th></tr>
+<tr><td>Transport / port</td><td>SSH 22</td><td>SSH 830</td><td>HTTP 80 / HTTPS 443 (by use_ssl)</td></tr>
+<tr><td>Controller dependency</td><td>paramiko or ansible-pylibssh</td><td>ncclient</td><td>none beyond ansible-core</td></tr>
+<tr><td>network_os</td><td>required</td><td>auto-detected if unset</td><td>required</td></tr>
+<tr><td>Privilege</td><td>become + enable</td><td>user must be priv 15 on IOS XE</td><td>become supported, ignored if n/a</td></tr>
+<tr><td>Typical modules</td><td>cli_command, cli_config, platform ios_*</td><td>netconf_get, netconf_config, netconf_rpc</td><td>restconf_get/config, cisco.aci.*</td></tr>
+<tr><td>Lab device</td><td>IOSv / IOSvL2</td><td>Cat8000V</td><td>Cat8000V (RESTCONF), APIC</td></tr>
+<tr><td>Key default timeout</td><td colspan="3">command_timeout 30 s, connect_timeout 30 s (all three)</td></tr>
+</table></div>
+<ul>
+<li>Config precedence: variable beats <code>ansible.cfg</code> beats default. Persistent timeouts live under <code>[persistent_connection]</code>.</li>
+<li><code>ansible_connection: local</code> with a <code>provider</code> dict is deprecated per the docs. Do not write new playbooks that way.</li>
+<li>Task shapes consistent with this blueprint verb: choose the right connection for a device and fix a connection that fails, given inventory and an error.</li>
+</ul>
+
+<h2 id="anat">Anatomy</h2>
+<p>Patterns as shown in the Ansible docs (netcommon 8.7.1 pages; Ansible docs "latest"). Values in angle brackets are yours.</p>
+<pre><code># CLI over SSH, privileged mode (platform page pattern)
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: &lt;platform os name&gt;
+ansible_user: &lt;user&gt;
+ansible_password: &lt;vault&gt;
+ansible_become: true
+ansible_become_method: enable
+ansible_become_password: &lt;vault&gt;</code></pre>
+<pre><code># NETCONF (platform page pattern, INI style)
+ansible_connection=ansible.netcommon.netconf
+ansible_network_os=&lt;platform os name&gt;
+ansible_user=&lt;user&gt;</code></pre>
+<pre><code># HTTPAPI knobs from the connection plugin page
+ansible_connection: ansible.netcommon.httpapi
+ansible_network_os: &lt;httpapi plugin name&gt;
+ansible_httpapi_use_ssl: true          # default false
+ansible_httpapi_validate_certs: false  # default true
+ansible_httpapi_port: 443              # default 80 or 443 by use_ssl
+ansible_httpapi_restconf_root: /restconf   # restconf plugin only; this is the default</code></pre>
+<pre><code># Device side, IOS XE 17.5 guides
+netconf-yang                       ! SSH 830, user priv 15, AAA default methods
+restconf
+ip http secure-server              ! HTTPS, root /restconf</code></pre>
+<p class="warn">Allow up to 90 s after <code>netconf-yang</code> for the interface to come up (17.5 guide). With <code>netconf-yang feature candidate-datastore</code> on, running is not writable over NETCONF; your <code>netconf_config</code> must commit via candidate.</p>
+
+<h2 id="bf">Break/fix</h2>
+<div class="wrap"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>"Authentication failed" though password is right</td><td>Paramiko tried SSH keys first</td><td><code>-vvvv</code> with <code>ANSIBLE_LOG_PATH</code> set</td><td><code>ANSIBLE_PARAMIKO_LOOK_FOR_KEYS=False</code> or <code>look_for_keys = False</code> under <code>[paramiko_connection]</code></td></tr>
+<tr><td>"Bad address" then "unable to connect to control socket"</td><td>Host key unknown; background process cannot answer the prompt</td><td><code>ssh-keyscan &lt;host&gt;</code></td><td>Add key, or <code>host_key_auto_add</code> / <code>ANSIBLE_PARAMIKO_HOST_KEY_AUTO_ADD=True</code></td></tr>
+<tr><td>"command timeout triggered, timeout value is 30 secs"</td><td>Slow command (e.g. config save)</td><td>Task time vs 30 s</td><td><code>ansible_command_timeout: 60</code> as task var, or <code>command_timeout</code> under <code>[persistent_connection]</code></td></tr>
+<tr><td>"unable to enter configuration mode" or "privileged mode required"</td><td>User-mode shell; no enable</td><td>Prompt ends in <code>&gt;</code> in the log</td><td>network_cli + <code>become: true</code>, <code>become_method: enable</code>, enable password</td></tr>
+<tr><td>httpapi task hits plain HTTP or cert error against Cat8000V</td><td><code>use_ssl</code> default false; self-signed cert with <code>validate_certs</code> true</td><td><code>show platform software yang-management process</code>; curl the root</td><td><code>ansible_httpapi_use_ssl: true</code>, <code>ansible_httpapi_validate_certs: false</code></td></tr>
+</table></div>
+<p>Also from the debug guide: "Socket path ... does not exist" and stale sessions are cleared by deleting the socket file in <code>~/.ansible/pc</code>. "unable to open shell" is a catch-all; turn on <code>ansible_persistent_log_messages</code> (off by default because passwords can be logged).</p>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>ansible-doc -t connection -l</code> lists connection plugins; <code>ansible-doc -t connection ansible.netcommon.httpapi</code> prints every option and variable name. Valid <code>-t</code> types include connection, httpapi, cliconf and netconf; <code>terminal</code> is not in the list.</li>
+<li><code>ansible-doc -t httpapi -l</code> shows which <code>network_os</code> values have an httpapi plugin installed. <code>ansible-doc -t cliconf -l</code> does the same for CLI. This is how you learn what <code>cisco.ios</code> absence costs you.</li>
+<li><code>ansible-galaxy collection list</code> confirms netcommon and cisco.aci versions (lab: 8.4.0 and 2.12.0).</li>
+<li>Device side: <code>show netconf-yang sessions</code>, <code>show netconf-yang datastores</code>, <code>show platform software yang-management process</code>; <code>clear netconf-yang session</code> for a stuck lock.</li>
+<li class="warn">⚠ unverified — test in lab: exact <code>ansible-doc</code> output formatting; <code>ansible-config dump --only-changed</code>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Requirement.</b> One inventory, three groups, no task-level connection vars. Read the version of <code>show version</code>-class data from each of: IOSv over CLI, Cat8000V over NETCONF, Cat8000V over RESTCONF. Prove each connection type is used.</p>
+<p><b>Reference.</b> Options <code>ansible_connection</code>, <code>ansible_network_os</code>, <code>ansible_httpapi_use_ssl</code>, <code>ansible_httpapi_validate_certs</code>; modules <code>cli_command</code>, <code>netconf_get</code>, <code>restconf_get</code>; discovery <code>ansible-doc -t cliconf -l</code>.</p>
+<p><b>Verify.</b> Run with <code>-vvvv</code>; the log names the connection plugin and the port (22, 830, 443). Check that a second task in the same play does not reconnect.</p>
+<p><b>Targets.</b> IOSv 15.9 (SSH; legacy KEX/cipher settings likely needed), Cat8000V 17.16.</p>
+<details><summary>Hint</summary><p>Run <code>ansible-doc -t cliconf -l</code> first. If no Cisco cliconf is installed, the IOSv leg may not be possible with Ansible here; that is the tracker's known gap. Record the answer rather than forcing it.</p></details>
+<details><summary>Solution outline</summary><pre><code># group_vars/cli.yml      ansible_connection: ansible.netcommon.network_cli ; ansible_network_os: &lt;from cliconf -l&gt;
+# group_vars/nc.yml       ansible_connection: ansible.netcommon.netconf ; ansible_network_os: &lt;as listed&gt;
+# group_vars/rc.yml       ansible_connection: ansible.netcommon.httpapi ; ansible_network_os: ansible.netcommon.restconf (⚠)
+#                         ansible_httpapi_use_ssl: true ; ansible_httpapi_validate_certs: false
+# tasks: cli_command (command: show version) ; netconf_get (filter: native-module subtree) ; restconf_get (path: &lt;path under /restconf/data&gt;)</code></pre><p class="warn">⚠ unverified — test in lab: network_os value for restconf; whether Cat8000V needs a specific netconf network_os; IOSv leg without cisco.ios.</p></details>
+</div>
+
+<svg viewBox="0 0 600 190" role="img" aria-label="Decision flow for picking a connection plugin">
+<rect class="b1" x="10" y="70" width="150" height="50" rx="8"/><text x="85" y="92" font-size="14" text-anchor="middle">What does the</text><text x="85" y="110" font-size="14" text-anchor="middle">device expose?</text>
+<rect class="b3" x="230" y="5" width="180" height="46" rx="8"/><text x="320" y="33" font-size="13" text-anchor="middle">Only a CLI shell</text>
+<rect class="b3" x="230" y="72" width="180" height="46" rx="8"/><text x="320" y="100" font-size="13" text-anchor="middle">YANG over SSH :830</text>
+<rect class="b3" x="230" y="139" width="180" height="46" rx="8"/><text x="320" y="167" font-size="13" text-anchor="middle">REST over HTTPS</text>
+<rect class="b2" x="450" y="5" width="140" height="46" rx="8"/><text x="520" y="33" font-size="13" text-anchor="middle">network_cli</text>
+<rect class="b2" x="450" y="72" width="140" height="46" rx="8"/><text x="520" y="100" font-size="13" text-anchor="middle">netconf</text>
+<rect class="b2" x="450" y="139" width="140" height="46" rx="8"/><text x="520" y="167" font-size="13" text-anchor="middle">httpapi</text>
+<path class="ln" d="M160 95L230 28M160 95H230M160 95L230 162M410 28H450M410 95H450M410 162H450"/>
+</svg>
+
+<h2 id="recall">Recall check</h2>
+<h3>Today</h3>
+<details><summary>1. A httpapi task against Cat8000V fails with a connection or certificate error. Name the two connection vars you check first and their defaults.</summary><p><code>ansible_httpapi_use_ssl</code> (default false, so port 80) and <code>ansible_httpapi_validate_certs</code> (default true, fails on self-signed).</p></details>
+<details><summary>2. Which three settings does a network_cli task need to run a config command on an IOS device whose login lands in user mode, and what is the plugin's default become_method?</summary><p><code>become: true</code>, <code>become_method: enable</code>, and the enable password (<code>ansible_become_password</code>). Default <code>become_method</code> on the plugin is <code>sudo</code>.</p></details>
+<details><summary>3. Name the default port and the controller-side library for the netconf connection, and what happens if network_os is unset.</summary><p>Port 830; ncclient; the plugin tries to auto-detect network_os and falls back to default.</p></details>
+<details><summary>4. A command works from the CLI in 45 s but the task fails at 30 s. Give the message and two places to raise the limit.</summary><p>"command timeout triggered, timeout value is 30 secs". Set <code>ansible_command_timeout</code> as a task or group var, or <code>command_timeout</code> under <code>[persistent_connection]</code> (env <code>ANSIBLE_PERSISTENT_COMMAND_TIMEOUT</code>).</p></details>
+<h3>From history</h3>
+<details><summary>5. (from 2026-10-13) <code>update-policy periodic 30</code>: what interval do you get, and what is the minimum on IOS XE 17.5?</summary><p>Centiseconds, so 0.3 s; the minimum is 100 (1 s). <span class="warn">Restated from earlier pages.</span></p></details>
+<details><summary>6. (from 2026-10-15) Why does <code>restconf_config</code> with defaults fail on the second run of a create, and what makes it repeatable?</summary><p>Its method defaults to post, which fails when the resource exists. Use an idempotent method (put or patch). <span class="warn">⚠ reconstructed from earlier pages; the second setting asked about on 10-15 is not restated here.</span></p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - NETCONF Protocol [Cisco IOS XE 17] - Cisco</a><span class="badge">✅</span> IOS XE 17.5, verified 2026-10-21. Device-side enable, priv 15, AAA, candidate datastore, show commands.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - RESTCONF Protocol [Cisco IOS XE Bengaluru 17.5.1]</a><span class="badge">✅</span> IOS XE 17.5, verified 2026-10-21. <code>restconf</code>, <code>ip http secure-server</code>, root /restconf.</li>
+<li><a href="https://docs.ansible.com/ansible/latest/collections/cisco/aci/aci_httpapi.html" target="_blank" rel="noopener">cisco.aci.aci httpapi</a><span class="badge">✅</span> cisco.aci 2.13.0 (lab 2.12.0), verified 2026-10-21. Confirms APIC has an httpapi plugin; page lists no options.</li>
+</ul>
+<h3>Third-party (Ansible)</h3>
+<ul>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/network_cli_connection.html" target="_blank" rel="noopener">ansible.netcommon.network_cli connection</a><span class="badge">✅</span> netcommon 8.7.1 (lab 8.4.0), verified 2026-10-21. Every option, default and variable name.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/httpapi_connection.html" target="_blank" rel="noopener">ansible.netcommon.httpapi connection</a><span class="badge">✅</span> netcommon 8.7.1, verified 2026-10-21. use_ssl, validate_certs, session_key, client certs.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_connection.html" target="_blank" rel="noopener">ansible.netcommon.netconf connection</a><span class="badge">✅</span> netcommon 8.7.1, verified 2026-10-21. Port 830, ncclient, network_os auto-detect.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/network/user_guide/network_debug_troubleshooting.html" target="_blank" rel="noopener">Network Debug and Troubleshooting Guide</a><span class="badge">✅</span> docs "latest", verified 2026-10-21. Error strings and fixes used in the break/fix table.</li>
+<li><a href="https://docs.ansible.com/ansible/latest/network/user_guide/platform_ios.html" target="_blank" rel="noopener">IOS Platform Options</a><span class="badge">✅</span> docs "latest", verified 2026-10-21. The group_vars pattern for IOS with enable.</li>
+</ul>
+
+<footer class="card">
+<p>Links: 8 ✅ · 0 🔎 · 0 removed</p>
+<p class="warn">⚠ Unverified claims: Domain 2 exam weight; restconf network_os value <code>ansible.netcommon.restconf</code>; <code>cisco.aci.aci</code> as network_os for APIC; whether any cliconf for IOS exists without cisco.ios; netconf network_os needed for Cat8000V; IOSv SSH legacy KEX needs under Ansible; <code>ansible-config dump --only-changed</code>; ansible-doc output format; drill modules on 17.16; recall answer 6 second setting; recall answers 5-6 restated from earlier pages. Docs pages are newer than pins (netcommon 8.7.1 / 8.6.2 vs lab 8.4.0; cisco.aci 2.13.0 vs 2.12.0). Cisco guides are 17.5, lab runs 17.16.</p>
+<p>Tomorrow: Unit 16 of 49, 3.5.e Secure telemetry streams (TLS/mTLS).</p>
+</footer>
+</main>
+</body>
+</html>
+
+</body></html>

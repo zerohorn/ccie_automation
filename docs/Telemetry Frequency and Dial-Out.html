@@ -1,0 +1,346 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Telemetry Frequency and Dial-Out</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single 860px column, sticky mini-TOC, SVG figures in bordered frames. Teal accent for "today's topic", amber for warnings. */
+:root{
+  --bg:#f6f7f8; --fg:#1b2127; --muted:#59636e; --card:#ffffff; --line:#d3d9df;
+  --accent:#0b7a75; --accent-soft:#d9efed; --warn:#9a5b00; --warn-soft:#fbeed3;
+  --code-bg:#eceff2; --ok:#1d7a3a; --bad:#b3261e;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171c; --fg:#e4e9ee; --muted:#9aa5b1; --card:#1a2128; --line:#2f3a44;
+  --accent:#4fd1c5; --accent-soft:#16413f; --warn:#f0b35a; --warn-soft:#3b2d12;
+  --code-bg:#0d1217; --ok:#6fd48b; --bad:#ff8a80; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#12171c; --fg:#e4e9ee; --muted:#9aa5b1; --card:#1a2128; --line:#2f3a44;
+  --accent:#4fd1c5; --accent-soft:#16413f; --warn:#f0b35a; --warn-soft:#3b2d12;
+  --code-bg:#0d1217; --ok:#6fd48b; --bad:#ff8a80; color-scheme:dark;}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.6;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--card)}
+.wrap{max-width:860px;margin:0 auto}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--card);border-bottom:1px solid var(--line);
+  margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:8px max(16px,env(safe-area-inset-left,0px));
+  display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none;white-space:nowrap}
+nav.toc a:hover{text-decoration:underline}
+h1{font-size:1.7rem;line-height:1.2;margin:20px 0 8px;text-wrap:balance}
+h2{font-size:1.25rem;margin:36px 0 8px;padding-top:6px;border-top:1px solid var(--line);text-wrap:balance}
+h3{font-size:1.02rem;margin:22px 0 4px}
+p{margin:8px 0}
+ul,ol{padding-left:1.2rem;margin:8px 0}
+li{margin:3px 0}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;margin:10px 0;line-height:1.45}
+pre code{background:none;padding:0;font-size:.82rem}
+.hdr{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-top:16px}
+.hdr dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;margin:10px 0 0}
+.hdr dt{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hdr dd{margin:0;font-weight:600}
+.snap{background:var(--accent-soft);border-radius:8px;padding:6px 16px 10px}
+.fig{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;margin:12px 0;overflow-x:auto}
+.fig svg{width:100%;height:auto;display:block;min-width:340px}
+.fig figcaption{font-size:.82rem;color:var(--muted);margin-top:6px}
+.tw{overflow-x:auto;margin:10px 0;border:1px solid var(--line);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;background:var(--card)}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{background:var(--code-bg);font-size:.76rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+.layer{border-left:3px solid var(--accent);padding:2px 0 2px 12px;margin:14px 0}
+.layer b.l{color:var(--accent)}
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn);padding:6px 12px;border-radius:4px;margin:10px 0;font-size:.92rem}
+details{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;padding:0 6px;border-radius:10px;background:var(--accent-soft);color:var(--accent);margin-right:4px;white-space:nowrap}
+.gd{list-style:none;padding:0}
+.gd li{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:8px 0}
+.gd .m{font-size:.82rem;color:var(--muted)}
+footer{margin-top:36px;border-top:1px solid var(--line);padding-top:12px;font-size:.9rem}
+/* svg tokens */
+svg text{font-family:var(--font);fill:var(--fg);font-size:12px}
+svg .mu{fill:var(--muted);font-size:11px}
+svg .bx{fill:var(--card);stroke:var(--line);stroke-width:1.2}
+svg .hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+svg .wn{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.2}
+svg .ln{stroke:var(--muted);stroke-width:1.2;fill:none}
+svg .ar{stroke:var(--accent);stroke-width:1.6;fill:none}
+svg .bd{font-weight:700}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<header class="hdr">
+<h1>3.5.c–d: Optimize telemetry frequency, build the dial-out subscription</h1>
+<dl>
+<div><dt>Date</dt><dd>Mon 2026-10-19</dd></div>
+<div><dt>Blueprint</dt><dd>3.5.c Optimize frequency · 3.5.d Dial-out subscription</dd></div>
+<div><dt>Domain</dt><dd>3 Build (weight unverified)</dd></div>
+<div><dt>Tier</dt><dd>1 (gap)</dd></div>
+<div><dt>Read time</dt><dd>~18 min</dd></div>
+<div><dt>Progress</dt><dd>Unit 13 of 49</dd></div>
+</dl>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<div class="snap"><ul>
+<li>Dial-out = the router opens the connection to your collector. A configured subscription lives in running-config and survives reload and switchover.</li>
+<li>IOS XE <code>update-policy periodic</code> counts <b>centiseconds</b>. <code>6000</code> is 60 s, not 6 s. Minimum <code>100</code> (1 s), no default.</li>
+<li>On-change on IOS XE: dampening must be 0, row granularity, not hierarchical, single-object XPath. It is a tool for rarely changing state, not a way to avoid thinking about cadence.</li>
+<li>Receivers cannot be edited. Change one by delete and recreate. Only the first valid receiver is used.</li>
+<li>"Optimizing frequency" means matching cadence to how fast data changes and what the device and collector can carry: narrow the XPath, pick the right update trigger, stagger paths, limit collectors.</li>
+<li>Subscription <i>Valid</i> says nothing about the receiver. Check receiver state separately (connecting, connected).</li>
+<li>NX-OS counts <b>milliseconds</b> in <code>sample-interval</code>; <code>0</code> means event-based. Same word "interval", different unit.</li>
+</ul></div>
+
+<h2 id="fit">Where this fits</h2>
+<figure class="fig">
+<svg viewBox="0 0 480 250" role="img" aria-label="Blueprint neighbors 3.4 to 3.5.f-g and the lab telemetry chain">
+<text x="4" y="14" class="mu">BLUEPRINT NEIGHBORS (Domain 3)</text>
+<rect class="bx" x="4" y="22" width="88" height="62" rx="6"/><text x="48" y="46" text-anchor="middle" class="bd">3.4</text><text x="48" y="62" text-anchor="middle" class="mu">design</text><text x="48" y="76" text-anchor="middle" class="mu">dial-in/out</text>
+<rect class="bx" x="100" y="22" width="88" height="62" rx="6"/><text x="144" y="46" text-anchor="middle" class="bd">3.5.a-b</text><text x="144" y="62" text-anchor="middle" class="mu">cadence,</text><text x="144" y="76" text-anchor="middle" class="mu">on-change</text>
+<rect class="hl" x="196" y="22" width="88" height="62" rx="6"/><text x="240" y="46" text-anchor="middle" class="bd">3.5.c-d</text><text x="240" y="62" text-anchor="middle">frequency +</text><text x="240" y="76" text-anchor="middle">dial-out</text>
+<rect class="bx" x="292" y="22" width="88" height="62" rx="6"/><text x="336" y="46" text-anchor="middle" class="bd">3.5.e</text><text x="336" y="62" text-anchor="middle" class="mu">secure</text><text x="336" y="76" text-anchor="middle" class="mu">streams</text>
+<rect class="bx" x="388" y="22" width="88" height="62" rx="6"/><text x="432" y="46" text-anchor="middle" class="bd">3.5.f-g</text><text x="432" y="62" text-anchor="middle" class="mu">confirm,</text><text x="432" y="76" text-anchor="middle" class="mu">fix issues</text>
+<path class="ln" d="M92 53h8M188 53h8M284 53h8M380 53h8"/>
+<text x="4" y="124" class="mu">LAB TOOL CHAIN (lab convention, not blueprint text)</text>
+<rect class="hl" x="4" y="134" width="84" height="56" rx="6"/><text x="46" y="158" text-anchor="middle" class="bd">Cat8000V</text><text x="46" y="174" text-anchor="middle" class="mu">subscription</text>
+<rect class="bx" x="102" y="134" width="84" height="56" rx="6"/><text x="144" y="158" text-anchor="middle" class="bd">Telegraf</text><text x="144" y="174" text-anchor="middle" class="mu">receiver</text>
+<rect class="bx" x="200" y="134" width="84" height="56" rx="6"/><text x="242" y="158" text-anchor="middle" class="bd">InfluxDB</text><text x="242" y="174" text-anchor="middle" class="mu">store</text>
+<rect class="bx" x="298" y="134" width="84" height="56" rx="6"/><text x="340" y="158" text-anchor="middle" class="bd">Grafana</text><text x="340" y="174" text-anchor="middle" class="mu">verify</text>
+<path class="ar" d="M88 162h14M186 162h14M284 162h14"/>
+<text x="95" y="128" class="mu" text-anchor="middle"></text>
+<text x="4" y="216" class="mu">Device initiates: gRPC (grpc-tcp or TLS) from Cat8000V to the collector IP and port.</text>
+<text x="4" y="234" class="mu">Tracker: the TIG stack is up on HORNLAB01; pointing the Cat8000V at it is not done yet.</text>
+</svg>
+<figcaption>Today builds the left box of the chain and tunes how often it speaks.</figcaption>
+</figure>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+
+<div class="layer"><b class="l">L1 Concept.</b> A telemetry subscription is a standing request: send me this slice of the YANG tree, in this encoding, on this trigger. The trigger is either a clock (periodic) or a change (on-change). In dial-out the subscription is device configuration, so the device is the client. It dials the receiver, and if the link drops it keeps retrying. Dial-in is the opposite: your tool opens a session and the subscription dies with it. Dial-out wins behind firewalls and for always-on streams, because only an outbound rule is needed and nothing is lost on a collector restart except the data during the gap.</div>
+
+<div class="layer"><b class="l">L2 Mechanics.</b> IOS XE implements RFC 8639/8641 style subscriptions. A configured subscription has an ID, a stream (<code>yang-push</code>), an XPath filter, an encoding, an update policy, an optional <code>source-vrf</code> / <code>source-address</code>, and one or more receivers. Per the 17.5 guide, for gRPC dial-out only <code>yang-push</code> and key-value GPB (<code>encode-kvgpb</code>) are supported (the Cisco support article for YANG Suite states these constraints).</div>
+
+<p>Two state machines matter, and people conflate them. The <i>subscription</i> is Valid, Invalid or Concluded. The <i>receiver</i> is connecting, active, suspended or disconnected in the RFC; the Cisco output prints <code>rcvr-state-connecting</code> and <code>rcvr-state-connected</code>.</p>
+
+<figure class="fig">
+<svg viewBox="0 0 480 330" role="img" aria-label="Dial-out lifecycle sequence between router, network and collector">
+<rect class="hl" x="20" y="6" width="110" height="26" rx="5"/><text x="75" y="24" text-anchor="middle" class="bd">Cat8000V</text>
+<rect class="bx" x="345" y="6" width="120" height="26" rx="5"/><text x="405" y="24" text-anchor="middle" class="bd">Collector</text>
+<path class="ln" d="M75 32V322M405 32V322" stroke-dasharray="4 4"/>
+<text x="84" y="56" class="mu">1 config applied: subscription state Valid</text>
+<path class="ar" d="M75 66h8v8h-8"/>
+<text x="195" y="100" class="mu" text-anchor="middle">2 TCP connect (receiver: connecting)</text>
+<path class="ar" d="M75 108H400"/><path class="ar" d="M392 103l8 5-8 5"/>
+<text x="195" y="140" class="mu" text-anchor="middle">3 channel up (receiver: connected / active)</text>
+<path class="ar" d="M400 148H80"/><path class="ar" d="M88 143l-8 5 8 5"/>
+<text x="195" y="180" class="mu" text-anchor="middle">4 first update, sent immediately</text>
+<path class="ar" d="M75 188H400"/><path class="ar" d="M392 183l8 5-8 5"/>
+<text x="195" y="220" class="mu" text-anchor="middle">5 next update after one period (e.g. 6000 cs = 60 s)</text>
+<path class="ar" d="M75 228H400"/><path class="ar" d="M392 223l8 5-8 5"/>
+<rect class="wn" x="95" y="246" width="290" height="68" rx="6"/>
+<text x="240" y="266" text-anchor="middle" class="bd">6 link drops or port closed</text>
+<text x="240" y="283" text-anchor="middle">receiver back to connecting, device retries</text>
+<text x="240" y="300" text-anchor="middle" class="mu">comment: "Connection retries in progress"</text>
+</svg>
+<figcaption>The first push is immediate; later pushes are one period apart and can slip if the device is busy (17.5 guide).</figcaption>
+</figure>
+
+<h3>Receiver state machine</h3>
+<figure class="fig">
+<svg viewBox="0 0 480 210" role="img" aria-label="Receiver states: connecting, active, suspended, disconnected">
+<rect class="hl" x="10" y="70" width="100" height="50" rx="8"/><text x="60" y="100" text-anchor="middle" class="bd">connecting</text>
+<rect class="bx" x="190" y="10" width="100" height="50" rx="8"/><text x="240" y="40" text-anchor="middle" class="bd">active</text>
+<rect class="wn" x="370" y="70" width="100" height="50" rx="8"/><text x="420" y="100" text-anchor="middle" class="bd">suspended</text>
+<rect class="bx" x="190" y="140" width="100" height="50" rx="8"/><text x="240" y="170" text-anchor="middle" class="bd">disconnected</text>
+<path class="ar" d="M110 85L190 40"/><text x="98" y="52" class="mu">subscription-started</text>
+<path class="ar" d="M290 40L375 76"/><text x="318" y="62" class="mu">buffer / CPU limit</text>
+<path class="ar" d="M110 108L190 160"/><text x="14" y="152" class="mu">timeout / no path</text>
+<path class="ar" d="M400 70C390 40 330 20 296 22"/><text x="345" y="22" class="mu">resumed</text>
+</svg>
+<figcaption>RFC 8639 s2.5.1: connecting to active on subscription-started; active to suspended when delivery fails on a live transport (insufficient-resources, unsupportable-volume); suspended back to active on resume. Timeout moves connecting to disconnected.</figcaption>
+</figure>
+
+<div class="layer"><b class="l">L3 Exam detail.</b> What you must get right on the CLI, and where the 17.5 guide is specific:</div>
+<ul>
+<li><b>Period units.</b> Centiseconds. The guide's own example <code>update-policy periodic 6000</code> is 60 s. Min 100. No default, so it must be set.</li>
+<li><b>On-change.</b> Dampening period must be 0. First update is the full data set (initial sync), then changed rows only. Not hierarchical: a parent XPath will not fire for a child change. Which models support it is read from the device (<code>show platform software ndbman {switch-number|active|standby} models</code>), not from the YANG.</li>
+<li><b>Receivers.</b> No modify. Delete the subscription or receiver and recreate. Rewriting a receiver with identical settings forces a reconnect. Multiple receivers allowed, only the first valid one carries data; if it is deleted another connects.</li>
+<li><b>Persistence.</b> Configured subscriptions persist across reload only if saved. After a stateful switchover dial-out reconnects on its own; dial-in must be recreated.</li>
+<li><b>Restrictions.</b> Subtree filters not supported (the subscription is marked invalid). Union operator over NETCONF only, not gRPC. No QoS for yang-push. 100 subscriptions supported per the guide (platform maxima vary).</li>
+<li><b>Deleting.</b> CLI: <code>no telemetry ietf subscription N</code>. The guide says configured subscriptions cannot be deleted by RPC, yet shows a NETCONF delete example. Treat the CLI as the reliable path.</li>
+</ul>
+
+<h3>Optimizing frequency: the levers</h3>
+<figure class="fig">
+<svg viewBox="0 0 480 330" role="img" aria-label="Decision flow for choosing update trigger and cadence">
+<rect class="hl" x="130" y="6" width="220" height="40" rx="6"/><text x="240" y="30" text-anchor="middle" class="bd">What does the data do?</text>
+<path class="ar" d="M190 46L90 80M290 46L390 80"/>
+<rect class="bx" x="10" y="80" width="170" height="64" rx="6"/><text x="95" y="102" text-anchor="middle" class="bd">Changes rarely</text><text x="95" y="118" text-anchor="middle" class="mu">state, config, neighbors</text><text x="95" y="134" text-anchor="middle" class="mu">model must support it</text>
+<rect class="bx" x="300" y="80" width="170" height="64" rx="6"/><text x="385" y="102" text-anchor="middle" class="bd">Counters / gauges</text><text x="385" y="118" text-anchor="middle" class="mu">always changing</text><text x="385" y="134" text-anchor="middle" class="mu">needs a time series</text>
+<path class="ar" d="M95 144V172M385 144V172"/>
+<rect class="bx" x="10" y="172" width="170" height="74" rx="6"/><text x="95" y="192" text-anchor="middle" class="bd">on-change</text><text x="95" y="208" text-anchor="middle" class="mu">dampening 0, row level</text><text x="95" y="224" text-anchor="middle" class="mu">XPath = one object</text><text x="95" y="240" text-anchor="middle" class="mu">test the firehose case</text>
+<rect class="bx" x="300" y="172" width="170" height="74" rx="6"/><text x="385" y="192" text-anchor="middle" class="bd">periodic</text><text x="385" y="208" text-anchor="middle" class="mu">period in centiseconds</text><text x="385" y="224" text-anchor="middle" class="mu">min 100, one per path class</text><text x="385" y="240" text-anchor="middle" class="mu">no default</text>
+<rect class="wn" x="10" y="264" width="460" height="56" rx="6"/>
+<text x="240" y="284" text-anchor="middle" class="bd">Then reduce load</text>
+<text x="240" y="302" text-anchor="middle">narrow XPath · slower period for slow data · fewer collectors · stagger paths</text>
+</svg>
+<figcaption>Pick the trigger from the data's behavior, then trim volume.</figcaption>
+</figure>
+
+<div class="tw"><table>
+<thead><tr><th>Lever</th><th>What it does</th><th>Source / limit</th></tr></thead>
+<tbody>
+<tr><td>Narrower XPath</td><td>Fewer objects per update. Capacity depends on how much subtree is subscribed.</td><td>RFC 8641 s3.6, s3.11.2. IOS XE: no subtree filters; exact keys in on-change.</td></tr>
+<tr><td>Longer period</td><td>Fewer pushes for slow-moving data.</td><td>IOS XE min 100 cs. The 17.5 guide gives Catalyst 9800 minimum recommended intervals that grow with scale and collector count (e.g. 180 s one collector, 360 s two for one neighbor scenario).</td></tr>
+<tr><td>On-change</td><td>Silence until something changes.</td><td>Dampening 0 only; full initial sync on start; models vary.</td></tr>
+<tr><td>Fewer collectors</td><td>Less duplicate load.</td><td>IOS XE uses only the first valid receiver per subscription.</td></tr>
+<tr><td>gNMI suppress_redundant + heartbeat</td><td>SAMPLE sends only changed leaves, plus one update per heartbeat.</td><td>gNMI spec 3.5.1.5.2. Dial-in side; not an IOS XE dial-out knob.</td></tr>
+<tr><td>Anchor-time</td><td>Aligns periodic updates to multiples of the period from a reference time.</td><td>RFC 8641 only. 17.5 guide does not mention it: do not assume it exists in CLI.</td></tr>
+</tbody></table></div>
+
+<p>When a publisher cannot carry the load, RFC 8641 expects it to refuse, return hints (acceptable periods, dampening), or suspend (<code>subscription-suspended</code> with reasons such as insufficient-resources and unsupportable-volume). Oversized pushes raise <code>update-too-big</code>; an oversized initial sync raises <code>sync-too-big</code>. In an exam task the practical read is: if data stops or gaps appear after you tighten the period, suspect volume before suspecting the collector.</p>
+
+<h3>Comparison: IOS XE vs NX-OS dial-out</h3>
+<div class="tw"><table>
+<thead><tr><th></th><th>IOS XE 17.5 (Cat8000V)</th><th>NX-OS 9.3(x) (N9Kv)</th></tr></thead>
+<tbody>
+<tr><td>Model</td><td><code>telemetry ietf subscription N</code></td><td><code>destination-group</code> + <code>sensor-group</code> + <code>subscription</code></td></tr>
+<tr><td>Cadence unit</td><td>centiseconds (<code>periodic 6000</code> = 60 s)</td><td>milliseconds (<code>sample-interval 10000</code> = 10 s)</td></tr>
+<tr><td>Event-driven</td><td><code>update-policy on-change</code>, dampening 0</td><td><code>sample-interval 0</code> = event-based</td></tr>
+<tr><td>Minimum</td><td>100 cs (1 s)</td><td>5 s at depth 0; more at greater depth</td></tr>
+<tr><td>Transport / encoding</td><td>grpc-tcp, TLS variant; kvGPB over yang-push</td><td>gRPC (default), HTTP, UDP; GPB (default) or JSON</td></tr>
+<tr><td>Receiver limits</td><td>First valid receiver used</td><td>Up to 5 receivers; CPU up to 20%</td></tr>
+<tr><td>Source of path</td><td>YANG XPath</td><td>DME, YANG or NX-API data-source</td></tr>
+<tr><td>Fail behavior</td><td>Retries; "Connection retries in progress"</td><td>After 20 gRPC errors the client disables the connection: unconfigure and reconfigure the destination IP</td></tr>
+</tbody></table></div>
+
+<h2 id="anat">Anatomy</h2>
+<p>Configured gRPC dial-out, periodic, as printed in the 17.5 guide:</p>
+<pre><code>telemetry ietf subscription 101
+  encoding encode-kvgpb
+  filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic
+  stream yang-push
+  update-policy periodic 6000
+  source-vrf Mgmt-intf
+  receiver ip address 10.28.35.45 57555 protocol grpc-tcp</code></pre>
+<ul>
+<li><code>periodic 6000</code>: 60 s. <code>source-vrf</code> picks the egress VRF. If the collector is not reachable through it, the receiver stays in connecting.</li>
+<li>Receiver syntax: <code>receiver ip address &lt;ip&gt; &lt;port&gt; protocol &lt;proto&gt; [profile &lt;name&gt;]</code>.</li>
+<li>TLS variant in the guide: <code>... protocol grpc_tls profile secure_profile</code>. Note the underscore; other text uses the hyphen form. ⚠ unverified — test in lab (it matters again on 3.5.e).</li>
+</ul>
+<p>Same subscription over RESTCONF, per the guide: POST to <code>/restconf/data/Cisco-IOS-XE-mdt-cfg:mdt-config-data</code> with <code>"subscription-id": "102"</code> and <code>"period": "6000"</code>. The NETCONF form edits the same <code>Cisco-IOS-XE-mdt-cfg</code> module; the on-change form sets the no-sync-on-start leaf to false and dampening to 0. ⚠ unverified — test in lab: exact element nesting, namespace and the leaf spelling (<code>no-synch-on-start</code> in the guide's XML, <code>no-sync-on-start</code> in the support article text).</p>
+<p>Verification output, guide style (<code>show telemetry ietf subscription all</code>):</p>
+<pre><code>  ID               Type        State       Filter type
+  100              Configured  Valid       xpath
+  2147483651       Dynamic     Valid       xpath</code></pre>
+<p>Receiver link state is a separate view: <code>show telemetry internal connection</code> lists peer, port, VRF, source address, transport and state (<code>Active</code> or <code>Connecting</code>). A device that pushes this via Ansible would use <a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_config_module.html" target="_blank" rel="noopener">netconf_config</a> (<span class="badge">✅</span>): <code>target</code> auto/candidate/running, <code>commit</code> default true, <code>lock</code> default always.</p>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Subscription Valid, no data at collector</td><td>Receiver stuck connecting: wrong VRF/source, firewall, port closed, collector not listening</td><td><code>show telemetry internal connection</code>; ping from the VRF; check port on the collector</td><td>Set <code>source-vrf</code>/<code>source-address</code>; open port; start the listener; rewrite receiver identically to force reconnect</td></tr>
+<tr><td>Updates 100x too slow or too fast</td><td>Period is centiseconds, not seconds or ms</td><td><code>show telemetry ietf subscription &lt;id&gt; detail</code>; read "Period"</td><td>Recompute: seconds x 100</td></tr>
+<tr><td>Changed receiver port, nothing moves</td><td>Receivers cannot be modified</td><td><code>show running-config | section telemetry</code></td><td>Delete the receiver/subscription, recreate with the new port</td></tr>
+<tr><td>Subscription Invalid</td><td>Subtree filter, unsupported XPath, on-change with dampening not 0, or on-change on a model that does not support it</td><td><code>show telemetry ietf subscription all detail</code>; ndbman models list</td><td>XPath filter to a single supported object; dampening 0; fall back to periodic</td></tr>
+<tr><td>Works until reload or switchover</td><td>Config not saved, or it was a dynamic (dial-in) subscription</td><td>Type column Configured vs Dynamic; compare startup-config</td><td>Save config; move dial-in design to configured dial-out</td></tr>
+</tbody></table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>CLI help builds the line for you: <code>telemetry ietf subscription ?</code>, then <code>update-policy ?</code>, <code>receiver ip address ?</code>.</li>
+<li>Model layout offline: <code>pyang -f tree Cisco-IOS-XE-mdt-cfg.yang</code>. ⚠ unverified — test in lab: whether the YANG files and pyang are on the workstation.</li>
+<li>Which models do on-change: <code>show platform software ndbman active models</code> (17.5 guide form).</li>
+<li>Telegraf side: the TIG stack is in <code>lab_infra/telemetry_tig/</code> per the tracker. The Telegraf input plugin name and listen port for Cisco MDT are not checked against an allowlisted source today. ⚠ unverified — test in lab.</li>
+<li>NX-OS: <code>show telemetry control database subscriptions</code>, <code>show telemetry transport</code>, <code>show running-config telemetry</code>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<p><b>Target:</b> Cat8000V (IOS XE 17.16 in lab). Collector: Telegraf in the TIG stack on HORNLAB01.</p>
+<p><b>Requirement.</b></p>
+<ol>
+<li>Create configured subscription 301: yang-push, kvGPB, XPath <code>/memory-ios-xe-oper:memory-statistics/memory-statistic</code>, periodic every 30 seconds, receiver on the collector over grpc-tcp, egress via the correct VRF.</li>
+<li>Prove the subscription and the receiver are both healthy.</li>
+<li>Cut the load: raise the cadence to once per 5 minutes without losing the receiver.</li>
+<li>Move the receiver to a different port with no stale state left behind.</li>
+</ol>
+<p><b>Reference fields:</b> subscription ID, stream, encoding, filter xpath, update-policy, source-vrf, receiver ip/port/protocol. <b>Verification:</b> <code>show telemetry ietf subscription all detail</code>, <code>show telemetry internal connection</code>, data visible in Grafana or InfluxDB.</p>
+<details><summary>Hint</summary><p>30 s is not 30. Receiver edits are delete and recreate. Whether period can be edited on a live subscription is ⚠ unverified — test in lab; if it is refused, delete and recreate the whole subscription.</p></details>
+<details><summary>Solution</summary>
+<pre><code>telemetry ietf subscription 301
+  encoding encode-kvgpb
+  filter xpath /memory-ios-xe-oper:memory-statistics/memory-statistic
+  stream yang-push
+  update-policy periodic 3000
+  source-vrf &lt;vrf that reaches collector&gt;
+  receiver ip address &lt;collector-ip&gt; &lt;port&gt; protocol grpc-tcp
+! 5 minutes = 30000 centiseconds
+! change port: no receiver ip address ... then add the new line
+! (or no telemetry ietf subscription 301 and rebuild)</code></pre>
+<p>Verify: Type Configured, State Valid; connection state Active; points arrive every 30 s, then every 300 s. Note: the exact "no receiver" form is ⚠ unverified — test in lab.</p></details>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<ol>
+<li>The guide's example says <code>update-policy periodic 6000</code>. What is the interval, and what is the smallest legal value?
+<details><summary>Answer</summary>60 seconds. Unit is centiseconds; minimum 100 (1 s).</details></li>
+<li>Two receivers are configured on one subscription. The first is unreachable. What does the second one receive?
+<details><summary>Answer</summary>Per the 17.5 guide only the first valid receiver is used, and others are not tried while it is connected or connecting. Do not expect fan-out; create a second subscription for a second collector.</details></li>
+<li>Name three ways to lower telemetry load while keeping the signal, with one IOS XE restriction attached to each.
+<details><summary>Answer</summary>Narrower XPath (no subtree filters, exact keys for on-change); on-change for slow-changing state (dampening 0, row level, model-dependent); longer period on slow data (min 100 cs, and platform scale guidance). Also: fewer collectors.</details></li>
+<li>An N9Kv has <code>sample-interval 10000</code>. How often does it send, and what does <code>0</code> mean?
+<details><summary>Answer</summary>Every 10 seconds (milliseconds). 0 makes the subscription event-based. Minimum at depth 0 is 5 s.</details></li>
+</ol>
+<p><b>From history</b></p>
+<ol start="5">
+<li>(from 2026-10-12) On ansible-core 2.19, <code>when: interfaces</code> with a list fails. What is the fix?
+<details><summary>Answer</summary>2.19 requires a boolean result. Write an explicit test such as <code>when: interfaces | length &gt; 0</code>. (Restated from earlier pages.)</details></li>
+<li>(from 2026-10-15) Give the confirmed-commit default timer on IOS XE 17.5 and say whether RESTCONF supports it.
+<details><summary>Answer</summary>600 seconds; RESTCONF does not support it (NETCONF only). (Restated from earlier pages.)</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="gd">
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x, Model-Driven Telemetry</a><div class="m">IOS XE 17.5 · verified 2026-10-19 · Best for: period units, receiver rules, restrictions, show commands.</div></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a><div class="m">Tested on IOS XE 17.3.3 · verified 2026-10-19 · Best for: NETCONF-built dial-out, gRPC constraints, <code>show telemetry internal connection</code>. It states it does not cover CLI dial-out.</div></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_0101001.html" target="_blank" rel="noopener">Cisco Nexus 9000 Series NX-OS Programmability Guide, Release 9.3(x), Model Driven Telemetry</a><div class="m">NX-OS 9.3(x) · verified 2026-10-19 · Best for: sensor/destination/subscription CLI, cadence limits. Last ~19K chars not read.</div></li>
+</ul>
+<h3>Standards</h3>
+<ul class="gd">
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">Subscription to YANG Notifications for Datastore Updates (RFC 8641)</a><div class="m">RFC · verified 2026-10-19 · Best for: anchor-time, dampening, sync-on-start, update-too-big, suspension.</div></li>
+<li><span class="badge">✅</span><a href="https://www.rfc-editor.org/rfc/rfc8639" target="_blank" rel="noopener">Subscription to YANG Notifications (RFC 8639)</a><div class="m">RFC · verified 2026-10-19 · Best for: configured-subscription and receiver state machine (s2.5).</div></li>
+<li><span class="badge">✅</span><a href="https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md" target="_blank" rel="noopener">gNMI specification (openconfig/reference)</a><div class="m">Spec · verified 2026-10-19 · Best for: SAMPLE, suppress_redundant, heartbeat_interval (s3.5.1.5.2).</div></li>
+</ul>
+<h3>Third-party</h3>
+<ul class="gd">
+<li><span class="badge">✅</span><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/netcommon/netconf_config_module.html" target="_blank" rel="noopener">ansible.netcommon.netconf_config module – netconf device configuration</a><div class="m">netcommon 8.7.1 (lab 8.4.0) · verified 2026-10-19 · Best for: pushing mdt-cfg XML with <code>commit</code>/<code>lock</code>/<code>confirm</code> settings.</div></li>
+</ul>
+
+<footer>
+<p><b>Links:</b> 7 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims:</b></p>
+<ul>
+<li>Domain 3 exam weight.</li>
+<li>Cat8000V 17.16 behavior: period handling below 100, on-change support, receiver and connection output strings, <code>show telemetry internal connection</code> availability.</li>
+<li>NETCONF/RESTCONF payload nesting and namespace; leaf spelling <code>no-synch-on-start</code> vs <code>no-sync-on-start</code>.</li>
+<li><code>grpc_tls</code> vs hyphen spelling; NETCONF delete example vs "cannot delete by RPC" statement.</li>
+<li>Editing period on a live configured subscription; the "no receiver" CLI form.</li>
+<li>Anchor-time support in IOS XE; Telegraf plugin name and port; pyang and YANG files on the workstation.</li>
+<li>Recall answers 5–6 (restated from earlier pages).</li>
+<li>Unread tails: RFC 8641 last ~9.6K, RFC 8639 last ~15K, gNMI spec last ~10K, NX-OS chapter last ~19.5K. Guide versions: IOS XE 17.5 (lab 17.16); article tested on 17.3.3; NX-OS 9.3(x); netcommon docs 8.7.1 vs lab 8.4.0.</li>
+</ul>
+<p><b>Tomorrow:</b> Unit 14, 4.3.a Kubernetes: deployments, secrets, services, ingress, volumes, namespaces, replicas (Tier 2).</p>
+</footer>
+</div>
+
+</body></html>

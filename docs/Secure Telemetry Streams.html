@@ -1,0 +1,232 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Secure Telemetry Streams</title>
+<style>
+:root{--bg:#fff;--fg:#1b1f24;--mut:#5b6672;--card:#f4f6f8;--bd:#d5dbe1;--ac:#0b6bcb;--ok:#1a7f37;--warn:#b35900;--bad:#c62828;--code:#eef1f4}
+@media (prefers-color-scheme:dark){:root{--bg:#14181d;--fg:#e6eaee;--mut:#9aa6b2;--card:#1d242c;--bd:#33404d;--ac:#5aa9ff;--ok:#4cc26a;--warn:#f0a050;--bad:#ff7b72;--code:#10151a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 60px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 16px;z-index:5;overflow-x:auto;white-space:nowrap;font-size:13px}
+nav a{margin-right:12px;color:var(--ac);text-decoration:none}
+h1{font-size:1.6rem;margin:18px 0 6px}h2{font-size:1.25rem;margin:30px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:1.05rem;margin:18px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;margin:10px 0}
+.meta{color:var(--mut);font-size:14px}
+.tw{overflow-x:auto;margin:10px 0}table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--card)}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:6px;padding:10px;overflow-x:auto;font-size:13px;line-height:1.4}code{font-family:ui-monospace,Consolas,monospace;font-size:.92em}
+svg{width:100%;height:auto;display:block;margin:10px 0}svg text{fill:var(--fg);font:12px system-ui,sans-serif}
+.b{stroke:var(--ac);fill:var(--card);stroke-width:1.5}.bw{stroke:var(--warn);fill:var(--card);stroke-width:1.5}.bo{stroke:var(--ok);fill:var(--card);stroke-width:1.5}.ln{stroke:var(--mut);stroke-width:1.3;fill:none}.ar{stroke:var(--ac);stroke-width:1.5;fill:none}.ar2{stroke:var(--ok);stroke-width:1.5;fill:none}
+details{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:6px 10px;margin:6px 0}summary{cursor:pointer;font-weight:600}
+.tag{display:inline-block;font-size:12px;padding:1px 6px;border-radius:10px;border:1px solid var(--bd);margin-left:4px}
+.warn{color:var(--warn)}li{margin:3px 0}
+</style></head><body>
+<nav><a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main id="top">
+<div class="card">
+<h1>Secure telemetry streams (TLS / mTLS)</h1>
+<div class="meta">Thu 2026-10-22 · Blueprint 3.5.e · Domain 3 (Network Programmability and Automation Tools) · Tier 1 (gap) · ~18 min read · Unit 16 of 49</div>
+<div class="meta">Exam is v1.1. Pins: IOS XE 17.5 (lab runs 17.16), NX-OS 9.3(8).</div>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>Every telemetry transport has a "who is the TLS server" answer. <b>Dial-in</b> (gNMI): the router is the server. <b>Dial-out</b> (gRPC): the collector is the server and the router is the TLS client.</li>
+<li>Default is server-auth only: the TLS client checks the server's cert chain and name. <b>mTLS</b> adds a client certificate that the server validates.</li>
+<li>IOS XE keeps all of this in a <b>PKI trustpoint</b>. Dial-in uses <code>gnxi secure-trustpoint</code>; dial-out references a <code>profile</code> on the receiver line.</li>
+<li>NETCONF dial-in telemetry rides SSH, not TLS: security is SSH keys/AAA. NX-OS dial-out uses a <code>certificate &lt;file&gt; &lt;hostname&gt;</code> line.</li>
+<li>Most failures are boring: name/SAN mismatch, missing CA in the trustpoint, wrong port, clock skew, or an expired cert.</li>
+<li>Cisco's 17.5 MDT guide lists TLS auth as unsupported in its gRPC restrictions list yet also says it works from 17.1.1. Know both statements exist.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 820 250" role="img" aria-label="Blueprint neighbors and tool chain">
+<rect class="b" x="10" y="20" width="150" height="46" rx="6"/><text x="22" y="48">3.4 dial-in / dial-out</text>
+<rect class="b" x="10" y="90" width="150" height="46" rx="6"/><text x="22" y="118">3.5.a-d subscriptions</text>
+<rect class="bw" x="10" y="160" width="150" height="46" rx="6"/><text x="22" y="188">3.5.e secure streams</text>
+<rect class="b" x="210" y="20" width="150" height="46" rx="6"/><text x="222" y="48">5.2 CSR / OpenSSL / CA</text>
+<rect class="b" x="210" y="160" width="150" height="46" rx="6"/><text x="222" y="188">3.5.f-g verify / fix</text>
+<path class="ln" d="M160 43H210M160 183H210M85 66V90M85 136V160M285 66V120H160"/>
+<text x="440" y="30" style="font-weight:600">Tool chain for a secured stream</text>
+<rect class="b" x="440" y="45" width="90" height="40" rx="6"/><text x="452" y="70">openssl CA</text>
+<rect class="b" x="560" y="45" width="100" height="40" rx="6"/><text x="570" y="70">IOS XE PKI</text>
+<rect class="b" x="690" y="45" width="110" height="40" rx="6"/><text x="700" y="70">gnxi / MDT cfg</text>
+<path class="ar" d="M530 65H560M660 65H690"/>
+<rect class="bo" x="440" y="130" width="130" height="50" rx="6"/><text x="450" y="152">Collector (TIG/Telegraf</text><text x="450" y="168">or gnmic) + cert</text>
+<rect class="bo" x="640" y="130" width="160" height="50" rx="6"/><text x="650" y="152">Verify: show, openssl</text><text x="650" y="168">s_client, data in DB</text>
+<path class="ar" d="M745 85V130M570 155H640"/>
+<text x="10" y="236" style="fill:var(--mut)">Lab: Cat8000V is the device; TIG stack on HORNLAB01 is the dial-out collector (not yet configured per tracker).</text>
+</svg>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+<h3>L1: concept</h3>
+<p>TLS gives a channel confidentiality and peer identity. Identity is an X.509 certificate signed by a CA the other side trusts. The client checks (a) the chain leads to a trusted CA, (b) the name or IP it dialed matches the cert's SAN, (c) validity dates. That is server-auth TLS. In <b>mTLS</b> the server also sends a CertificateRequest and validates the client's cert. TLS 1.3 handshake: RFC 8446 sec. 2 (overview), 4.3.2 (CertificateRequest), 4.4.3 (CertificateVerify). The gNMI spec (sec. 3.1) requires TLS, says implementations should support TLS 1.2 or later, and describes new connections as mutually authenticated.</p>
+<p>Telemetry adds a twist: you must decide which end is the server for each transport.</p>
+
+<svg viewBox="0 0 820 330" role="img" aria-label="Server-auth TLS versus mutual TLS sequence">
+<text x="20" y="20" style="font-weight:600">Server-auth TLS</text><text x="440" y="20" style="font-weight:600">mTLS (adds the amber steps)</text>
+<rect class="b" x="20" y="30" width="100" height="30" rx="5"/><text x="30" y="50">TLS client</text>
+<rect class="b" x="290" y="30" width="100" height="30" rx="5"/><text x="300" y="50">TLS server</text>
+<path class="ln" d="M70 60V310M340 60V310"/>
+<path class="ar" d="M70 85H340"/><text x="120" y="80">ClientHello</text>
+<path class="ar2" d="M340 120H70"/><text x="100" y="115">ServerHello + server cert</text>
+<text x="80" y="145" style="fill:var(--ok)">client: chain? SAN? dates?</text>
+<path class="ar" d="M70 180H340"/><text x="120" y="175">Finished</text>
+<path class="ar2" d="M340 215H70"/><text x="150" y="210">Finished</text>
+<text x="120" y="260" style="fill:var(--mut)">encrypted app data (gRPC)</text>
+<rect class="b" x="440" y="30" width="100" height="30" rx="5"/><text x="450" y="50">TLS client</text>
+<rect class="b" x="710" y="30" width="100" height="30" rx="5"/><text x="720" y="50">TLS server</text>
+<path class="ln" d="M490 60V310M760 60V310"/>
+<path class="ar" d="M490 85H760"/><text x="540" y="80">ClientHello</text>
+<path class="ar2" d="M760 120H490"/><text x="500" y="115">server cert + CertificateRequest</text>
+<path d="M490 160H760" stroke="var(--warn)" stroke-width="1.8" fill="none"/><text x="500" y="155" style="fill:var(--warn)">client cert + CertificateVerify</text>
+<text x="500" y="185" style="fill:var(--warn)">server: chain to trusted CA?</text>
+<path class="ar" d="M490 220H760"/><text x="560" y="215">Finished</text>
+<text x="540" y="260" style="fill:var(--mut)">encrypted app data (gRPC)</text>
+<text x="20" y="300" style="fill:var(--mut)">Dial-in: client = collector/gnmic, server = router. Dial-out: client = router, server = collector.</text>
+</svg>
+
+<h3>L2: mechanics per transport</h3>
+<div class="tw"><table>
+<tr><th>Transport</th><th>Who is TLS server</th><th>Secured by</th><th>Where the cert lives</th></tr>
+<tr><td>gNMI dial-in (IOS XE)</td><td>Router</td><td>TLS; optional client-cert auth (mTLS)</td><td>Router trustpoint named in <code>gnxi secure-trustpoint</code></td></tr>
+<tr><td>NETCONF dial-in</td><td>Router (SSH server)</td><td>SSH, AAA, priv 15; not TLS</td><td>SSH host key; users in AAA</td></tr>
+<tr><td>gRPC dial-out (IOS XE)</td><td>Collector</td><td><code>protocol grpc-tls profile &lt;name&gt;</code></td><td>Router trustpoint holds the CA that signed the collector cert; collector holds server cert+key</td></tr>
+<tr><td>gRPC dial-out (NX-OS 9.3)</td><td>Collector</td><td><code>certificate &lt;path&gt; &lt;hostname&gt;</code> in the destination</td><td>File on bootflash; hostname = cert CN to match</td></tr>
+<tr><td>gNMI dial-in (NX-OS)</td><td>Switch</td><td>Not covered in this run</td><td>Not verified</td></tr>
+</table></div>
+
+<h3>L3: exam detail</h3>
+<ul>
+<li><b>IOS XE gNMI secure mode (17.5 guide):</b> commands <code>gnxi</code>, <code>gnxi secure-trustpoint</code>, <code>gnxi secure-server</code>, optional <code>gnxi secure-client-auth</code> (mTLS), optional <code>gnxi secure-port</code>. Secure default port 9339, insecure 50052. Insecure and secure can run together; the guide's Day Zero flow starts insecure then switches. Verify with <code>show gnxi state</code>.</li>
+<li><b>Key encryption:</b> the guide says IOS needs the device private key encrypted (it uses <code>openssl rsa -des3</code>) and imports with <code>crypto pki import &lt;tp&gt; pem terminal password &lt;pw&gt;</code>, pasting CA cert, key, device cert. Then <code>revocation-check none</code> in the trustpoint.</li>
+<li><b>gNOI cert management:</b> <code>cert.Install</code> (new cert; ID becomes the trustpoint name), <code>cert.Rotate</code> (renew; controller tests a new connection and sends Finalize), GetCertificates, RevokeCertificates, CanGenerateCSR. Bootstrapping via <code>gnxi secure-init</code> starts with a self-signed cert the client does not verify. <code>gnmi-yang secure-peer-verify-trustpoint</code> enables mutual auth; without it the device checks the client against all trustpoints and the trustpool.</li>
+<li><b>Dial-out TLS (IOS XE):</b> feature table says TLS for gRPC dial-out arrived in 17.1.1. The 17.5 chapter shows <code>receiver ip address &lt;ip&gt; &lt;port&gt; protocol grpc_tls profile secure_profile</code> in one example (underscore) while Cisco's YANG Suite page uses <code>grpc-tls</code> (hyphen). Try <code>?</code> on the box.</li>
+<li><b>Receivers can't be edited in place</b> (from 3.5.d): changing profile means delete and recreate the subscription.</li>
+<li><b>NX-OS 9.3:</b> certificate is set under the destination with <code>certificate /bootflash/server.key localhost</code> style syntax (hostname argument = CN); "gRPC client sends the wrong certificate" counts toward the 20-error limit that disables the connection. HTTPS works only if a certificate is configured.</li>
+<li><b>Name matching:</b> openssl <code>-verify_ip</code> checks the SAN IP only; <code>-verify_hostname</code> checks SAN DNS or CN. If you dial a bare IP, put an IP SAN in the cert.</li>
+<li><b>Auth beyond TLS:</b> gNMI also lets the client pass username/password (and optional AAA metadata) in RPC metadata; failure maps to Unauthenticated (16). TLS and RPC credentials are separate layers.</li>
+</ul>
+
+<svg viewBox="0 0 820 220" role="img" aria-label="Decision flow for choosing server-auth or mTLS and where certs go">
+<rect class="b" x="10" y="10" width="150" height="40" rx="6"/><text x="20" y="35">Which direction?</text>
+<rect class="bo" x="220" y="10" width="190" height="56" rx="6"/><text x="230" y="30">Dial-in gNMI: cert on router</text><text x="230" y="48">gnxi secure-trustpoint</text>
+<rect class="bw" x="220" y="90" width="190" height="56" rx="6"/><text x="230" y="110">Dial-out: cert on collector</text><text x="230" y="128">router trustpoint = CA only</text>
+<path class="ar" d="M160 30H220M160 40L190 118H220"/>
+<rect class="b" x="470" y="10" width="170" height="40" rx="6"/><text x="480" y="35">Need client identity?</text>
+<rect class="bo" x="470" y="74" width="170" height="40" rx="6"/><text x="480" y="99">Yes: secure-client-auth</text>
+<rect class="b" x="470" y="130" width="170" height="40" rx="6"/><text x="480" y="155">No: server-auth only</text>
+<path class="ar" d="M410 38H470M555 50V74M555 114V130"/>
+<rect class="b" x="680" y="74" width="130" height="96" rx="6"/><text x="688" y="96">Always check:</text><text x="688" y="114">SAN = target</text><text x="688" y="130">CA in trustpoint</text><text x="688" y="146">clock / dates</text><text x="688" y="162">port + VRF</text>
+<text x="10" y="205" style="fill:var(--mut)">Whether the IOS XE dial-out profile can present a client cert (true mTLS) is not stated in the fetched sources: treat as unverified.</text>
+</svg>
+
+<h2 id="anat">Anatomy</h2>
+<p>Snippets pinned to IOS XE 17.5 guide text; lab device is 17.16, so confirm syntax with <code>?</code>.</p>
+<pre><code># Dial-in gNMI secure mode (from the 17.5 gNMI chapter)
+crypto pki trustpoint trustpoint1
+ revocation-check none
+!
+gnxi
+gnxi secure-trustpoint trustpoint1
+gnxi secure-server
+gnxi secure-client-auth        ! optional: mTLS
+gnxi secure-port 50001         ! optional: default 9339
+!
+show gnxi state</code></pre>
+<pre><code># Dial-out TLS: trustpoint holds the CA that signed the COLLECTOR cert (YANG Suite page)
+crypto pki trustpoint grpc-receiver
+ enrollment terminal
+ chain-validation stop
+ revocation-check none
+crypto pki authenticate grpc-receiver     ! paste CA cert
+!
+telemetry ietf subscription 222
+ encoding encode-kvgpb
+ filter xpath /process-cpu-ios-xe-oper:cpu-usage/cpu-utilization/five-seconds
+ stream yang-push
+ update-policy periodic 2000
+ receiver ip address 10.10.10.10 50070 protocol grpc-tls profile myca</code></pre>
+<p class="warn">Cisco's own page flags that the profile name (<code>myca</code>) differs from the trustpoint name (<code>grpc-receiver</code>) and that the SAN IP (10.19.198.133) differs from the receiver IP. How a <i>profile</i> maps to a trustpoint is not defined in the fetched Cisco pages. ⚠ unverified.</p>
+<pre><code># Collector-side cert with IP SAN (YANG Suite page)
+openssl genrsa -out myca.key 2048
+openssl genrsa -out server.key 2048
+openssl req -x509 -new -nodes -key myca.key -sha256 -days 365 -out myca.cert
+openssl req -out server.csr -key server.key -new -config ./ssl.conf     # ssl.conf: subjectAltName = IP.1 = &lt;collector IP&gt;
+openssl x509 -req -in server.csr -CA myca.cert -CAkey myca.key -CAcreateserial -out server.cert -days 365 -extensions v3_req -extfile ./ssl.conf</code></pre>
+<pre><code># NX-OS 9.3 dial-out (guide fragments)
+telemetry
+  destination-group 1
+    ip address 1.2.3.4 port 50003 protocol gRPC encoding GPB
+  ! cert applied per guide step: certificate /bootflash/server.key localhost</code></pre>
+
+<h2 id="bf">Break / fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Dial-out sub stays not-connected; grpc-tcp to the same collector works</td><td>Collector cert SAN doesn't match receiver IP/host, or CA not in router trustpoint</td><td><code>openssl s_client -connect &lt;col&gt;:&lt;port&gt; -CAfile myca.cert -verify_ip &lt;ip&gt;</code> from the workstation; <code>show crypto pki trustpoints</code></td><td>Reissue cert with correct SAN; re-run <code>crypto pki authenticate</code></td></tr>
+<tr><td>gNMI client: handshake failure on 9339</td><td><code>gnxi secure-server</code> not on, or you dialed the insecure port 50052 with TLS</td><td><code>show gnxi state</code></td><td>Enable secure server; match port to <code>secure-port</code></td></tr>
+<tr><td>TLS works only without client cert</td><td><code>secure-client-auth</code> on, client cert not signed by the trustpoint CA</td><td><code>openssl s_client -cert client.crt -key client.key -CAfile rootCA.pem</code></td><td>Sign client cert with the same root; or drop client auth if not required</td></tr>
+<tr><td><code>crypto pki import</code> rejects the key</td><td>Device key unencrypted</td><td>Look for the import error text</td><td><code>openssl rsa -des3</code> the key and re-import (per 17.5 gNMI page)</td></tr>
+<tr><td>Worked yesterday, fails today</td><td>Cert expired or router clock wrong (lab VMs often reboot cold)</td><td><code>show clock</code>; <code>openssl x509 -noout -dates</code></td><td>Fix NTP/clock; reissue or rotate cert</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>openssl s_client -help</code> and <code>openssl verify -help</code> list <code>-verify_ip</code>, <code>-verify_hostname</code>, <code>-cert</code>, <code>-key</code>, <code>-CAfile</code>.</li>
+<li><code>openssl x509 -in x.crt -noout -text | grep -A1 "Alternative"</code> shows SAN. ⚠ unverified — test in lab</li>
+<li>On the router: <code>show running-config | section gnxi</code>, <code>show running-config | section telemetry</code>, <code>show crypto pki trustpoints</code>. Use <code>?</code> after <code>protocol</code> to see the exact spelling (grpc-tls vs grpc_tls).</li>
+<li>gnmic, if installed: <code>gnmic --help</code> lists <code>--tls-ca</code>, <code>--tls-cert</code>, <code>--tls-key</code> ⚠ unverified — test in lab.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Target:</b> Cat8000V (IOS XE 17.16). <b>Requirement:</b> enable secure gNMI with server-auth TLS, then require client certs, and prove each state from the workstation.</p>
+<ol>
+<li>Create a root CA, a device cert (CN or SAN = device mgmt IP) and a client cert with openssl.</li>
+<li>Import device cert chain into a trustpoint (key encrypted).</li>
+<li>Enable <code>gnxi secure-server</code> on a non-default port.</li>
+<li>Verify with <code>show gnxi state</code> and <code>openssl s_client</code> (expect chain verifies, no client cert needed).</li>
+<li>Add <code>gnxi secure-client-auth</code>; show that connecting without <code>-cert/-key</code> fails and with them succeeds.</li>
+</ol>
+<p>Reference: <code>gnxi secure-trustpoint</code>, <code>secure-port</code>, <code>crypto pki import ... pem terminal password</code>.</p>
+<details><summary>Hint</summary>Key must be des3-encrypted before import. If s_client says verify error, check SAN against the IP you used in <code>-connect</code> and use <code>-verify_ip</code>.</details>
+<details><summary>Solution outline</summary>Follow the Anatomy block 1 exactly; client test: <code>openssl s_client -connect &lt;ip&gt;:50001 -CAfile rootCA.pem -cert client.crt -key client.key -verify_ip &lt;ip&gt;</code>. Handshake behavior on 17.16 and exact error text ⚠ unverified — test in lab.</details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<details><summary>1. Dial-in vs dial-out: which end is the TLS server in each, and where does the certificate that proves the server's identity live?</summary>Dial-in: router (trustpoint named by <code>gnxi secure-trustpoint</code>). Dial-out: collector holds server cert+key; router trustpoint holds the signing CA.</details>
+<details><summary>2. What does <code>gnxi secure-client-auth</code> add, and what are the secure and insecure default ports?</summary>Authenticates the client certificate against the root cert (mTLS). Secure 9339, insecure 50052.</details>
+<details><summary>3. Your openssl-signed device key won't import into IOS XE. What is the likely cause and fix?</summary>Key not encrypted; encrypt with <code>openssl rsa -des3</code> and re-import with the password.</details>
+<details><summary>4. A collector is reached by IP 10.1.1.3 but its cert only has a DNS name. What fails, and which openssl option reproduces the check?</summary>Name verification fails (no IP SAN). <code>-verify_ip</code> checks SAN IP only. Reissue with IP SAN.</details>
+<p><b>From earlier</b></p>
+<details><summary>5. (2026-10-19) Two receivers are configured on one subscription and the first is unreachable. What does the second receive?</summary>Per the 17.5 guide only the first valid receiver is used, so the second can receive data. Answer reconstructed from the earlier page.</details>
+<details><summary>6. (2026-10-13) How do you learn which IOS XE models support on-change, and why can't you read it from the YANG?</summary>Use <code>show platform software ndbman ... models</code> (listed in the guide); support is a platform property, not expressed in the YANG module. Reconstructed from the earlier page.</details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnmi.html" target="_blank" rel="noopener">gNMI Protocol</a> <span class="tag">✅</span> IOS XE 17.5 · verified 2026-10-22 · secure-mode commands, OpenSSL cert recipe, ports.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnoi_protocol.html" target="_blank" rel="noopener">gRPC Network Operations Interface</a> <span class="tag">✅</span> IOS XE 17.5 · verified 2026-10-22 · cert.Install/Rotate, secure-init, mutual auth.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Model-Driven Telemetry</a> <span class="tag">✅</span> IOS XE 17.5 · verified 2026-10-22 · TLS restriction text, 17.1.1 feature row, <code>grpc_tls</code> example.</li>
+<li><a href="https://developer.cisco.com/docs/yangsuite/telemetry-over-grpc-secure-channel" target="_blank" rel="noopener">Telemetry over gRPC Secure Channel</a> <span class="tag">✅</span> YANG Suite docs, IOS XE version not stated · verified 2026-10-22 · end-to-end TLS dial-out recipe (server-auth only).</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_0101001.html" target="_blank" rel="noopener">Model Driven Telemetry (NX-OS 9.3(x))</a> <span class="tag">✅</span> NX-OS 9.3(x) · verified 2026-10-22 · <code>certificate</code> command, wrong-cert error counting.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md" target="_blank" rel="noopener">gNMI specification (openconfig/reference)</a> <span class="tag">✅</span> spec · verified 2026-10-22 · sec. 3.1 session security.</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446" target="_blank" rel="noopener">RFC 8446: TLS 1.3</a> <span class="tag">✅</span> RFC · verified 2026-10-22 · handshake and client-auth message sections.</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://grpc.io/docs/guides/auth/" target="_blank" rel="noopener">Authentication | gRPC</a> <span class="tag">✅</span> current · verified 2026-10-22 · SSL/TLS vs mutual, channel vs call credentials.</li>
+<li><a href="https://docs.openssl.org/3.0/man1/openssl-s_client/" target="_blank" rel="noopener">openssl-s_client</a> <span class="tag">✅</span> OpenSSL 3.0 · verified 2026-10-22 · <code>-cert/-key/-verify_ip</code> for testing.</li>
+<li><a href="https://docs.openssl.org/3.1/man1/openssl-verification-options/" target="_blank" rel="noopener">openssl-verification-options</a> <span class="tag">✅</span> OpenSSL 3.1 · verified 2026-10-22 · SAN vs CN matching.</li>
+</ul>
+
+<hr>
+<p class="meta"><b>Links: 10 ✅ · 0 🔎 · 0 removed.</b></p>
+<p class="meta"><b>⚠ Unverified claims:</b> how an IOS XE dial-out <code>profile</code> maps to a trustpoint; whether dial-out supports a client cert (mTLS); <code>grpc-tls</code> vs <code>grpc_tls</code> spelling on 17.16; Cat8000V 17.16 gnxi behavior and error text; <code>show telemetry ietf subscription &lt;id&gt; receiver</code> TLS fields; NX-OS gNMI TLS; gnmic TLS flags; SAN grep command; recall answers 5-6 (reconstructed). Tail of the 17.5 MDT, gNMI spec, and RFC 8446 pages not read (fetch window).</p>
+<p class="meta"><b>Tomorrow:</b> Friday weekly review 4 (units 13-16: 3.5.c-d, 4.3.a, 2.7.d, 3.5.e).</p>
+</main></body></html>
+
+</body></html>
