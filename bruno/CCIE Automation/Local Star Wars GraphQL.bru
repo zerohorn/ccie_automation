@@ -1,0 +1,39 @@
+meta {
+  name: Local Star Wars GraphQL
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: http://10.0.0.241:4000/graphql
+  body: graphql
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Accept-CH: application/graphql
+}
+
+body:graphql {
+  query listfilms {
+    allFilms(first: 3) {
+      films {
+        episodeID
+        title
+        releaseDate
+        starshipConnection {
+          starships {
+            name
+          }
+        }
+      }
+    }
+  }
+  
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

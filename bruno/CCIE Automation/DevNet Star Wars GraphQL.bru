@@ -1,0 +1,33 @@
+meta {
+  name: DevNet Star Wars GraphQL
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: http://starwars.devnetexperttraining.com/graphql
+  body: graphql
+  auth: inherit
+}
+
+body:graphql {
+  query listplanets {
+    data {
+      allFilms {
+        films {
+          episodeID
+          title
+          releaseDate
+          starshipConnection {
+            name
+          }
+        }
+      }
+    }
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

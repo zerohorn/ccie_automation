@@ -82,4 +82,34 @@ query MyDevNetQuery {
 
 ```
 
+### 2a Python REST API server with Flask-RESTX
 
+Build server side of REST API
+flask & flask-restx are API server tools on CWA
+
+```
+from flask import Flask
+from flask_restx import Resource, Api
+
+app = Flask("devnet")
+api = Api(app)
+
+@api.route("/devnet")
+class DevNet(Resource):
+    def get(self):
+        return "Expert"
+
+if __name__ == "__main__"
+    app.run(debug=True)
+```
+
+HTTP Client ==> Request (Method, headers, path, parameters, payload data) ==> REST API Server  ==>  Response
+
+Request Parser
+- Arguments
+
+HTTP Client
+GET /myapi/Matt?country=USA
+
+Python
+@api.route("myapi/<name>)
