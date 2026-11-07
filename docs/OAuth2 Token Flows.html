@@ -1,0 +1,294 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>OAuth2 Token Flows</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single 860px column, sticky TOC, SVG figures, tables in scroll wrappers. Palette: ink-blue neutrals, teal accent, amber for warnings. */
+:root{--bg:#f6f8fa;--fg:#17202b;--mute:#566474;--card:#ffffff;--line:#d5dce4;--accent:#0a7c86;--accent-fg:#ffffff;--warn:#a85b00;--warn-bg:#fff3e0;--code-bg:#eef2f6;--svg-a:#d9eef0;--svg-b:#e7ecf3;--svg-hi:#bfe3e6;--ok:#1d7a46;--bad:#b3261e;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161d;--fg:#e3e9ef;--mute:#9aa9b8;--card:#17212b;--line:#2b3947;--accent:#4cc3cd;--accent-fg:#06262a;--warn:#ffb454;--warn-bg:#2b2113;--code-bg:#1b2733;--svg-a:#16363a;--svg-b:#1f2c3a;--svg-hi:#1f5157;--ok:#58c88a;--bad:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f161d;--fg:#e3e9ef;--mute:#9aa9b8;--card:#17212b;--line:#2b3947;--accent:#4cc3cd;--accent-fg:#06262a;--warn:#ffb454;--warn-bg:#2b2113;--code-bg:#1b2733;--svg-a:#16363a;--svg-b:#1f2c3a;--svg-hi:#1f5157;--ok:#58c88a;--bad:#ff8a80;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.6}
+.wrap{max-width:860px;margin:0 auto;padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px;z-index:5}
+nav.toc a{color:var(--mute);text-decoration:none}nav.toc a:hover{color:var(--accent)}
+h1{font-size:1.9rem;line-height:1.2;margin:20px 0 6px;text-wrap:balance}
+h2{font-size:1.35rem;margin:36px 0 10px;text-wrap:balance;scroll-margin-top:60px}
+h3{font-size:1.05rem;margin:22px 0 6px;color:var(--accent)}
+p{margin:8px 0}a{color:var(--accent)}
+.hdr{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-top:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 16px;font-size:14px}
+.hdr b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:600}
+ul{padding-left:20px;margin:8px 0}li{margin:4px 0}
+.fig{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px;margin:14px 0;overflow-x:auto}
+.fig svg{width:100%;height:auto;display:block;min-width:340px}
+.fig figcaption{font-size:13px;color:var(--mute);padding:6px 4px 0}
+svg text{font-family:var(--font);fill:var(--fg);font-size:13px}
+svg .t-m{fill:var(--mute);font-size:11.5px}
+svg .box{fill:var(--svg-b);stroke:var(--line);stroke-width:1.2}
+svg .hi{fill:var(--svg-hi);stroke:var(--accent);stroke-width:1.6}
+svg .alt{fill:var(--svg-a);stroke:var(--line);stroke-width:1.2}
+svg .ln{stroke:var(--mute);stroke-width:1.4;fill:none}
+svg .ac{stroke:var(--accent);stroke-width:1.8;fill:none}
+svg .dash{stroke:var(--mute);stroke-width:1;stroke-dasharray:4 4;fill:none}
+svg .bad{fill:var(--bad);font-weight:600}svg .good{fill:var(--ok);font-weight:600}
+.tw{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+tr:last-child td{border-bottom:0}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.5;margin:10px 0}
+code{font-family:var(--mono);font-size:.9em}
+p code,li code,td code{background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre code{font-size:13px}
+.layer{border-left:3px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+.layer h3{margin-top:0}
+.warn{background:var(--warn-bg);border:1px solid var(--warn);color:var(--fg);border-radius:6px;padding:8px 12px;font-size:14px;margin:10px 0}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:3px;padding:1px 6px;margin-right:6px;background:var(--accent);color:var(--accent-fg);letter-spacing:.04em}
+details{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ref{list-style:none;padding:0}.ref li{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:8px 0}
+.ref .meta{display:block;font-size:12.5px;color:var(--mute);margin-top:2px}
+footer{margin-top:36px;border-top:1px solid var(--line);padding-top:14px;font-size:14px;color:var(--mute)}
+</style>
+<div class="wrap">
+<nav class="toc" aria-label="Sections"><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anatomy">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+
+<h1>OAuth2 Token Flows</h1>
+<div class="hdr">
+<div><b>Date</b>2026-11-04 (Wed)</div>
+<div><b>Blueprint</b>5.3 Use OAuth2+ to obtain an auth token</div>
+<div><b>Domain</b>5 Security (weight not verified)</div>
+<div><b>Tier</b>2</div>
+<div><b>Read time</b>~18 min</div>
+<div><b>Position</b>Unit 23 of 49</div>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>OAuth2 is a delegation protocol: a client gets a short-lived access token from an authorization server, then presents it to a resource server. The token is not a login; it is a scoped, expiring capability.</li>
+<li>For a human consenting in a browser (Webex integration, Meraki integration), the grant is <b>authorization code</b>, plus <b>PKCE</b> for any client that cannot hold a secret.</li>
+<li>No browser (appliance, CLI on a jump host): <b>device grant</b>. No human at all: <b>client credentials</b> or a vendor's service-app equivalent.</li>
+<li>Password grant (ROPC) is still in RFC 6749 and in the FastAPI tutorial, but RFC 9700 says not to use it.</li>
+<li>The access token goes in <code>Authorization: Bearer</code>. Query-string tokens are discouraged and RFC 9700 prohibits them in clients.</li>
+<li>Refresh tokens can rotate. Meraki revokes the old one on every refresh, so a script that does not persist the new one breaks on the second run.</li>
+<li>Most exam failures here are plumbing: redirect URI mismatch, expired code, wrong header, missing scope.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure class="fig">
+<svg viewBox="0 0 760 330" role="img" aria-label="Domain 5 neighbors and the OAuth2 tool chain">
+<text x="10" y="20" class="t-m">DOMAIN 5 NEIGHBORS</text>
+<rect class="box" x="10" y="30" width="170" height="52" rx="5"/><text x="22" y="52">5.2 CSR / CA / TLS</text><text x="22" y="70" class="t-m">transport trust</text>
+<rect class="hi" x="205" y="30" width="170" height="52" rx="5"/><text x="217" y="52">5.3 OAuth2 token</text><text x="217" y="70" class="t-m">today</text>
+<rect class="box" x="400" y="30" width="170" height="52" rx="5"/><text x="412" y="52">5.4 Secret manager</text><text x="412" y="70" class="t-m">where client_secret lives</text>
+<rect class="box" x="595" y="30" width="155" height="52" rx="5"/><text x="607" y="52">5.5 Token on REST</text><text x="607" y="70" class="t-m">validate side</text>
+<path class="ln" d="M180 56h25M375 56h25M570 56h25"/>
+<text x="10" y="130" class="t-m">TOOL CHAIN FOR A TOKEN-BASED TASK</text>
+<rect class="alt" x="10" y="145" width="150" height="60" rx="5"/><text x="22" y="170">Python client</text><text x="22" y="188" class="t-m">requests / script</text>
+<rect class="box" x="215" y="145" width="160" height="60" rx="5"/><text x="227" y="170">Authorization server</text><text x="227" y="188" class="t-m">authorize + token</text>
+<rect class="box" x="430" y="145" width="150" height="60" rx="5"/><text x="442" y="170">Resource API</text><text x="442" y="188" class="t-m">Meraki, Webex, ...</text>
+<rect class="alt" x="620" y="145" width="130" height="60" rx="5"/><text x="632" y="170">Vault</text><text x="632" y="188" class="t-m">client_secret</text>
+<path class="ac" d="M160 165h55"/><text x="165" y="156" class="t-m">1 code→token</text>
+<path class="ac" d="M85 205v40h420v-40"/><text x="200" y="262" class="t-m">2 Authorization: Bearer token</text>
+<path class="dash" d="M690 205v70h-460v-70"/>
+<text x="470" y="290" class="t-m">secret read at start, never in git</text>
+</svg>
+<figcaption>5.3 produces the token that 5.5 checks on the receiving side. Vault (5.4) holds the secret used at the token endpoint.</figcaption>
+</figure>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+<div class="layer"><h3>L1: Concept</h3>
+<p>Four roles. The <b>resource owner</b> is the person. The <b>client</b> is your script or app. The <b>authorization server</b> issues tokens. The <b>resource server</b> is the API. RFC 6749 defines four grant types: authorization code, implicit, resource-owner password credentials, and client credentials, and allows extension grants. The device grant (<a href="https://www.rfc-editor.org/rfc/rfc8628" target="_blank" rel="noopener">RFC 8628</a> <span class="tag">✅</span>) is one such extension.</p>
+<p>You pick the grant by who is present. A person who can open a browser: authorization code. A person with no browser on the device: device grant. No person: client credentials. You are the architect, so think of it as choosing an authentication mode by what the client can prove and who can consent.</p></div>
+
+<figure class="fig">
+<svg viewBox="0 0 760 330" role="img" aria-label="Grant selection flowchart">
+<rect class="hi" x="280" y="8" width="200" height="40" rx="5"/><text x="300" y="33">Need an access token</text>
+<path class="ln" d="M380 48v22"/>
+<rect class="box" x="280" y="70" width="200" height="40" rx="5"/><text x="305" y="95">Is a user consenting?</text>
+<path class="ln" d="M280 90h-120v30"/><text x="165" y="84" class="t-m">no</text>
+<path class="ln" d="M480 90h120v30"/><text x="535" y="84" class="t-m">yes</text>
+<rect class="alt" x="40" y="120" width="240" height="64" rx="5"/><text x="52" y="144">Client credentials</text><text x="52" y="162" class="t-m">client authenticates as itself</text><text x="52" y="177" class="t-m">(Webex: service app)</text>
+<rect class="box" x="480" y="120" width="240" height="40" rx="5"/><text x="492" y="145">Browser on same device?</text>
+<path class="ln" d="M600 160v20h-130v15"/><text x="475" y="178" class="t-m">no</text>
+<path class="ln" d="M600 160v20h110v15"/><text x="650" y="178" class="t-m">yes</text>
+<rect class="alt" x="360" y="195" width="220" height="60" rx="5"/><text x="372" y="219">Device grant</text><text x="372" y="237" class="t-m">user_code, poll token endpoint</text>
+<rect class="hi" x="600" y="195" width="150" height="60" rx="5"/><text x="610" y="219">Auth code</text><text x="610" y="237" class="t-m">+ PKCE if public</text>
+<rect class="box" x="40" y="215" width="270" height="70" rx="5"/><text x="52" y="238" class="bad">Password grant (ROPC)</text><text x="52" y="256" class="t-m">RFC 9700 s2.4: must not be used.</text><text x="52" y="271" class="t-m">Still in the FastAPI tutorial.</text>
+</svg>
+<figcaption>Decision path. The red box is a trap: it works, and the tutorial teaches it, but the current security BCP forbids it.</figcaption>
+</figure>
+
+<div class="layer"><h3>L2: Mechanics of authorization code with PKCE</h3>
+<p>The client sends the user's browser to the authorize endpoint with <code>response_type=code</code>, <code>client_id</code>, <code>redirect_uri</code>, <code>scope</code> and a random <code>state</code> (RFC 6749 s4.1.1; <code>state</code> is the CSRF check). The server authenticates the user, shows consent, and redirects back with a single-use <code>code</code> and your <code>state</code>. The RFC recommends the code expire within 10 minutes; Meraki states 10 minutes for its access grant.</p>
+<p>The client then POSTs the code to the token endpoint. For a confidential client that includes client authentication. The response is JSON: <code>access_token</code> and <code>token_type</code> are required, <code>expires_in</code> is recommended, <code>refresh_token</code> is optional (RFC 6749 s5.1). Failures return 400 with <code>invalid_grant</code>, <code>invalid_client</code>, <code>invalid_request</code>, <code>unauthorized_client</code>, <code>unsupported_grant_type</code> or <code>invalid_scope</code> (s5.2).</p>
+<p>PKCE (<a href="https://www.rfc-editor.org/rfc/rfc7636" target="_blank" rel="noopener">RFC 7636</a> <span class="tag">✅</span>) binds the code to the client that asked for it. The client invents a <code>code_verifier</code> of 43 to 128 unreserved characters, sends only its S256 hash as <code>code_challenge</code> on the authorize request, and reveals the verifier on the token request. If the server's hash of the verifier does not match, you get <code>invalid_grant</code>. A stolen code is useless without the verifier.</p></div>
+
+<figure class="fig">
+<svg viewBox="0 0 760 400" role="img" aria-label="Authorization code with PKCE sequence">
+<g class="t-m"><text x="40" y="18">Browser/user</text><text x="230" y="18">Client</text><text x="440" y="18">Auth server</text><text x="640" y="18">Resource API</text></g>
+<path class="dash" d="M70 26v360M250 26v360M475 26v360M670 26v360"/>
+<path class="ac" d="M250 56h225"/><text x="262" y="50">1 authorize: code_challenge, state</text>
+<path class="ln" d="M475 86H70"/><text x="130" y="80">2 login + consent</text>
+<path class="ln" d="M70 116h180"/><text x="82" y="110">3 redirect: ?code=...&amp;state=...</text>
+<rect class="hi" x="150" y="128" width="200" height="26" rx="4"/><text x="158" y="146">4 check state, then use code</text>
+<path class="ac" d="M250 186h225"/><text x="262" y="178">5 POST token: code, redirect_uri,</text><text x="262" y="194">code_verifier (+ client auth)</text>
+<path class="ln" d="M475 224H250"/><text x="262" y="218">6 access_token, expires_in, refresh_token</text>
+<path class="ac" d="M250 262h420"/><text x="262" y="256">7 GET resource, Authorization: Bearer ...</text>
+<path class="ln" d="M670 292H250"/><text x="262" y="286">8 200, or 401 invalid_token / 403 insufficient_scope</text>
+<path class="ac" d="M250 330h225"/><text x="262" y="324">9 later: POST token, grant_type=refresh_token</text>
+<path class="ln" d="M475 358H250"/><text x="262" y="352">10 new access_token (+ maybe new refresh_token)</text>
+</svg>
+<figcaption>Steps 1 to 6 happen once per consent. Steps 7 and 8 repeat until the access token expires; 9 and 10 renew it.</figcaption>
+</figure>
+
+<div class="layer"><h3>L3: Exam detail</h3>
+<p><b>Vendor shapes you can verify.</b> Webex integrations: authorize at <code>/v1/authorize</code> on webexapis.com with <code>response_type=code</code>, <code>scope</code>, <code>state</code>, <code>client_id</code>, <code>redirect_uri</code>; token POST to <code>/v1/access_token</code> with a URL-encoded body including <code>client_secret</code>. The sample response carries <code>expires_in</code> (about 14 days in the example) and <code>refresh_token_expires_in</code> (about 90 days), and the refresh lifetime renews on use. Meraki: authorize, token and revoke endpoints on as.meraki.com, <code>client_id</code> and <code>client_secret</code> sent as HTTP Basic on token requests, access token valid 60 minutes, refresh token revoked after 90 days idle, and each refresh returns a new refresh token and revokes the old. Scope strings are colon-delimited, such as <code>dashboard:iam:config:read</code>.</p>
+<p><b>Sending the token.</b> The Authorization header with the Bearer scheme is the supported method. <a href="https://www.rfc-editor.org/rfc/rfc6750" target="_blank" rel="noopener">RFC 6750</a> <span class="tag">✅</span> allows a form body and a query parameter but discourages both; RFC 9700 s4.3.2 prohibits clients from using the query form. On failure the resource server answers with a <code>WWW-Authenticate: Bearer</code> challenge: <code>invalid_token</code> is 401, <code>insufficient_scope</code> is 403, <code>invalid_request</code> is usually 400. The Meraki <a href="https://developer.cisco.com/meraki/api-v1/authorization/" target="_blank" rel="noopener">Authentication page</a> <span class="tag">✅</span> says v1 uses the standard header and warns that curl, Postman or PowerShell can drop it on a redirect, which surfaces as "Missing API key".</p>
+<p><b>Security BCP.</b> RFC 9700 requires exact string matching of redirect URIs (localhost port may vary for native apps), requires PKCE for public clients and recommends it for confidential ones, discourages implicit, forbids ROPC, and requires refresh tokens for public clients to be sender-constrained or rotated.</p></div>
+
+<div class="tw"><table>
+<caption style="text-align:left;padding:8px 10px;font-weight:600">Grant comparison</caption>
+<thead><tr><th>Grant</th><th>Who consents</th><th>Client proves</th><th>Refresh token</th><th>Use here</th></tr></thead>
+<tbody>
+<tr><td>Authorization code + PKCE</td><td>User in browser</td><td>Secret if confidential; verifier if public</td><td>Optional</td><td>Webex integration, Meraki integration (Meraki page does not mention PKCE)</td></tr>
+<tr><td>Device (RFC 8628)</td><td>User on a second device</td><td>client_id; secret if confidential</td><td>Provider decides</td><td>CLI on a host with no browser</td></tr>
+<tr><td>Client credentials</td><td>Nobody</td><td>Client authentication, confidential only</td><td>Should not be issued (RFC 6749 s4.4)</td><td>Unattended automation; Webex calls this a service app</td></tr>
+<tr><td>Password (ROPC)</td><td>Nobody; client sees the password</td><td>Username and password</td><td>Optional</td><td>FastAPI tutorial only; RFC 9700 prohibits</td></tr>
+<tr><td>Implicit</td><td>User in browser</td><td>Nothing</td><td>No</td><td>Avoid (RFC 9700 s2.1.2)</td></tr>
+</tbody></table></div>
+
+<p>Device grant mechanics, since the CLI task shape (2.2 is tomorrow) may call for it: POST to the device authorization endpoint, receive <code>device_code</code>, <code>user_code</code>, <code>verification_uri</code>, <code>expires_in</code> and an optional <code>interval</code> (default 5 s). Poll the token endpoint with the device-code URN grant type. <code>authorization_pending</code> means keep going, <code>slow_down</code> adds 5 seconds, <code>access_denied</code> and <code>expired_token</code> end the loop. Neither the Webex nor the Meraki pages fetched today document a device grant, so treat it as protocol knowledge, not a vendor recipe.</p>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Pinned to the vendor pages fetched today. These are shapes, not a solution to the drill.</p>
+<h3>Webex authorize and token request</h3>
+<pre><code>GET https://webexapis.com/v1/authorize
+    ?response_type=code
+    &amp;client_id=&lt;CLIENT_ID&gt;
+    &amp;redirect_uri=&lt;REGISTERED_URI&gt;
+    &amp;scope=spark:rooms_read
+    &amp;state=&lt;RANDOM&gt;
+
+POST https://webexapis.com/v1/access_token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&amp;code=&lt;CODE&gt;&amp;redirect_uri=&lt;REGISTERED_URI&gt;
+&amp;client_id=&lt;CLIENT_ID&gt;&amp;client_secret=&lt;SECRET&gt;</code></pre>
+<h3>Meraki token request</h3>
+<pre><code># client_id:client_secret as HTTP Basic (per Meraki OAuth page)
+POST https://as.meraki.com/oauth/token
+Authorization: Basic base64(client_id:client_secret)
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&amp;code=&lt;CODE&gt;&amp;redirect_uri=&lt;REGISTERED_URI&gt;   # ⚠ unverified body fields</code></pre>
+<h3>PKCE pair in Python 3.13</h3>
+<pre><code>import secrets, hashlib, base64
+verifier  = secrets.token_urlsafe(32)          # 43 chars; RFC 7636 allows 43-128  ⚠ length unverified
+digest    = hashlib.sha256(verifier.encode("ascii")).digest()
+challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()   # ⚠ padding strip unverified here
+state     = secrets.token_urlsafe(16)</code></pre>
+<p><code>secrets</code> is the right module for these values; the <a href="https://docs.python.org/3/library/secrets.html" target="_blank" rel="noopener">Python docs</a> <span class="tag">✅</span> say to prefer it over <code>random</code> for security tokens, and offer <code>compare_digest</code> for constant-time checks, which is what you want for the <code>state</code> comparison.</p>
+<h3>Calling and failing</h3>
+<pre><code>GET /resource HTTP/1.1
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
+
+HTTP/1.1 401
+WWW-Authenticate: Bearer error="invalid_token"        # RFC 6750 s3.1 shape</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Token POST returns 400 <code>invalid_grant</code></td><td>Code expired or already used; <code>redirect_uri</code> differs from the authorize request; PKCE verifier does not match the challenge</td><td><code>curl -i</code> the POST, read <code>error_description</code>; compare the two redirect strings byte for byte; log elapsed seconds since redirect</td><td>Restart from authorize, exchange immediately, reuse the exact redirect string, keep one verifier per attempt</td></tr>
+<tr><td>API call returns 401 "Missing API key" on Meraki</td><td>Wrong header name, or the Authorization header dropped on a redirect</td><td><code>curl -v</code> and read the request headers actually sent</td><td>Send <code>Authorization: Bearer &lt;token&gt;</code>; follow redirects with the tool's flag that re-sends the header (per the Meraki page)</td></tr>
+<tr><td>Refresh works the first run, fails the second with <code>invalid_grant</code></td><td>Refresh token rotated; script saved the old one (Meraki revokes it on each refresh)</td><td>Compare the refresh token in the response to the one stored</td><td>Write the new refresh token back to the secret store after every refresh, before using the new access token</td></tr>
+<tr><td>Redirect lands but the script aborts "state mismatch"</td><td>New <code>state</code> generated per request but a stale one compared; or two browser tabs; or a real CSRF attempt</td><td>Print sent and received <code>state</code> (not the code)</td><td>Persist <code>state</code> for the attempt, compare with <code>secrets.compare_digest</code>, reject on mismatch</td></tr>
+<tr><td>Token is valid but API returns 403</td><td><code>insufficient_scope</code>: scope not requested, not registered on the integration, or not approved at consent</td><td><code>curl -i</code> and read <code>WWW-Authenticate</code>; compare the <code>scope</code> field in the token response to what you asked for</td><td>Add the scope to the integration registration and the authorize request, then repeat consent (Webex page: request the same scopes you registered)</td></tr>
+</tbody></table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>python -m pydoc secrets</code> and <code>python -m pydoc hashlib.sha256</code> work with no network.</li>
+<li><code>openssl rand -hex 32</code> generates a signing secret; the FastAPI JWT chapter uses exactly this.</li>
+<li><code>python -m pydoc fastapi.security.OAuth2PasswordRequestForm</code> and <code>uv run python -c "import fastapi, jwt"</code> test what is installed. ⚠ unverified: whether FastAPI, PyJWT and requests are on the workstation.</li>
+<li>Decode a JWT payload without a library: split on dots, base64url-decode the middle part. Read-only; it proves nothing about the signature.</li>
+<li>The running FastAPI app serves its own docs at <code>/docs</code>; the OAuth2 scheme shows up under the Authorize button. ⚠ unverified on the lab build.</li>
+<li>Cisco docs for the vendor side are not offline. Note the endpoint hosts and the header shape before the exam starts: as.meraki.com, webexapis.com.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<p><b>Target:</b> Candidate Workstation only. No device, no live vendor account. You build both ends of a small flow and test with curl.</p>
+<p><b>Requirement.</b></p>
+<ul>
+<li>Part A: a script that prints an authorize URL carrying <code>response_type</code>, <code>client_id</code>, <code>redirect_uri</code>, <code>scope</code>, <code>state</code>, <code>code_challenge</code> (S256) and prints the verifier it must keep.</li>
+<li>Part B: a FastAPI service with a <code>/token</code> endpoint that reads form fields, returns JSON with <code>access_token</code> and <code>token_type</code> of <code>bearer</code>, signs a JWT HS256 with 30 minute expiry, and a <code>/users/me</code> endpoint that requires it.</li>
+</ul>
+<p><b>Reference names.</b> <code>secrets.token_urlsafe</code>, <code>hashlib.sha256</code>, <code>base64.urlsafe_b64encode</code>; <code>OAuth2PasswordBearer(tokenUrl="token")</code>, <code>OAuth2PasswordRequestForm</code>, <code>jwt.encode</code>, <code>jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])</code>, claim <code>sub</code>, claim <code>exp</code>.</p>
+<p><b>Verify.</b></p>
+<ul>
+<li><code>curl -i localhost:8000/users/me</code> returns 401 and a <code>WWW-Authenticate: Bearer</code> header.</li>
+<li><code>curl -d username=x -d password=y localhost:8000/token</code> (form-encoded) returns the token JSON for a valid user. The same call with a JSON body fails.</li>
+<li><code>curl -H "Authorization: Bearer $T" localhost:8000/users/me</code> returns the user.</li>
+<li>Edit one character of <code>$T</code> and confirm 401.</li>
+</ul>
+<details><summary>Hint</summary>
+<p>The form-field names are fixed by the spec: <code>username</code> and <code>password</code>. <code>tokenUrl</code> only documents the endpoint; you still have to write it. Put the user id in <code>sub</code>, and set <code>exp</code> as a UTC datetime. Remember this is the password grant, which is here only because it is the cheapest local exercise.</p></details>
+<details><summary>Solution outline</summary>
+<pre><code># part A
+import secrets, hashlib, base64, urllib.parse as up
+v = secrets.token_urlsafe(32); s = secrets.token_urlsafe(16)
+c = base64.urlsafe_b64encode(hashlib.sha256(v.encode()).digest()).rstrip(b"=").decode()
+q = up.urlencode(dict(response_type="code", client_id="lab", redirect_uri="http://localhost:8080/cb",
+                      scope="spark:rooms_read", state=s, code_challenge=c, code_challenge_method="S256"))
+print("https://auth.example.invalid/authorize?"+q); print("verifier:", v)   # placeholder host
+
+# part B (shape from the FastAPI JWT chapter)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+@app.post("/token")
+async def login(f: Annotated[OAuth2PasswordRequestForm, Depends()]):
+    # check user, then:
+    tok = jwt.encode({"sub": f.username, "exp": datetime.now(timezone.utc)+timedelta(minutes=30)},
+                     SECRET_KEY, algorithm="HS256")
+    return {"access_token": tok, "token_type": "bearer"}</code></pre>
+<p>⚠ unverified — test in lab: the whole block. The authorize host is a placeholder on purpose; the drill does not need it to resolve.</p></details>
+
+<h2 id="recall">Recall check</h2>
+<details><summary>1. A token POST returns <code>invalid_grant</code>. List three causes you can check from the client side.</summary><p>Code expired or reused; <code>redirect_uri</code> not identical to the authorize request; PKCE verifier does not hash to the stored challenge.</p></details>
+<details><summary>2. Meraki rotates refresh tokens. What does your script do after every refresh?</summary><p>Stores the new refresh token (the old one is revoked) before it relies on the new access token.</p></details>
+<details><summary>3. Name the HTTP status and challenge error for an expired token versus a token lacking the scope.</summary><p>401 <code>invalid_token</code> versus 403 <code>insufficient_scope</code>, both in <code>WWW-Authenticate: Bearer</code> (RFC 6750 s3.1).</p></details>
+<details><summary>4. Which grant would you pick for a CLI on a host with no browser, and what does the polling loop do on <code>slow_down</code>?</summary><p>Device grant. Keep polling, but lengthen the interval by 5 seconds. <code>authorization_pending</code> continues; <code>access_denied</code> and <code>expired_token</code> stop.</p></details>
+<details><summary>5. (from 2026-10-27) You want 201 on create and a response that omits <code>password</code>. Which two arguments do you use, and which wins if you give both a model and an annotation?</summary><p><code>status_code=201</code> plus <code>response_model</code> (or return annotation). <code>response_model</code> wins.</p></details>
+<details><summary>6. (from 2026-10-29) The CSR carried a SAN but the issued cert has none. Why, and name two fixes.</summary><p><code>openssl x509</code> ignores request extensions by default. Use <code>-extfile</code>/<code>-extensions</code>, or <code>-copy_extensions copy</code>.</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<ul class="ref">
+<li><b>Cisco</b></li>
+<li><span class="tag">✅</span><a href="https://developer.cisco.com/meraki/api-v1/oauth-overview/" target="_blank" rel="noopener">Overview - Meraki Dashboard API v1 - Cisco Meraki Developer Hub</a><span class="meta">Meraki Dashboard API v1 · verified 2026-11-04 · Best for: endpoints, token lifetimes, refresh rotation, Basic client auth.</span></li>
+<li><span class="tag">✅</span><a href="https://developer.cisco.com/meraki/api-v1/oauth-access-scopes/" target="_blank" rel="noopener">Access Scopes - Meraki Dashboard API v1 - Cisco Meraki Developer Hub</a><span class="meta">Meraki Dashboard API v1 · verified 2026-11-04 · Best for: scope string anatomy (config vs telemetry, read vs write).</span></li>
+<li><span class="tag">✅</span><a href="https://developer.webex.com/docs/understanding-oauth-flow-of-webex-integration" target="_blank" rel="noopener">Experimenting with OAuth Integrations | Webex for Developers</a><span class="meta">Webex integrations · verified 2026-11-04 · Best for: concrete authorize and token request, token lifetimes. Refresh request not shown.</span></li>
+<li><b>Standards</b></li>
+<li><span class="tag">✅</span><a href="https://www.rfc-editor.org/rfc/rfc6749" target="_blank" rel="noopener">RFC 6749: The OAuth 2.0 Authorization Framework</a><span class="meta">RFC · verified 2026-11-04 · Best for: s4.1 code flow, s5.1/5.2 responses, s6 refresh. s10.12 not read.</span></li>
+<li><span class="tag">✅</span><a href="https://www.rfc-editor.org/rfc/rfc7636" target="_blank" rel="noopener">RFC 7636: Proof Key for Code Exchange by OAuth Public Clients</a><span class="meta">RFC · verified 2026-11-04 · Best for: verifier and challenge rules, s4.1 to s4.6.</span></li>
+<li><span class="tag">✅</span><a href="https://www.rfc-editor.org/rfc/rfc9700.html" target="_blank" rel="noopener">RFC 9700: Best Current Practice for OAuth 2.0 Security</a><span class="meta">RFC · verified 2026-11-04 · Best for: what is prohibited now (ROPC, query tokens) and why. Last ~5.6K chars unread.</span></li>
+<li><b>Third-party</b></li>
+<li><span class="tag">✅</span><a href="https://fastapi.tiangolo.com/tutorial/security/simple-oauth2/" target="_blank" rel="noopener">Simple OAuth2 with Password and Bearer - FastAPI</a><span class="meta">current docs, no version shown · verified 2026-11-04 · Best for: form fields, token response shape, 401 header.</span></li>
+<li><span class="tag">✅</span><a href="https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/" target="_blank" rel="noopener">OAuth2 with Password (and hashing), Bearer with JWT tokens - FastAPI</a><span class="meta">current docs, no version shown · verified 2026-11-04 · Best for: JWT create and verify outline. Its 401 vs 400 choices differ from the simple chapter.</span></li>
+</ul>
+
+<footer>
+<p><b>Links:</b> 12 ✅ · 0 🔎 · 1 removed (developer.webex.com/docs/integrations: fetched page was titled "Webex Admin", did not match topic).</p>
+<p><b>Version flags:</b> FastAPI and Python docs are current (Python 3.15 docs vs 3.13 pin); Meraki and Webex pages are undated; RFC 9700 tail unread.</p>
+<p><b>⚠ Unverified, test in lab:</b></p>
+<ul>
+<li>Domain 5 weight; whether the exam uses live Meraki or Webex, a local server, or a mock.</li>
+<li>Meraki token-request body fields and PKCE support (page shows neither); Meraki client credentials grant (not covered by fetched pages).</li>
+<li>Webex refresh request shape; token lifetimes are from a page example.</li>
+<li>Verifier length from <code>token_urlsafe(32)</code>; padding strip on the challenge; all drill code.</li>
+<li>FastAPI, PyJWT, requests, curl on the workstation; <code>/docs</code> behavior.</li>
+<li>Device grant on any Cisco API; localhost redirect listener pattern (RFC 8252 not fetched).</li>
+<li>RFC 6749 s10.12 not read; RFC 9700 section numbers taken from the fetch summary.</li>
+</ul>
+<p><b>Tomorrow (Thu 2026-11-05):</b> Unit 24, 2.2: build, manage and operate a Python CLI app that uses a REST API (Tier 1). Friday 11-06 is weekly review 6.</p>
+</footer>
+</div>
+
+</body></html>

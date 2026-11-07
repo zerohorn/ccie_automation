@@ -1,0 +1,337 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Telemetry Verification and Triage</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single column reading page, sticky mini-TOC, wide tables/code/figures scroll inside their own wrappers */
+:root{
+  --bg:#f6f7f9; --fg:#1b2430; --mut:#5a6677; --line:#d5dae2; --card:#ffffff; --code:#eef1f5;
+  --acc:#0b6e8a; --ok:#1b7a43; --bad:#b3342b; --warn:#9a6200; --soft:#e3eef3;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171e; --fg:#e3e8ef; --mut:#9aa6b6; --line:#2d3643; --card:#1a212b; --code:#0f141a;
+  --acc:#52c1de; --ok:#5fcf8a; --bad:#ff8077; --warn:#e8b04a; --soft:#18303a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171e; --fg:#e3e8ef; --mut:#9aa6b6; --line:#2d3643; --card:#1a212b; --code:#0f141a;
+  --acc:#52c1de; --ok:#5fcf8a; --bad:#ff8077; --warn:#e8b04a; --soft:#18303a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);padding-block:12px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:860px;margin:0 auto}
+h1,h2,h3{line-height:1.2;text-wrap:balance}
+h1{font-size:1.9rem;margin:.2em 0}
+h2{font-size:1.35rem;margin:2.2em 0 .6em;padding-top:.4em;border-top:1px solid var(--line)}
+h3{font-size:1.05rem;margin:1.5em 0 .3em;color:var(--acc)}
+p,li{max-width:70ch}
+a{color:var(--acc)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 0;font-size:.82rem;margin-bottom:12px}
+.toc a{text-decoration:none;color:var(--mut)}
+.toc a:hover{color:var(--acc)}
+.hdr{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--mut);font-size:.88rem}
+.meta b{color:var(--fg);font-weight:600}
+.tw,.pw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+td code,p code,li code{font-family:var(--mono);font-size:.85em;background:var(--code);padding:1px 4px;border-radius:3px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin:0;overflow-x:auto;font-size:.82rem;line-height:1.45}
+pre code{font-family:var(--mono)}
+figure{margin:16px 0}
+figure svg{width:100%;height:auto;display:block;max-width:560px;margin:0 auto}
+figcaption{font-size:.84rem;color:var(--mut);margin-top:6px}
+.b{display:inline-block;font-size:.72rem;padding:0 5px;border-radius:3px;border:1px solid var(--line);vertical-align:1px;margin-left:3px}
+.b.ok{color:var(--ok);border-color:var(--ok)}
+.u{color:var(--warn)}
+details{border:1px solid var(--line);border-radius:4px;padding:6px 10px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+.L{border-left:3px solid var(--acc);padding-left:12px;margin:14px 0}
+.L h3{margin-top:0}
+ul{padding-left:1.2em}
+.gd li{margin:10px 0}
+.small{font-size:.85rem;color:var(--mut)}
+svg text{fill:currentColor;font-family:var(--sans)}
+svg .m{font-family:var(--mono)}
+svg .bx{fill:var(--card);stroke:currentColor;stroke-width:1.3}
+svg .hl{fill:var(--soft);stroke:var(--acc);stroke-width:2}
+svg .dsh{stroke-dasharray:5 3}
+svg .ln{stroke:currentColor;stroke-width:1.4;fill:none}
+svg .bad{stroke:var(--bad);fill:none;stroke-width:1.6}
+svg .mut{fill:var(--mut)}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a><a href="#foot">Footer</a>
+</nav>
+
+<header class="hdr">
+<div class="meta"><span>2026-10-28 (Wed)</span><span>Domain 3 <span class="u">(weight not verified)</span></span><span>Tier 1 (gap)</span><span>Read ~18 min</span><span><b>Unit 19 of 49</b></span></div>
+<h1>3.5.f-g: Confirm telemetry arrives, then triage and fix it</h1>
+<p class="small">Blueprint 3.5.f "Confirm data transmission" and 3.5.g "Identify network issues and make changes", under 3.5 "Create YANG model-driven telemetry subscriptions". Exam release v1.1.</p>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>A telemetry subscription fails quietly. Nobody sees a red light, they see an empty graph. 3.5.f is the skill of proving data moved; 3.5.g is finding the first hop where it stopped and changing the right object.</li>
+<li>"Valid" means the device accepted the subscription. It says nothing about whether a session to the receiver exists or whether a single update was sent.</li>
+<li>Subscription state and receiver state are two separate things, each with its own show output. An XPath typo kills the first; a closed port or wrong VRF stalls the second.</li>
+<li>Work a ladder from the device outward and stop at the first rung that fails: process, subscription, receiver connection, device counters, wire, collector, database, dashboard.</li>
+<li>Counters are cumulative. After a fix, look for counters that move (connection count, transmit count), not for old error counts to disappear.</li>
+<li>IOS XE receivers cannot be edited in place on the documented path, so "make changes" often means delete and recreate. NX-OS disables a receiver after 20 errors and needs it unconfigured and reconfigured.</li>
+<li>In gNMI a quiet open stream is legal. The end of the initial dump is signalled by <code>sync_response</code>, not by silence.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure>
+<svg viewBox="0 0 480 250" role="img" aria-label="3.5.f and 3.5.g sit at the end of the 3.5 build items; in the lab chain they cover every hop from Cat8000V to Grafana">
+<text x="0" y="16" font-size="13" font-weight="700">3.5 Create telemetry subscriptions</text>
+<g font-size="13" text-anchor="middle">
+<rect class="bx" x="0" y="26" width="62" height="34" rx="3"/><text x="31" y="48">a cadence</text>
+<rect class="bx" x="68" y="26" width="62" height="34" rx="3"/><text x="99" y="48">b event</text>
+<rect class="bx" x="136" y="26" width="62" height="34" rx="3"/><text x="167" y="48">c optimize</text>
+<rect class="bx" x="204" y="26" width="62" height="34" rx="3"/><text x="235" y="48">d dial-out</text>
+<rect class="bx" x="272" y="26" width="62" height="34" rx="3"/><text x="303" y="48">e TLS</text>
+<rect class="hl" x="340" y="26" width="62" height="34" rx="3"/><text x="371" y="48" font-weight="700">f confirm</text>
+<rect class="hl" x="408" y="26" width="72" height="34" rx="3"/><text x="444" y="48" font-weight="700">g triage</text>
+</g>
+<text x="0" y="96" font-size="13" font-weight="700">Lab chain (HORNLAB01 TIG stack)</text>
+<g font-size="13" text-anchor="middle">
+<rect class="bx" x="0" y="110" width="84" height="46" rx="3"/><text x="42" y="138">Cat8000V</text>
+<rect class="bx" x="132" y="110" width="84" height="46" rx="3"/><text x="174" y="138">Telegraf</text>
+<rect class="bx" x="264" y="110" width="84" height="46" rx="3"/><text x="306" y="138">InfluxDB</text>
+<rect class="bx" x="396" y="110" width="84" height="46" rx="3"/><text x="438" y="138">Grafana</text>
+</g>
+<g class="ln"><line x1="84" y1="133" x2="130" y2="133"/><line x1="216" y1="133" x2="262" y2="133"/><line x1="348" y1="133" x2="394" y2="133"/></g>
+<g fill="currentColor"><polygon points="130,133 123,129 123,137"/><polygon points="262,133 255,129 255,137"/><polygon points="394,133 387,129 387,137"/></g>
+<g font-size="11" text-anchor="middle"><text x="107" y="124">dial-out</text><text x="239" y="124">write</text><text x="371" y="124">query</text></g>
+<path class="bad dsh" d="M0 172 H480"/>
+<text x="0" y="192" font-size="13">3.5.f asks for proof at each hop. 3.5.g asks which hop failed</text>
+<text x="0" y="210" font-size="13">and what you change. Dial-in (gNMI, NETCONF) skips Telegraf:</text>
+<text x="0" y="228" font-size="13">your client is the receiver, so rung 5 moves to the client.</text>
+</svg>
+<figcaption>3.5.a-e build and secure the subscription; 3.5.f-g are the operate phase. Telegraf, InfluxDB and Grafana are lab tooling, the blueprint verbs are device-agnostic.</figcaption>
+</figure>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+
+<div class="L"><h3>L1: Concept</h3>
+<p>Pull telemetry (SNMP polling) fails loudly: the poll times out and the NMS alarms. Push telemetry fails by absence. The device decides when to send, so a dead pipeline looks identical to a quiet network until someone notices a flat graph. That is why the blueprint separates "build the subscription" from "confirm data transmission".</p>
+<p>Think of three planes. Configuration plane: the subscription exists and the device accepted it. Session plane: a transport session to the receiver is up (dial-out) or a client session exists (dial-in). Data plane: payloads are being emitted, received, decoded, stored and queried. A fault in one plane can look healthy in the plane before it, so you need evidence per plane.</p></div>
+
+<div class="L"><h3>L2: Mechanics</h3>
+<p>RFC 8639 defines a receiver state machine for configured subscriptions, shown below. A receiver starts in <em>connecting</em>, moves to <em>active</em> once the subscription-started notification is delivered, and only active receivers get event records. If transport cannot be established it falls to <em>disconnected</em>. It can go to <em>suspended</em> when the publisher hits a buffer or CPU limit while the transport stays up, and returns to active after a subscription-resumed or subscription-modified notification. For dynamic subscriptions the publisher never sends subscription-started.</p>
+<figure>
+<svg viewBox="0 0 480 240" role="img" aria-label="Receiver state machine from RFC 8639: connecting to active or disconnected, active to suspended and back">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g font-size="14" text-anchor="middle">
+<rect class="hl" x="20" y="30" width="130" height="44" rx="22"/><text x="85" y="58">connecting</text>
+<rect class="bx" x="330" y="30" width="130" height="44" rx="22"/><text x="395" y="58">active</text>
+<rect class="bx" x="330" y="160" width="130" height="44" rx="22"/><text x="395" y="188">suspended</text>
+<rect class="bx" x="20" y="160" width="130" height="44" rx="22"/><text x="85" y="188">disconnected</text>
+</g>
+<g class="ln" marker-end="url(#ar)">
+<line x1="150" y1="52" x2="328" y2="52"/>
+<line x1="85" y1="74" x2="85" y2="158"/>
+<path d="M375 74 V158"/>
+<path d="M415 160 V76"/>
+</g>
+<g font-size="12" text-anchor="middle">
+<text x="240" y="44">subscription-started delivered</text>
+<text x="85" y="124" text-anchor="start" dx="8">transport cannot be set up</text>
+<text x="368" y="120" text-anchor="end">buffer or CPU limit</text>
+<text x="422" y="120" text-anchor="start">resumed / modified</text>
+</g>
+<text x="20" y="228" font-size="12" class="mut">IOS XE oper data names connecting and connected; RFC says active.</text>
+</svg>
+<figcaption>Receiver states per RFC 8639 section 2.5.1 and notifications per section 2.7 <a href="https://www.rfc-editor.org/rfc/rfc8639" target="_blank" rel="noopener">RFC 8639</a><span class="b ok">✅</span>. IOS XE exposes <code>rcvr-state-connecting</code> and <code>rcvr-state-connected</code> in the Cisco-IOS-XE-mdt-oper sample and mentions a disconnected state; how those map to RFC names is not stated.</figcaption>
+</figure>
+<p>Datastore subscriptions (RFC 8641) add their own failure vocabulary. A <code>push-update</code> carries a complete filtered snapshot (periodic updates and the initial sync of on-change). A <code>push-change-update</code> carries only changes. If the publisher cannot honour its obligations it sets <code>incomplete-update</code> on the record or suspends the subscription. Section 5 lists suspension reasons <code>period-unsupported</code>, <code>update-too-big</code> and <code>sync-too-big</code>. See <a href="https://www.rfc-editor.org/rfc/rfc8641" target="_blank" rel="noopener">RFC 8641</a><span class="b ok">✅</span>. On the exam you will meet the Cisco CLI words, not these identities, but the identities explain what the device is protecting itself from.</p></div>
+
+<div class="L"><h3>L3: Exam detail, the evidence ladder</h3>
+<figure>
+<svg viewBox="0 0 480 470" role="img" aria-label="Seven-rung diagnostic ladder from device process to Grafana query, each with the command that gives evidence">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g font-size="13">
+<rect class="bx" x="0" y="0" width="480" height="52" rx="3"/><text x="10" y="21" font-weight="700">R0 Process</text><text x="10" y="41" class="m" font-size="11">show platform software yang-management process</text>
+<rect class="bx" x="0" y="66" width="480" height="52" rx="3"/><text x="10" y="87" font-weight="700">R1 Subscription: Valid or Invalid, Notes</text><text x="10" y="107" class="m" font-size="11">show telemetry ietf subscription &lt;id&gt; detail</text>
+<rect class="bx" x="0" y="132" width="480" height="52" rx="3"/><text x="10" y="153" font-weight="700">R2 Receiver: Active or Connecting</text><text x="10" y="173" class="m" font-size="11">show telemetry internal connection</text>
+<rect class="bx" x="0" y="198" width="480" height="52" rx="3"/><text x="10" y="219" font-weight="700">R3 Device counters: updates in / dampened / dropped</text><text x="10" y="239" class="m" font-size="11">mdt-oper-data / mdt-subscriptions (NETCONF or RESTCONF get)</text>
+<rect class="bx dsh" x="0" y="264" width="480" height="52" rx="3"/><text x="10" y="285" font-weight="700">R4 Wire: packets leave the device, arrive at the host</text><text x="10" y="305" class="m" font-size="11">monitor capture (device)  +  tcpdump (collector)</text>
+<rect class="bx dsh" x="0" y="330" width="480" height="52" rx="3"/><text x="10" y="351" font-weight="700">R5 Collector decodes, database has the measurement</text><text x="10" y="371" class="m" font-size="11">collector log, InfluxDB measurement list</text>
+<rect class="bx dsh" x="0" y="396" width="480" height="52" rx="3"/><text x="10" y="417" font-weight="700">R6 Query: time range, measurement, field names</text><text x="10" y="437" class="m" font-size="11">Grafana Explore, run query</text>
+</g>
+<g class="ln" marker-end="url(#ar2)"><line x1="240" y1="52" x2="240" y2="65"/><line x1="240" y1="118" x2="240" y2="131"/><line x1="240" y1="184" x2="240" y2="197"/><line x1="240" y1="250" x2="240" y2="263"/><line x1="240" y1="316" x2="240" y2="329"/><line x1="240" y1="382" x2="240" y2="395"/></g>
+<text x="0" y="465" font-size="11" class="mut">Solid: commands in the Cisco guides. Dashed: lab convention, commands not verified for Cat8000V.</text>
+</svg>
+<figcaption>The ladder for IOS XE dial-out. Stop at the first failing rung and fix that object before looking further out.</figcaption>
+</figure>
+
+<h3>IOS XE (guide 17.5, lab runs 17.16)</h3>
+<p>The 17.5 Model-Driven Telemetry chapter <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry</a><span class="b ok">✅</span> gives the monitoring commands: <code>show telemetry ietf subscription all</code>, <code>... dynamic brief</code>, and <code>... &lt;id&gt; detail</code>. Detail shows ID, State, Stream, Encoding, Filter type and XPath, Update policy and Notes. The same data is in the Cisco-IOS-XE-mdt-oper model, via NETCONF get with an empty <code>mdt-subscriptions</code> filter or a RESTCONF GET. There the subscription state reads <code>sub-state-valid</code>, the type is static or dynamic, and each receiver has a state such as <code>rcvr-state-connecting</code> or <code>rcvr-state-connected</code> with a comment like "Connection retries in progress". The NETCONF sample also shows <code>updates-in</code>, <code>updates-dampened</code> and <code>updates-dropped</code>. The chapter documents no sent counter, so do not tell yourself "transmit count" exists on IOS XE.</p>
+<p>The TAC note <a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a><span class="b ok">✅</span> (tested on 17.3.3) adds <code>show telemetry internal connection</code>, with peer address, port, VRF, source address, transport, state and profile, and two states: Active and Connecting. It also gives the two classic cases. Valid but nothing arrives: look for Connecting, ping the receiver, test the port from a host (connection refused means closed or unreachable), and on VRF devices set the source VRF and source address. Invalid: read Notes; the example is an XPath with an extra slash after the module prefix.</p>
+<p>Three limits from the 17.5 chapter shape your fixes. Only the first receiver is tried (configured subscriptions use later ones only if the first is unavailable). Receivers cannot be modified; to change one you delete and recreate. A disconnected receiver on a valid subscription can be nudged by rewriting it with identical characteristics. Configured subscriptions go away only with <code>no telemetry ietf subscription</code> or a configuration delete; dynamic ones can be removed with <code>clear telemetry ietf subscription &lt;id&gt;</code> or the kill-subscription RPC (both from 16.11.1). After a switchover, dial-out reconnects by itself while dial-in subscriptions must be recreated.</p>
+<p>One trap: a periodic update whose filter selects nothing is still delivered, as an empty <code>datastore-contents-xml</code> element. A flowing but empty stream points at R1 (the XPath) or at missing data, not at transport.</p>
+
+<h3>NX-OS (guide 9.3(x), lab N9Kv 9.3(8))</h3>
+<p>The 9.3 chapter <a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_0101001.html" target="_blank" rel="noopener">Model Driven Telemetry</a><span class="b ok">✅</span> is richer than IOS XE here. Transport: <code>show telemetry transport</code> (status Connected, Disconnected or Idle), then <code>show telemetry transport &lt;id&gt; stats</code> (connection and disconnect counts, transmit count, last TX time) and <code>... errors</code> (connection and Tx error counts, last Tx error and return code). Collection: <code>show telemetry data collector brief</code> and <code>details</code>, <code>show telemetry control database</code>, <code>show telemetry control stats</code>. Traces: <code>show system internal telemetry trace</code> and <code>show tech-support telemetry</code>. The device disables a gRPC receiver after it sends 20 errors (wrong certificate, timeouts); recover by unconfiguring and reconfiguring the receiver IP under the destination group.</p>
+<p>The newer TAC note <a href="https://www.cisco.com/c/en/us/support/docs/switches/nexus-9000-series-switches/226393-configure-and-verify-telemetry-on-nexus.html" target="_blank" rel="noopener">Configure and Verify Telemetry on Nexus Platform</a><span class="b ok">✅</span> (NX-OS 10.6(4), newer than the 9.3(8) pin) gives a clean order: transport Connected, collector brief, control stats for the skip reason, transport errors, <code>show telemetry config errors</code> (shows a configured VRF against the correct VRF), then stats to confirm recovery. Its example failure is Last Tx Return Code UNAVAILABLE with skipped collections rising. It also states that collection counters are cumulative.</p>
+
+<h3>gNMI dial-in</h3>
+<p>The client is the receiver, so R2 is your own Subscribe call. The spec <a href="https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md" target="_blank" rel="noopener">gNMI specification</a><span class="b ok">✅</span> says that after the initial updates the target sends <code>sync_response: true</code>. With <code>updates_only</code> the first message is the sync_response. Paths that are valid but do not exist yet produce nothing and the RPC stays open. Valid but unimplemented paths return UNIMPLEMENTED and syntactically invalid ones INVALID_ARGUMENT. The IOS XE 17.5 gNMI chapter <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_gnmi.html" target="_blank" rel="noopener">gNMI Protocol</a><span class="b ok">✅</span> documents <code>show gnxi state</code> as its only show command, and sample errors: a bad xpath arrives as TERMINATED, an unsupported encoding as UNIMPLEMENTED, an empty result as NOT_FOUND.</p>
+
+<h3>Collector side</h3>
+<p>For the lab chain, R5 and R6 are outside Cisco's guides. Grafana's InfluxDB troubleshooting page <a href="https://grafana.com/docs/grafana/latest/datasources/influxdb/troubleshooting/" target="_blank" rel="noopener">Troubleshoot InfluxDB data source issues</a><span class="b ok">✅</span> separates connection errors (URL needs http://, default port 8086, timeouts) from "datasource is working. 0 measurements found" (connection fine, nothing written). For empty results check the time range and measurement and field names. A raw InfluxQL query needs <code>WHERE $timeFilter</code>, per the <a href="https://grafana.com/docs/grafana/latest/datasources/influxdb/query-editor/" target="_blank" rel="noopener">InfluxDB query editor</a><span class="b ok">✅</span> page.</p>
+
+<h3>Comparison: what proves what</h3>
+<div class="tw"><table>
+<tr><th>Question</th><th>IOS XE dial-out</th><th>NX-OS dial-out</th><th>gNMI dial-in</th></tr>
+<tr><td>Config accepted?</td><td>Subscription State Valid; Notes if Invalid</td><td><code>show telemetry control database</code>, <code>config errors</code> (10.6(4) note)</td><td>Subscribe RPC not rejected</td></tr>
+<tr><td>Session up?</td><td><code>show telemetry internal connection</code>: Active / Connecting</td><td><code>show telemetry transport</code>: Connected / Disconnected / Idle</td><td><code>show gnxi state</code>; client connected</td></tr>
+<tr><td>Data sent?</td><td>oper counters updates-in, dampened, dropped (no sent counter documented)</td><td>transport stats: transmit count, last TX time</td><td>updates then <code>sync_response</code></td></tr>
+<tr><td>Errors?</td><td>Notes, receiver state</td><td>transport errors, last Tx return code</td><td>gRPC status on the stream</td></tr>
+<tr><td>Disabled by errors?</td><td>not documented</td><td>20 receiver errors disables the connection</td><td>n/a</td></tr>
+</table></div>
+
+<h3>Fault to change (3.5.g)</h3>
+<div class="tw"><table>
+<tr><th>Fault found</th><th>Object to change</th><th>Constraint</th></tr>
+<tr><td>Invalid, XPath parse error in Notes</td><td>Subscription filter</td><td>Subtree filters are marked invalid; XPath must be valid and keys exact</td></tr>
+<tr><td>Connecting, wrong port or VRF</td><td>Receiver, source VRF, source address</td><td>IOS XE receivers cannot be modified: delete and recreate</td></tr>
+<tr><td>Data volume or interval refused or dropped</td><td>XPath scope, period</td><td>IOS XE period is in centiseconds, minimum 100; error-insufficient-resources covers too many subscriptions, data too large, interval too small</td></tr>
+<tr><td>NX-OS shows timer when you wanted events</td><td>sensor group sample-interval</td><td>Above 0 is milliseconds periodic; 0 is event-based</td></tr>
+<tr><td>NX-OS receiver disabled after errors</td><td>destination-group receiver</td><td>Unconfigure then reconfigure the IP; fix certificate first</td></tr>
+</table></div>
+</div>
+
+<h2 id="anat">Anatomy</h2>
+<p class="small">Pinned to IOS XE 17.5 (lab 17.16) and NX-OS 9.3(x). These show the evidence you collect, not a solved drill.</p>
+<h3>IOS XE evidence commands</h3>
+<div class="pw"><pre><code>show platform software yang-management process   ! pubd must be running
+show telemetry ietf subscription all             ! ID  Type  State  Filter type
+show telemetry ietf subscription 100 detail      ! State, Stream, Encoding, Filter, Update policy, Notes
+show telemetry internal connection               ! tested on 17.3.3 only (TAC note)</code></pre></div>
+<h3>One row of connection output, from the TAC note</h3>
+<div class="pw"><pre><code>10.88.246.10  57344  0  10.88.246.2  grpc-tcp  Active
+!  peer         port VRF source       transport state</code></pre></div>
+<h3>Oper-data shape (outline only)</h3>
+<div class="pw"><pre><code>mdt-oper-data
+  mdt-subscriptions
+    state    sub-state-valid
+    type     sub-type-static | sub-type-dynamic
+    receivers
+      state  rcvr-state-connecting | rcvr-state-connected
+    counters updates-in / updates-dampened / updates-dropped   (nesting <span class="u">⚠ unverified</span>)</code></pre></div>
+<h3>NX-OS 9.3 order of checks</h3>
+<div class="pw"><pre><code>show telemetry transport
+show telemetry transport 0 stats
+show telemetry transport 0 errors
+show telemetry data collector brief
+show telemetry control stats
+show telemetry control database</code></pre></div>
+<h3>gNMI response order (illustrative)</h3>
+<div class="pw"><pre><code>SubscribeResponse{update ...}   one per subscribed path with data
+SubscribeResponse{update ...}
+SubscribeResponse{sync_response: true}   initial dump done
+SubscribeResponse{update ...}   later samples or changes</code></pre></div>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>IOS XE subscription State Invalid</td><td>XPath syntax error, for example an extra "/" after the module prefix; or a subtree filter</td><td><code>show telemetry ietf subscription &lt;id&gt; detail</code>, read Notes</td><td>Correct the filter, recreate the subscription</td></tr>
+<tr><td>Valid, but no data at the collector; connection shows Connecting</td><td>Receiver unreachable, port closed, or source VRF/address wrong</td><td><code>show telemetry internal connection</code>; ping; test the port from a host</td><td>Set source VRF and address, fix port or firewall; delete and recreate the receiver</td></tr>
+<tr><td>NX-OS Connected but skipped collections rise, Last Tx Return Code UNAVAILABLE</td><td>Receiver application stopped or port not listening</td><td><code>show telemetry transport &lt;id&gt; errors</code>, <code>show telemetry control stats</code></td><td>Restore receiver; confirm connection count rises and queued and dropped are 0</td></tr>
+<tr><td>NX-OS connection to gRPC receiver gone after a certificate change</td><td>Receiver sent 20 errors (wrong cert or timeouts), connection disabled</td><td><code>show telemetry transport</code> status</td><td>Fix certificate, unconfigure and reconfigure the receiver IP</td></tr>
+<tr><td>gNMI Subscribe open, no updates for a path</td><td>Path valid but node does not exist yet; or <code>updates_only</code> set</td><td>Did you get <code>sync_response</code>? Get on the same path</td><td>Create the data, or drop <code>updates_only</code>; a bad path would have returned INVALID_ARGUMENT</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li>On the device: <code>show telemetry ietf subscription ?</code> and <code>show telemetry ?</code> list the variants available on your image <span class="u">⚠ unverified on 17.16</span>. NX-OS: <code>show telemetry ?</code>, and <code>show tech-support telemetry &gt; bootflash:t.txt</code> to capture everything.</li>
+<li>Read the model, not the doc: <code>pyang -f tree Cisco-IOS-XE-mdt-oper.yang</code> shows the real nesting for counters and states <span class="u">⚠ unverified: file present on workstation</span>.</li>
+<li>Capture on the router with the Embedded Packet Capture steps in <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/epc/configuration/xe-17/epc-xe-17-book/nm-packet-capture-xe.html" target="_blank" rel="noopener">Embedded Packet Capture Overview</a><span class="b ok">✅</span>: <code>monitor capture NAME access-list ACL</code>, <code>... interface IF both</code>, <code>... buffer circular size N</code>, <code>start</code>, <code>stop</code>, <code>show monitor capture NAME buffer dump</code>. <span class="u">⚠ unverified on Cat8000V</span>.</li>
+<li>On the collector host: <code>tcpdump -nn port &lt;receiver port&gt;</code> proves arrival before any decoding. <span class="u">⚠ unverified: tcpdump and receiver port on the workstation/HORNLAB01</span>.</li>
+<li>Collector logs (<code>docker logs</code> for the Telegraf container) <span class="u">⚠ unverified</span>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min): break it, find it, fix it</h2>
+<p><b>Target:</b> Cat8000V (IOS XE 17.16) pushing to the TIG stack on HORNLAB01. Assumes the 3.5.d dial-out subscription exists. The tracker says that has not been pointed at TIG yet, so build it first if needed.</p>
+<ol>
+<li><b>Requirement:</b> produce one piece of evidence per rung R0 to R3 for subscription 100, written in a text file. Include state, receiver state, and the filter in effect.</li>
+<li><b>Fault A:</b> add an extra "/" after the module prefix in the XPath. Identify it using only a show command. Fix it.</li>
+<li><b>Fault B:</b> change the receiver port to one the collector does not listen on. Identify using the connection output and one host-side test. Fix it.</li>
+<li><b>Fault C:</b> stop the Telegraf container. Decide which rung fails first and which show output does not change.</li>
+</ol>
+<p><b>Reference names:</b> subscription State, Notes, Filter, receiver address and port, source VRF, source address, connection state Active/Connecting.</p>
+<p><b>Verify:</b> after each fix the state returns to Valid and Active, and Grafana Explore shows a new point inside the last minute.</p>
+<details><summary>Hint</summary><p>Fault A shows up at R1, in Notes. Fault B shows at R2 as Connecting while R1 stays Valid. Fault C leaves R1 and probably R2 looking odd or healthy depending on the receiver; compare what moves in the oper counters with what Grafana shows. Since receivers cannot be modified, expect to remove and recreate for B.</p></details>
+<details><summary>Solution outline</summary>
+<p>A: <code>show telemetry ietf subscription 100 detail</code> shows Invalid and a parse error in Notes; remove with <code>no telemetry ietf subscription 100</code> and recreate with a correct XPath. B: <code>show telemetry internal connection</code> shows Connecting; the host test to the wrong port is refused; recreate the receiver with the right port. C: the device cannot know the collector application died if the TCP session still opens; R0 to R3 may look fine and R4 (tcpdump) or R5 (container down) is where the fault appears. Exact receiver behavior on 17.16 is <span class="u">⚠ unverified: test in lab</span>. Config syntax for the subscription itself is not reproduced here: <span class="u">⚠ unverified: test in lab</span>.</p></details>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<ol>
+<li>Subscription says Valid and <code>show telemetry internal connection</code> says Connecting. Name three checks and the VRF-related settings.
+<details><summary>Answer</summary>Ping the receiver, test the receiver port from a host (refused means closed or unreachable), check firewalls and the configured port number; set source VRF and source address on VRF-enabled devices (TAC note 217427).</details></li>
+<li>Where do you find why a subscription is Invalid, and what was the cause in the Cisco example?
+<details><summary>Answer</summary>Notes field in <code>show telemetry ietf subscription &lt;id&gt; detail</code>. An extra "/" after the module prefix colon in the XPath produced a parse error.</details></li>
+<li>A gNMI SAMPLE stream stays open and a path never produces data. Is that an error, and what message ends the initial dump?
+<details><summary>Answer</summary>Not necessarily: valid paths that do not exist yet send nothing and the RPC stays open. The initial dump ends with <code>sync_response: true</code>. Invalid paths return INVALID_ARGUMENT, unimplemented ones UNIMPLEMENTED.</details></li>
+<li>NX-OS: Status Connected, Last Tx Return Code UNAVAILABLE, skipped collections rising. Meaning, and why not trust old counters after the fix?
+<details><summary>Answer</summary>Receiver unreachable or application stopped. Counters are cumulative, so confirm recovery by connection count rising, queued size 0 and dropped 0. Also remember 20 receiver errors disables the connection until the receiver IP is unconfigured and reconfigured.</details></li>
+</ol>
+<p><b>From earlier pages</b></p>
+<ol start="5">
+<li>(2026-10-19) The guide example says <code>update-policy periodic 6000</code>. What interval, and what is the smallest legal value?
+<details><summary>Answer</summary>Centiseconds: 60 s. Minimum 100 (1 s) on 17.5. Restated from the 2026-10-23 review page.</details></li>
+<li>(2026-10-22) Dial-in versus dial-out: which end is the TLS server in each?
+<details><summary>Answer</summary>Dial-in: the device (gNMI or NETCONF server) is the TLS server. Dial-out: the collector is the TLS server and the device is the client. Restated from the 2026-10-23 review page.</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<div class="gd">
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry [Cisco IOS XE Bengaluru 17.5.1]</a><span class="b ok">✅</span> IOS XE 17.5, verified 2026-10-28. Show commands, oper data, limits, kill-subscription.</li>
+<li><a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a><span class="b ok">✅</span> tested on IOS XE 17.3.3, verified 2026-10-28. The two troubleshooting scenarios.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_0101001.html" target="_blank" rel="noopener">Model Driven Telemetry (Cisco Nexus 9000 Series NX-OS Programmability Guide, Release 9.3(x))</a><span class="b ok">✅</span> NX-OS 9.3(x), verified 2026-10-28. Transport, collector and trace commands; the 20-error rule. Last ~19.5K characters unread.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/epc/configuration/xe-17/epc-xe-17-book/nm-packet-capture-xe.html" target="_blank" rel="noopener">Embedded Packet Capture Configuration Guide, Cisco IOS XE 17 - Embedded Packet Capture Overview</a><span class="b ok">✅</span> IOS XE 17, verified 2026-10-28. Capturing the dial-out session on the router.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8639" target="_blank" rel="noopener">RFC 8639</a><span class="b ok">✅</span> RFC, verified 2026-10-28. Receiver state machine (2.5.1) and subscription notifications (2.7). Last ~24K characters unread.</li>
+<li><a href="https://github.com/openconfig/reference/blob/master/rpc/gnmi/gnmi-specification.md" target="_blank" rel="noopener">reference/rpc/gnmi/gnmi-specification.md at master · openconfig/reference · GitHub</a><span class="b ok">✅</span> spec, verified 2026-10-28. sync_response and the path-error table (3.5.2.4).</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://grafana.com/docs/grafana/latest/datasources/influxdb/troubleshooting/" target="_blank" rel="noopener">Troubleshoot InfluxDB data source issues</a><span class="b ok">✅</span> Grafana docs (latest, version not shown), verified 2026-10-28. Connection errors versus empty results.</li>
+<li><a href="https://grafana.com/docs/learning-paths/influxdb-data-source/explore-data/" target="_blank" rel="noopener">Explore InfluxDB data in Grafana</a><span class="b ok">✅</span> Grafana docs (latest), verified 2026-10-28. The five-step check that data arrived.</li>
+</ul>
+</div>
+
+<footer id="foot">
+<h2>Footer</h2>
+<p><b>Links: 12 ✅ · 0 🔎 · 0 removed</b> (8 in Go deeper, 4 inline only: NX-OS note 226393, RFC 8641, gNMI 17.5 chapter, InfluxDB query editor).</p>
+<p><b>Version flags:</b> IOS XE guides are 17.5 and the lab runs 17.16; TAC note 217427 was tested on 17.3.3; NX-OS note 226393 is 10.6(4) against the 9.3(8) pin; Grafana docs show no version.</p>
+<p><b>⚠ Unverified claims, test in lab:</b></p>
+<ul>
+<li>Domain 3 exam weight.</li>
+<li><code>show telemetry internal connection</code> existence and output on Cat8000V 17.16 (documented on 17.3.3).</li>
+<li>Exact mdt-oper nesting, namespace and RESTCONF URI for counters; counter semantics on 17.16.</li>
+<li>Mapping of IOS XE receiver strings to RFC 8639 state names.</li>
+<li>Recreate-versus-edit of a live subscription on 17.16; behavior when the collector application stops while TCP still opens.</li>
+<li>Embedded Packet Capture on Cat8000V; tcpdump and docker logs on the workstation and HORNLAB01; the receiver port.</li>
+<li>pyang and the mdt-oper YANG file on the workstation.</li>
+<li><code>show telemetry config errors</code> and the 226393 workflow on NX-OS 9.3(8).</li>
+<li>Recall answers 5 and 6 are restated from the 2026-10-23 review page.</li>
+<li>Unread: last ~8K of the gNMI spec is the protobuf appendix and copyright; RFC 8641 last ~17K; RFC 8639 last ~24K; Grafana query-editor last ~1K.</li>
+</ul>
+<p><b>Tomorrow:</b> Thursday 2026-10-29, Unit 20 of 49, 5.2 Create a CSR via OpenSSL, send it to a CA, secure a web app with the cert. Friday is weekly review 5.</p>
+</footer>
+</div>
+
+</body></html>

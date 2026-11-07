@@ -1,0 +1,217 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Terraform Loops, Variables, Graph</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#fff;--fg:#1c2330;--mut:#5b6678;--card:#f3f5f9;--bd:#d5dbe6;--acc:#0b63c5;--ok:#17803d;--warn:#b45309;--c1:#dbeafe;--c2:#dcfce7;--c3:#fef3c7;--c4:#fce7f3;--code:#eef1f6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151d;--fg:#e4e9f2;--mut:#9aa6ba;--card:#18202c;--bd:#2c3748;--acc:#6cb2ff;--ok:#4ade80;--warn:#fbbf24;--c1:#1e3a5f;--c2:#14532d;--c3:#5b3e08;--c4:#5b1d44;--code:#0c1119;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10151d;--fg:#e4e9f2;--mut:#9aa6ba;--card:#18202c;--bd:#2c3748;--acc:#6cb2ff;--ok:#4ade80;--warn:#fbbf24;--c1:#1e3a5f;--c2:#14532d;--c3:#5b3e08;--c4:#5b1d44;--code:#0c1119;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 16px;z-index:5;font-size:13px;overflow-x:auto;white-space:nowrap}
+nav a{margin-right:12px;color:var(--acc);text-decoration:none}
+h1{font-size:26px;margin:20px 0 6px}h2{font-size:21px;margin:32px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:17px;margin:20px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--mut);font-size:14px}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--card)}
+svg{width:100%;height:auto;display:block;margin:10px 0}svg text{fill:var(--fg);font:12px system-ui,sans-serif}
+.b{display:inline-block;font-size:11px;border-radius:4px;padding:1px 6px;border:1px solid var(--bd);margin-right:4px}.b.ok{color:var(--ok)}.b.ix{color:var(--warn)}
+details{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:6px 12px;margin:6px 0}summary{cursor:pointer;font-weight:600}
+.uv{color:var(--warn);font-size:13px}a{color:var(--acc)}li{margin:3px 0}
+</style>
+<nav><a href="#hdr">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main>
+<section id="hdr" class="card">
+<h1>Terraform loops, variables and the resource graph</h1>
+<div class="meta"><span>Mon 2026-11-02</span><span>Blueprint 2.8.a-c &middot; Loop control, variables, resource graphs</span><span>Domain 2 (weight unverified)</span><span>Tier 3</span><span>~18 min</span><span>Unit 21 of 49</span></div>
+</section>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li><code>count</code> = N copies addressed by integer index; <code>for_each</code> = one copy per map key or set member, addressed by key. They never coexist in one block.</li>
+<li>Key rule: <code>for_each</code> keys and <code>count</code> must be known at plan time. Anything the API generates at apply time (IDs) cannot drive either.</li>
+<li>Variables are typed inputs. Precedence is a stack: <code>default</code> lowest, <code>-var</code>/<code>-var-file</code> highest. Maps are replaced, not merged.</li>
+<li>The graph is built from references (implicit) plus <code>depends_on</code> (explicit). File order is irrelevant. Independent nodes run in parallel, default 10 at once.</li>
+<li><code>depends_on</code> is a last resort: it makes plans conservative ("known after apply" spreads).</li>
+<li>Exam shape for 2.8.a-c (blueprint verbs: loop control, variables, resource graphs): write or fix a config that creates N ACI objects from a variable, and explain or print the dependency order.</li>
+<li>Lab: only <code>ciscodevnet/aci</code> v2.17.0 is installed on the workstation; no IOS XE provider. Everything runs against APIC.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 820 230" role="img" aria-label="Terraform 2.8 sub-items and the tool chain">
+<rect x="10" y="10" width="800" height="26" rx="6" fill="var(--c1)"/><text x="20" y="28">2.8 Use Terraform to statefully manage infrastructure</text>
+<rect x="10" y="48" width="125" height="46" rx="6" fill="var(--c2)" stroke="var(--acc)" stroke-width="2"/><text x="18" y="68">2.8.a Loop control</text><text x="18" y="84">(today)</text>
+<rect x="145" y="48" width="125" height="46" rx="6" fill="var(--c2)" stroke="var(--acc)" stroke-width="2"/><text x="153" y="68">2.8.b Resource graphs</text><text x="153" y="84">(today)</text>
+<rect x="280" y="48" width="125" height="46" rx="6" fill="var(--c2)" stroke="var(--acc)" stroke-width="2"/><text x="288" y="68">2.8.c Variables</text><text x="288" y="84">(today)</text>
+<rect x="415" y="48" width="125" height="46" rx="6" fill="var(--card)" stroke="var(--bd)"/><text x="423" y="68">2.8.d Retrieval</text><text x="423" y="84">(unit 27)</text>
+<rect x="550" y="48" width="125" height="46" rx="6" fill="var(--card)" stroke="var(--bd)"/><text x="558" y="68">2.8.e Provision</text><text x="558" y="84">(unit 27)</text>
+<rect x="685" y="48" width="125" height="46" rx="6" fill="var(--card)" stroke="var(--bd)"/><text x="693" y="68">2.8.f State</text><text x="693" y="84">(unit 27)</text>
+<text x="10" y="128">Tool chain on the Candidate Workstation</text>
+<rect x="10" y="138" width="150" height="40" rx="6" fill="var(--c3)"/><text x="20" y="162">.tf + .tfvars files</text>
+<rect x="200" y="138" width="150" height="40" rx="6" fill="var(--c3)"/><text x="210" y="162">terraform plan</text>
+<rect x="390" y="138" width="150" height="40" rx="6" fill="var(--c3)"/><text x="400" y="162">aci provider v2.17.0</text>
+<rect x="580" y="138" width="150" height="40" rx="6" fill="var(--c4)"/><text x="590" y="162">APIC (sandbox)</text>
+<path d="M160 158h40M350 158h40M540 158h40" stroke="var(--fg)" stroke-width="2"/>
+<text x="10" y="205">State file records what the provider created; graph decides order. No NSO or Ansible in this chain.</text>
+</svg>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+<h3>L1: concept</h3>
+<p>Terraform is declarative: you describe objects, it computes the difference from state and applies it. Three things make a config scale beyond copy-paste: loops (many objects from one block), variables (inputs that change per environment), and the graph (Terraform works out order itself).</p>
+<h3>L2: mechanics</h3>
+<p><b>Loops.</b> <code>count</code> takes an integer, exposes <code>count.index</code>, and instances are <code>type.name[0]</code>, <code>[1]</code>. <code>for_each</code> takes a map or a set of strings, exposes <code>each.key</code>/<code>each.value</code> (equal for a set), and instances are <code>type.name["key"]</code>. A list must go through <code>toset()</code>; that drops order and duplicates. <code>dynamic</code> blocks loop over <em>nested blocks</em> inside one resource, not over resources.</p>
+<p><b>Why keys beat indexes.</b> Remove the first item of a list driving <code>count</code> and every later index shifts, so Terraform sees changes to every following instance. With <code>for_each</code> keys, removing one key affects only that instance. (The fetched count page does not discuss index shifting; this is standard behavior of index-addressed instances, treat as ⚠ unverified against the doc.)</p>
+<p><b>Variables.</b> A <code>variable</code> block takes <code>type</code>, <code>default</code>, <code>description</code>, <code>validation</code>, <code>sensitive</code>, <code>nullable</code>, and (1.10+) <code>ephemeral</code>. Type constructors: <code>list</code>, <code>set</code>, <code>map</code>, <code>object</code>, <code>tuple</code>. <code>sensitive</code> hides CLI output only; the value is still in state in cleartext.</p>
+<p><b>Graph.</b> Terraform adds a node per resource instance, edges from every reference and from <code>depends_on</code>, a root node, and splits destroy and create nodes where a replacement happens. It validates no cycles, then walks the graph: a node runs when its dependencies finish, up to 10 concurrently (<code>-parallelism</code>). Destroy runs in reverse dependency order.</p>
+
+<svg viewBox="0 0 820 250" role="img" aria-label="Dependency graph example for ACI tenant, VRF, bridge domain">
+<text x="10" y="18">Implicit edges come from references; apply order is leaves first, destroy order is reversed</text>
+<rect x="20" y="40" width="140" height="40" rx="6" fill="var(--c1)"/><text x="30" y="64">aci_tenant.t</text>
+<rect x="230" y="40" width="140" height="40" rx="6" fill="var(--c2)"/><text x="240" y="64">aci_vrf.v["prod"]</text>
+<rect x="230" y="110" width="140" height="40" rx="6" fill="var(--c2)"/><text x="240" y="134">aci_vrf.v["dev"]</text>
+<rect x="440" y="40" width="170" height="40" rx="6" fill="var(--c3)"/><text x="450" y="64">aci_bridge_domain.bd</text>
+<rect x="440" y="170" width="170" height="40" rx="6" fill="var(--c4)"/><text x="450" y="194">aci_rest_managed.x</text>
+<rect x="670" y="170" width="130" height="40" rx="6" fill="var(--card)" stroke="var(--bd)"/><text x="680" y="194">depends_on edge</text>
+<path d="M160 60h70M160 70l70 60M370 60h70M610 190h60" stroke="var(--fg)" stroke-width="2" fill="none"/>
+<path d="M370 130l70-80" stroke="var(--fg)" stroke-width="2" fill="none" stroke-dasharray="4"/>
+<text x="20" y="235">Tenant first, then both VRFs in parallel, then the BD. Arrows read "is referenced by". Illustrative, not a plan output.</text>
+</svg>
+
+<h3>L3: exam detail</h3>
+<div class="tw"><table>
+<tr><th></th><th>count</th><th>for_each</th><th>dynamic block</th></tr>
+<tr><td>Loops over</td><td>integer</td><td>map or set of strings</td><td>collection, any type</td></tr>
+<tr><td>Instance address</td><td><code>[0]</code></td><td><code>["key"]</code></td><td>none (nested blocks)</td></tr>
+<tr><td>Iterator</td><td><code>count.index</code></td><td><code>each.key</code>, <code>each.value</code></td><td>label name, or <code>iterator</code> arg; <code>.key</code>/<code>.value</code></td></tr>
+<tr><td>Values must be known</td><td>at plan time</td><td>keys at plan time; no sensitive; no impure functions in keys</td><td>collection evaluated at plan</td></tr>
+<tr><td>Combine</td><td colspan="2">cannot use both in one block</td><td>cannot generate <code>lifecycle</code>/<code>provisioner</code></td></tr>
+<tr><td>Typical use</td><td>near-identical copies, on/off switch (<code>cond ? 1 : 0</code>)</td><td>copies that differ by named input</td><td>repeating sub-blocks (rules, settings)</td></tr>
+</table></div>
+<div class="tw"><table>
+<tr><th>Variable value source (low to high)</th><th>Note</th></tr>
+<tr><td><code>default</code> in the block</td><td>literal only</td></tr>
+<tr><td><code>TF_VAR_name</code> env</td><td>strings; complex types need HCL syntax</td></tr>
+<tr><td><code>terraform.tfvars</code>, then <code>terraform.tfvars.json</code></td><td>auto-loaded</td></tr>
+<tr><td><code>*.auto.tfvars[.json]</code></td><td>lexical order</td></tr>
+<tr><td><code>-var</code> / <code>-var-file</code></td><td>in command-line order; highest</td></tr>
+</table></div>
+<p>Version note: the v1.10.x page lists environment variables first and command-line last (low to high); the latest page (v1.17.x) lists the same layering from highest down and adds <code>default</code> as lowest. They agree. Pin is 1.13; the docs I could fetch are 1.10.x and 1.17.x, so confirm nothing changed in between (⚠ unverified for 1.13 exactly).</p>
+<p>Graph facts worth memorizing: default concurrency 10; <code>terraform graph</code> emits DOT, default output is the simplified resource/data dependency view; <code>-type=plan|plan-refresh-only|plan-destroy|apply</code> exposes more; <code>-plan=FILE</code> implies apply type; <code>-draw-cycles</code> only with <code>-type</code>.</p>
+<svg viewBox="0 0 820 150" role="img" aria-label="Plan then apply flow with graph walk">
+<rect x="10" y="30" width="130" height="44" rx="6" fill="var(--c1)"/><text x="20" y="56">Load config + vars</text>
+<rect x="165" y="30" width="130" height="44" rx="6" fill="var(--c2)"/><text x="175" y="56">Expand count/for_each</text>
+<rect x="320" y="30" width="130" height="44" rx="6" fill="var(--c3)"/><text x="330" y="56">Build graph, no cycles</text>
+<rect x="475" y="30" width="130" height="44" rx="6" fill="var(--c4)"/><text x="485" y="56">Walk: 10 parallel</text>
+<rect x="630" y="30" width="170" height="44" rx="6" fill="var(--card)" stroke="var(--bd)"/><text x="640" y="56">State updated per node</text>
+<path d="M140 52h25M295 52h25M450 52h25M605 52h25" stroke="var(--fg)" stroke-width="2"/>
+<text x="10" y="115">Unknown-at-plan values in count/for_each stop at step 2 with an error.</text>
+</svg>
+
+<h2 id="anat">Anatomy</h2>
+<p>Snippets show the shapes only; resource arguments for the ACI provider are ⚠ unverified (registry docs were not fetched) so check with <code>terraform providers schema -json</code> on the workstation.</p>
+<pre><code># variables.tf
+variable "vrfs" {
+  type = map(object({
+    description = optional(string, "")
+  }))
+  validation {
+    condition     = length(var.vrfs) > 0
+    error_message = "At least one VRF is required."
+  }
+}
+variable "tenant_name" { type = string }
+
+# main.tf  (ACI argument names: check schema)
+resource "aci_vrf" "v" {
+  for_each  = var.vrfs
+  tenant_dn = aci_tenant.t.id        # implicit edge
+  name      = each.key
+}</code></pre>
+<pre><code># count form and a toggle
+resource "aci_tenant" "t" {
+  count = var.create_tenant ? 1 : 0
+  name  = var.tenant_name
+}
+# reference with index:  aci_tenant.t[0].id
+
+# dynamic block shape (nested blocks inside one resource)
+dynamic "rule" {
+  for_each = var.rules
+  content { name = rule.value.name }
+}</code></pre>
+<p class="uv">⚠ unverified: <code>optional(string, "")</code> default syntax needs Terraform &ge;1.3 (not on a fetched page); <code>tenant_dn</code>/<code>name</code> argument names for <code>aci_vrf</code> at v2.17.0; <code>aci_tenant.t[0].id</code> output attribute.</p>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>"for_each value depends on resource attributes that cannot be determined until apply"</td><td>Keys built from an ID the API returns at apply time</td><td><code>terraform plan</code>; check what feeds the map</td><td>Key by static input (names), take computed values only in <code>each.value</code> or arguments</td></tr>
+<tr><td>Error mixing <code>count</code> and <code>for_each</code></td><td>Both set in one block</td><td><code>terraform validate</code></td><td>Pick one; <code>for_each</code> if instances differ by name</td></tr>
+<tr><td>Passing a list to <code>for_each</code> errors</td><td>Only map or set of strings accepted</td><td><code>terraform console</code>: <code>type(var.x)</code></td><td><code>toset(var.x)</code> (drops order and duplicates) or build a map</td></tr>
+<tr><td>Sensitive variable rejected as <code>for_each</code> input</td><td>Keys identify instances so sensitive not allowed</td><td>plan error text</td><td>Strip sensitivity from keys with a <code>for</code> expression, or do not mark it sensitive</td></tr>
+<tr><td>"Cycle" error on plan</td><td>Two resources reference each other</td><td><code>terraform graph -type=plan -draw-cycles</code></td><td>Remove one reference; move shared value to a variable or a third resource</td></tr>
+</table></div>
+<p class="uv">⚠ unverified: exact error message wording (not on fetched pages); <code>terraform console</code> <code>type()</code> function availability on 1.13; the sensitive-key workaround is stated on the for_each page, the rest is inferred.</p>
+
+<h2 id="speed">Speed notes (offline, on the workstation)</h2>
+<ul>
+<li><code>terraform providers schema -json | jq '.provider_schemas | keys'</code> then dig to <code>resource_schemas.aci_vrf.block.attributes</code> for argument names. ⚠ unverified: <code>jq</code> installed.</li>
+<li><code>terraform console</code> to test <code>toset()</code>, <code>tomap()</code>, <code>for</code> expressions and <code>type()</code> against your variables.</li>
+<li><code>terraform validate</code>, then <code>terraform plan -var-file=x.tfvars</code>. <code>terraform graph | dot -Tpng &gt; g.png</code> needs Graphviz installed (⚠ unverified on the workstation); without it, read the DOT text.</li>
+<li><code>terraform plan -out=p</code> then <code>terraform graph -plan=p</code> shows the apply graph.</li>
+<li><code>terraform -help</code> and <code>terraform plan -help</code> for flags such as <code>-parallelism</code> and <code>-target</code>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<div class="card">
+<p><b>Target:</b> DevNet Sandbox APIC (tracker: local APIC deferred). <b>Provider:</b> <code>ciscodevnet/aci</code> 2.17.0, the only installed provider.</p>
+<p><b>Requirement:</b></p>
+<ul>
+<li>Variable <code>vrfs</code>: map of objects with an optional description. Validate that at least one entry exists.</li>
+<li>Create one tenant and one VRF per map key, using <code>for_each</code>.</li>
+<li>Add a second tenant toggle with <code>count</code> that creates nothing when <code>false</code>.</li>
+<li>Run <code>terraform graph</code> and name the edge order. Remove one VRF key and show only that instance is destroyed.</li>
+</ul>
+<p><b>Reference fields:</b> look up the argument names in <code>terraform providers schema -json</code> for <code>aci_tenant</code> and <code>aci_vrf</code>. Provider block needs the APIC URL and credentials; check the provider schema for names (⚠ unverified).</p>
+<p><b>Verification:</b> (1) <code>terraform plan</code> shows <code>aci_vrf.v["prod"]</code> style addresses; (2) after apply, delete one key and plan: exactly one destroy; (3) <code>terraform state list</code> shows keyed addresses.</p>
+<details><summary>Hint</summary><p>The tenant reference in each VRF is what orders creation. If the plan shows VRFs with no dependency on the tenant, you typed the tenant name instead of referencing the resource.</p></details>
+<details><summary>Solution outline</summary><p>variables.tf as in Anatomy; one <code>aci_tenant</code>, one <code>aci_vrf</code> with <code>for_each = var.vrfs</code> and <code>each.key</code> as name, a second tenant with <code>count = var.extra ? 1 : 0</code>. Run <code>init</code>, <code>validate</code>, <code>plan -var-file</code>. Attribute names are yours to confirm from the schema; I did not verify them.</p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<details><summary>1. A config drives <code>count</code> from a list and you delete the first list item. What happens and what is the safer pattern?</summary><p>Later indexes shift, so Terraform plans changes for every following instance (index-addressed). Use <code>for_each</code> over a map keyed by stable names. ⚠ index shifting is not on the fetched count page.</p></details>
+<details><summary>2. <code>for_each = var.names</code> where names is a list(string) fails. Give the error cause and two ways to fix.</summary><p>Only maps or sets of strings are accepted. Wrap in <code>toset()</code> (drops order and duplicates) or convert to a map.</p></details>
+<details><summary>3. Name the order of variable sources from lowest to highest, and say what happens when a map is set in two sources.</summary><p>default, env <code>TF_VAR_</code>, terraform.tfvars, terraform.tfvars.json, *.auto.tfvars, then -var/-var-file. Maps and objects are overridden whole, not merged.</p></details>
+<details><summary>4. How many nodes does Terraform apply in parallel by default, what changes the setting, and what does <code>depends_on</code> cost you?</summary><p>10; <code>-parallelism</code>. <code>depends_on</code> can make plans more conservative: more replacements and more "(known after apply)" values. Use references where possible.</p></details>
+<p><b>From earlier days</b></p>
+<details><summary>5. (from 2026-10-27) Name the three built-in URLs FastAPI serves after startup and what each is.</summary><p>/docs Swagger UI, /redoc ReDoc, /openapi.json the schema. (Restated from the 10-27 note.)</p></details>
+<details><summary>6. (from 2026-10-29) A CSR carried a SAN; the issued cert has none. Why, and name two fixes.</summary><p><code>openssl x509 -req</code> ignores request extensions by default. Fixes: <code>-copy_extensions copy</code> or supply <code>-extfile</code>/<code>-extensions</code>. (Restated from the 10-29 note.)</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><span class="b ok">&#9989;</span><a href="https://github.com/CiscoDevNet/terraform-provider-aci/releases" target="_blank" rel="noopener">Releases &middot; CiscoDevNet/terraform-provider-aci &middot; GitHub</a> &middot; provider releases, verified 2026-11-02. Best for: what changed between v2.17.0 (lab) and later; v2.19.0 deprecations and renames.</li>
+</ul>
+<h3>Third-party (HashiCorp)</h3>
+<ul>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/language/meta-arguments/for_each" target="_blank" rel="noopener">for_each meta-argument reference</a> &middot; docs v1.17.x (pin 1.13), verified 2026-11-02. Best for: limits on values, sets vs lists, chaining.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/language/meta-arguments/count" target="_blank" rel="noopener">count meta-argument reference</a> &middot; v1.17.x, verified 2026-11-02. Best for: count.index and the known-before-apply limit.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/language/expressions/dynamic-blocks" target="_blank" rel="noopener">dynamic Blocks</a> &middot; v1.17.x, verified 2026-11-02. Best for: iterator, nesting, when not to use.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/language/v1.10.x/values/variables" target="_blank" rel="noopener">Input Variables</a> &middot; v1.10.x, verified 2026-11-02. Best for: precedence list, type constraints, validation, nullable.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/language/values/variables" target="_blank" rel="noopener">Use input variables to add module arguments</a> &middot; v1.17.x, verified 2026-11-02. Best for: current short form; no nullable section.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/internals/graph" target="_blank" rel="noopener">Dependency Graph</a> &middot; v1.17.x, verified 2026-11-02. Best for: node types, build steps, parallelism of 10.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/cli/commands/graph" target="_blank" rel="noopener">terraform graph command</a> &middot; v1.17.x, verified 2026-11-02. Best for: -type, -plan, -draw-cycles, dot piping.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/language/meta-arguments/depends_on" target="_blank" rel="noopener">depends_on meta-argument reference</a> &middot; v1.17.x, verified 2026-11-02. Best for: restrictions and plan side effects.</li>
+<li><span class="b ok">&#9989;</span><a href="https://developer.hashicorp.com/terraform/tutorials/configuration-language/dependencies" target="_blank" rel="noopener">Create resource dependencies</a> &middot; tutorial, verified 2026-11-02. Best for: implicit vs explicit, destroy order.</li>
+</ul>
+<p>Standards: none relevant to this unit.</p>
+
+<h2>Footer</h2>
+<div class="card">
+<p>Links: 10 &#9989; &middot; 0 &#128270; &middot; 0 removed</p>
+<p class="uv">&#9888; Unverified claims: Domain 2 weight; index shifting with <code>count</code>; <code>optional()</code> defaults syntax; ACI resource argument names and attributes at v2.17.0; provider block argument names; error message wording; <code>terraform console</code> <code>type()</code>; jq/Graphviz on workstation; doc versions 1.10.x and 1.17.x vs pin 1.13; lab APIC target (tracker: local APIC deferred, DevNet sandbox is the fallback).</p>
+<p>Tomorrow: Unit 22 &middot; 3.3.a &middot; pyATS testbed file for IOS/IOS XE/NX-OS. Friday: Weekly Review 6.</p>
+</div>
+</main>
+
+</body></html>

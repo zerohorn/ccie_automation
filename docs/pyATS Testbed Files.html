@@ -1,0 +1,346 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>pyATS Testbed Files</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single column, sticky TOC strip, figures and tables scroll inside their own wrappers.
+   Palette: ink (text), paper (bg), signal-teal (accent), amber (warning), slate (rules). */
+:root{
+  --bg:#f6f8f9; --fg:#14232b; --muted:#4d6270; --rule:#cdd8de; --card:#ffffff;
+  --accent:#0b7a75; --accent-soft:#d8efed; --warn:#9a5b00; --warn-soft:#fbefd5;
+  --code-bg:#eaf0f3; --ok:#1d7a3e; --idx:#6a4fb3;
+  --svg-a:#d8efed; --svg-b:#e6ecf1; --svg-c:#fbefd5;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a20; --fg:#e3edf1; --muted:#9db3bf; --rule:#2a3d48; --card:#16252d;
+  --accent:#4fd1c7; --accent-soft:#12403f; --warn:#f0b559; --warn-soft:#3a2d12;
+  --code-bg:#1a2c35; --ok:#5fd18a; --idx:#b9a4f2;
+  --svg-a:#12403f; --svg-b:#1f323d; --svg-c:#3a2d12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a20; --fg:#e3edf1; --muted:#9db3bf; --rule:#2a3d48; --card:#16252d;
+  --accent:#4fd1c7; --accent-soft:#12403f; --warn:#f0b559; --warn-soft:#3a2d12;
+  --code-bg:#1a2c35; --ok:#5fd18a; --idx:#b9a4f2;
+  --svg-a:#12403f; --svg-b:#1f323d; --svg-c:#3a2d12; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.6;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+main{max-width:860px;margin:0 auto}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--rule);
+  display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 0;font-size:13px}
+nav.toc a{color:var(--muted);text-decoration:none}
+nav.toc a:hover,nav.toc a:focus{color:var(--accent);text-decoration:underline}
+h1{font-size:1.9rem;line-height:1.2;margin:22px 0 6px;text-wrap:balance}
+h2{font-size:1.3rem;margin:36px 0 8px;text-wrap:balance;border-top:1px solid var(--rule);padding-top:18px}
+h3{font-size:1.05rem;margin:20px 0 4px;color:var(--accent)}
+p,li{max-width:68ch} ul{padding-left:1.2rem} li{margin:4px 0}
+a{color:var(--accent)} a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hdr{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;margin:14px 0}
+.hdr dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;margin:0}
+.hdr dt{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hdr dd{margin:0;font-weight:600}
+.scroll{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{border:1px solid var(--rule);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+pre{background:var(--code-bg);border-radius:6px;padding:12px 14px;overflow-x:auto;font-size:13px;line-height:1.5;margin:10px 0}
+code{font-family:var(--mono);font-size:.92em} p code,li code,td code{background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre code{background:none;padding:0}
+figure{margin:16px 0} figure svg{width:100%;height:auto;max-width:100%;display:block}
+figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+svg text{fill:currentColor;font-family:var(--font);font-size:12px}
+svg .a{fill:var(--svg-a);stroke:var(--accent);stroke-width:1.2}
+svg .b{fill:var(--svg-b);stroke:var(--muted);stroke-width:1}
+svg .c{fill:var(--svg-c);stroke:var(--warn);stroke-width:1.2}
+svg .ln{stroke:currentColor;stroke-width:1.3;fill:none}
+svg .dash{stroke-dasharray:4 3}
+svg .tt{font-weight:700} svg .sm{font-size:11px}
+.uv{color:var(--warn);background:var(--warn-soft);padding:0 4px;border-radius:3px;font-size:.88em;white-space:nowrap}
+.badge{font-size:11px;font-weight:700;border:1px solid currentColor;border-radius:3px;padding:0 5px;margin-right:6px;color:var(--ok)}
+details{border:1px solid var(--rule);border-radius:6px;padding:6px 12px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+.layer{border-left:3px solid var(--accent);padding-left:12px;margin:12px 0}
+.ref li{margin:10px 0}
+.note{background:var(--warn-soft);border-radius:6px;padding:8px 12px;font-size:14px}
+footer{margin-top:40px;border-top:1px solid var(--rule);padding-top:14px;font-size:14px;color:var(--muted)}
+@media (max-width:480px){h1{font-size:1.5rem}}
+</style>
+<main>
+<nav class="toc" aria-label="Contents">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<h1>pyATS testbed files for IOS, IOS XE and NX-OS</h1>
+<div class="hdr"><dl>
+<div><dt>Date</dt><dd>2026-11-03 (Tue)</dd></div>
+<div><dt>Blueprint</dt><dd>3.3.a Testbed file</dd></div>
+<div><dt>Domain</dt><dd>3 (weight <span class="uv">⚠ unverified</span>)</dd></div>
+<div><dt>Tier</dt><dd>1 (gap)</dd></div>
+<div><dt>Read time</dt><dd>~17 min</dd></div>
+<div><dt>Position</dt><dd>Unit 22 of 49</dd></div>
+</dl></div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>A testbed file is YAML that describes devices, how to reach them, credentials, and optionally links. Everything in 3.3.b (Genie parsers) and 3.3.c (AEtest jobs) loads it first.</li>
+<li>Top-level keys: <code>testbed</code>, <code>devices</code>, <code>topology</code>, and <code>extends</code>. Only <code>devices</code> with a <code>connections</code> block is needed to log in.</li>
+<li>The device key is the hostname. The getting-started example comments that it must match the hostname in the device prompt.</li>
+<li><code>os</code> (ios, iosxe, nxos) says what the device runs. <code>type</code> is a free-form string and is the one the schema marks required.</li>
+<li>Credentials resolve connection, then device, then testbed. A missing named credential falls back to <code>default</code>.</li>
+<li>Markups (<code>%ENV{}</code>, <code>%ASK{}</code>, <code>%ENC{}</code>, <code>%CLI{}</code>) are replaced by the loader before objects exist. Quote anything containing <code>%</code>.</li>
+<li>Check a file with <code>pyats validate testbed FILE</code>; add <code>--connect</code> to try real logins.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="3.3.a testbed file feeds 3.3.b Genie parsers and 3.3.c AEtest jobs; the file is loaded into Device objects that open connections to lab devices.">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<text x="10" y="18" class="tt">Blueprint 3.3 (pyATS / Genie)</text>
+<rect x="10" y="28" width="150" height="50" rx="4" class="a"/><text x="85" y="49" text-anchor="middle" class="tt">3.3.a testbed</text><text x="85" y="66" text-anchor="middle" class="sm">today</text>
+<rect x="305" y="28" width="150" height="50" rx="4" class="b"/><text x="380" y="49" text-anchor="middle">3.3.b Genie parse</text><text x="380" y="66" text-anchor="middle" class="sm">operational state</text>
+<rect x="600" y="28" width="150" height="50" rx="4" class="b"/><text x="675" y="49" text-anchor="middle">3.3.c AEtest jobs</text><text x="675" y="66" text-anchor="middle" class="sm">tests + results</text>
+<line x1="160" y1="53" x2="303" y2="53" class="ln" marker-end="url(#ar)"/><text x="232" y="46" text-anchor="middle" class="sm">loads</text>
+<line x1="455" y1="53" x2="598" y2="53" class="ln" marker-end="url(#ar)"/><text x="527" y="46" text-anchor="middle" class="sm">same testbed</text>
+<text x="10" y="118" class="tt">Tool chain behind one connect()</text>
+<rect x="10" y="130" width="130" height="46" rx="4" class="a"/><text x="75" y="157" text-anchor="middle">lab.yaml</text>
+<rect x="190" y="130" width="130" height="46" rx="4" class="b"/><text x="255" y="157" text-anchor="middle">loader.load()</text>
+<rect x="370" y="130" width="130" height="46" rx="4" class="b"/><text x="435" y="150" text-anchor="middle">Device</text><text x="435" y="166" text-anchor="middle" class="sm">os, creds, via</text>
+<rect x="550" y="130" width="200" height="46" rx="4" class="b"/><text x="650" y="150" text-anchor="middle">SSH to lab device</text><text x="650" y="166" text-anchor="middle" class="sm">IOSv, IOSvL2, Cat8000V, N9Kv</text>
+<line x1="140" y1="153" x2="188" y2="153" class="ln" marker-end="url(#ar)"/>
+<line x1="320" y1="153" x2="368" y2="153" class="ln" marker-end="url(#ar)"/><text x="344" y="146" text-anchor="middle" class="sm">objects</text>
+<line x1="500" y1="153" x2="548" y2="153" class="ln" marker-end="url(#ar)"/><text x="524" y="146" text-anchor="middle" class="sm">connect</text>
+<text x="10" y="215" class="sm">Cat8000V and N9Kv could also take NETCONF/RESTCONF/NX-API, but 3.3 uses CLI sessions through the connection layer.</text>
+</svg>
+<figcaption>3.3.a is the front door of 3.3. Nothing in 3.3.b or 3.3.c runs without a loadable testbed.</figcaption>
+</figure>
+
+<h2 id="depth">Fundamentals to exam depth</h2>
+<div class="layer">
+<h3>L1: concept</h3>
+<p>pyATS models a lab as objects: one <code>Testbed</code> holds <code>Device</code> objects, which hold interfaces and links (<a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/concept.html" target="_blank" rel="noopener">Everything is an Object</a> <span class="badge">✅</span>). You rarely build them by hand. The docs recommend a YAML file unless you must create topology on the fly (<a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/creation.html" target="_blank" rel="noopener">Creating Topology</a> <span class="badge">✅</span>). The loader (<code>from pyats.topology import loader; loader.load('file.yaml')</code>) reads the file and returns the testbed. Jobs take the same file with <code>pyats run job jobfile.py --testbed-file FILE</code>, and the argument can be a path or a URL.</p>
+<p>If you are used to Ansible, think of it as inventory plus connection vars, but typed: the file declares what each device is (<code>os</code>, <code>type</code>) so that later libraries pick the right behavior for it. If you are used to Terraform, the closest comparison is a variables file whose markups resolve at load time, before any object exists.</p>
+</div>
+
+<div class="layer">
+<h3>L2: mechanics</h3>
+<p>The file has four top-level keys. <code>testbed</code> carries testbed-wide data: name, credentials, servers, custom values. If <code>name</code> is omitted the loader uses the file name with a <code>CONFIG.</code> prefix and <code>.yaml</code> suffix trimmed. <code>devices</code> holds one entry per device. <code>topology</code> declares interfaces and links per device; the schema marks it optional and 3.3.a does not need it to log in. <code>extends</code> merges other testbed files into this one.</p>
+<figure>
+<svg viewBox="0 0 760 330" role="img" aria-label="Nested layout of a testbed file: testbed block with credentials, servers and custom; devices block with os, type, credentials and connections; topology block with interfaces and links.">
+<rect x="10" y="10" width="740" height="62" rx="5" class="b"/><text x="22" y="30" class="tt">testbed:</text>
+<rect x="110" y="18" width="190" height="46" rx="3" class="a"/><text x="205" y="38" text-anchor="middle">credentials</text><text x="205" y="54" text-anchor="middle" class="sm">default, enable</text>
+<rect x="320" y="18" width="190" height="46" rx="3" class="a"/><text x="415" y="38" text-anchor="middle">name, alias</text><text x="415" y="54" text-anchor="middle" class="sm">default = file name</text>
+<rect x="530" y="18" width="210" height="46" rx="3" class="a"/><text x="635" y="38" text-anchor="middle">servers, custom</text><text x="635" y="54" text-anchor="middle" class="sm">tftp/sftp targets, free-form</text>
+<rect x="10" y="84" width="740" height="170" rx="5" class="b"/><text x="22" y="104" class="tt">devices:  (key = hostname)</text>
+<rect x="30" y="114" width="150" height="130" rx="3" class="a"/><text x="105" y="134" text-anchor="middle" class="tt">identity</text><text x="105" y="154" text-anchor="middle" class="sm">os: ios | iosxe | nxos</text><text x="105" y="170" text-anchor="middle" class="sm">type (required)</text><text x="105" y="186" text-anchor="middle" class="sm">platform, model, role</text><text x="105" y="202" text-anchor="middle" class="sm">alias, custom</text>
+<rect x="200" y="114" width="190" height="130" rx="3" class="a"/><text x="295" y="134" text-anchor="middle" class="tt">credentials</text><text x="295" y="154" text-anchor="middle" class="sm">default: username, password</text><text x="295" y="170" text-anchor="middle" class="sm">enable: password</text><text x="295" y="190" text-anchor="middle" class="sm">inherits testbed values</text><text x="295" y="206" text-anchor="middle" class="sm">if not set here</text>
+<rect x="410" y="114" width="320" height="130" rx="3" class="c"/><text x="570" y="134" text-anchor="middle" class="tt">connections (required)</text><text x="570" y="154" text-anchor="middle" class="sm">defaults: class, alias, via</text><text x="570" y="170" text-anchor="middle" class="sm">cli: protocol, ip, port, host</text><text x="570" y="186" text-anchor="middle" class="sm">vty: protocol, ip, credentials</text><text x="570" y="206" text-anchor="middle" class="sm">names are yours; any extra key</text><text x="570" y="222" text-anchor="middle" class="sm">goes to the connection class</text>
+<rect x="10" y="266" width="740" height="54" rx="5" class="b"/><text x="22" y="286" class="tt">topology:</text><text x="110" y="286" class="sm">device, then interfaces, each interface needs a type; optional link; ipv4 and ipv6 parsed as IP interface objects</text><text x="110" y="304" class="sm">optional for 3.3.a login, used by tests that walk links</text>
+</svg>
+<figcaption>Orange block = what a login needs. Teal blocks = defaults you set once and inherit.</figcaption>
+</figure>
+<p>Credentials come from the nearest level. A connection with its own <code>credentials</code> uses them; otherwise it uses the device's, then the testbed's. If a named credential (say <code>enable</code>) is not found, the lookup uses <code>default</code> when one exists. Fields with "password" in the name are stored as secret strings and cannot be printed directly. The older <code>passwords</code> block (<code>tacacs</code>, <code>enable</code>, <code>line</code>, <code>linux</code>) is still in the production schema, so you will see it in older files (<a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html" target="_blank" rel="noopener">Topology Schema</a> <span class="badge">✅</span>).</p>
+<p>Connection names are arbitrary labels. The docs' examples use <code>a</code>, <code>b</code>, <code>vty</code>, and <code>cli</code>. A connection's <code>ip</code> may be a hostname; it is resolved when the file loads. Any key the schema does not define on a connection is passed to the connection class constructor. That is the hook for per-connection SSH behavior, which matters on IOSv (below).</p>
+<figure>
+<svg viewBox="0 0 760 300" role="img" aria-label="Sequence: script loads the YAML, loader resolves markups and builds objects, device.connect picks a connection by via and alias, the connection class logs in to the device.">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g class="b"><rect x="10" y="10" width="130" height="30" rx="3"/><rect x="200" y="10" width="130" height="30" rx="3"/><rect x="390" y="10" width="130" height="30" rx="3"/><rect x="580" y="10" width="170" height="30" rx="3"/></g>
+<text x="75" y="30" text-anchor="middle">your script</text><text x="265" y="30" text-anchor="middle">loader</text><text x="455" y="30" text-anchor="middle">Device</text><text x="665" y="30" text-anchor="middle">lab device (SSH)</text>
+<g class="ln dash"><line x1="75" y1="40" x2="75" y2="285"/><line x1="265" y1="40" x2="265" y2="285"/><line x1="455" y1="40" x2="455" y2="285"/><line x1="665" y1="40" x2="665" y2="285"/></g>
+<line x1="75" y1="70" x2="263" y2="70" class="ln" marker-end="url(#ar2)"/><text x="170" y="64" text-anchor="middle" class="sm">load('lab.yaml')</text>
+<line x1="265" y1="105" x2="453" y2="105" class="ln" marker-end="url(#ar2)"/><text x="360" y="99" text-anchor="middle" class="sm">%ENV/%CLI replaced, objects built</text>
+<line x1="265" y1="135" x2="75" y2="135" class="ln" marker-end="url(#ar2)"/><text x="170" y="129" text-anchor="middle" class="sm">testbed</text>
+<line x1="75" y1="175" x2="453" y2="175" class="ln" marker-end="url(#ar2)"/><text x="264" y="169" text-anchor="middle" class="sm">connect(alias='x', via='cli')</text>
+<line x1="455" y1="215" x2="663" y2="215" class="ln" marker-end="url(#ar2)"/><text x="560" y="209" text-anchor="middle" class="sm">login with resolved creds</text>
+<line x1="663" y1="250" x2="455" y2="250" class="ln" marker-end="url(#ar2)"/><text x="560" y="244" text-anchor="middle" class="sm">prompt reached</text>
+<line x1="453" y1="280" x2="77" y2="280" class="ln" marker-end="url(#ar2)"/><text x="264" y="274" text-anchor="middle" class="sm">device.x.execute(...)</text>
+</svg>
+<figcaption>Errors split cleanly: a YAML or markup error fails at load, before any device is touched. A login or prompt error fails at connect.</figcaption>
+</figure>
+<p>On connect: <code>device.connect()</code> with no arguments makes a connection with alias <code>default</code>. <code>connect(alias='console', via='a')</code> opens the named path and exposes it as <code>device.console</code>, so one device can hold several sessions at once. <code>Testbed.connect()</code> connects to all devices in threads; <code>vias</code> maps a device name to a connection name, and extra keywords such as <code>log_stdout=False</code> go to every connection (<a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/usage.html" target="_blank" rel="noopener">Using Topology Objects</a> <span class="badge">✅</span>). <code>connections: defaults: via:</code> sets the default path; if unset, the connection class decides.</p>
+</div>
+
+<div class="layer">
+<h3>L3: exam detail</h3>
+<p>Markups are the exam-relevant trick because they keep secrets and per-run values out of the file. From the <a href="https://pubhub.devnetcloud.com/media/pyats/docs/utilities/yaml_markup.html" target="_blank" rel="noopener">YAML File Markups</a> <span class="badge">✅</span> page:</p>
+<div class="scroll"><table>
+<tr><th>Markup</th><th>Use</th><th>Trap</th></tr>
+<tr><td><code>%ENV{NAME}</code></td><td>Value from the shell environment</td><td>Quote it when it follows a colon</td></tr>
+<tr><td><code>%CLI{flag, default=12}</code></td><td>Value from a command-line argument</td><td>Missing argument gives an empty string; a flag with no value gives <code>True</code></td></tr>
+<tr><td><code>%ASK{prompt}</code></td><td>Prompt at load time</td><td>Blocks unattended jobs</td></tr>
+<tr><td><code>%ENC{...}</code></td><td>Decode a stored secret; <code>prefix=x</code> picks alternate settings</td><td>Needs the same key/representer in config that encoded it</td></tr>
+<tr><td><code>%INTF{name}</code>, <code>%CALLABLE{}</code>, <code>%{self.x}</code></td><td>Interface lookup, function result, reference to current device</td><td>Callable runs once; no retry with another argument form</td></tr>
+<tr><td><code>extends: other.yaml</code></td><td>Merge another file</td><td>Docs do not state precedence when files overlap</td></tr>
+</table></div>
+<p>Secrets: <a href="https://pubhub.devnetcloud.com/media/pyats/docs/cli/pyats_secret.html" target="_blank" rel="noopener"><code>pyats secret</code></a> <span class="badge">✅</span> has <code>keygen</code>, <code>encode</code>, and <code>decode</code>, driven by <code>[secrets] string.key</code> and <code>string.representer</code> in the pyATS config. The page itself does not show <code>%ENC{}</code> in a testbed, so connect the two from the markup page.</p>
+<p>Platform mapping for the lab, using the device list from your tracker:</p>
+<div class="scroll"><table>
+<tr><th>Device</th><th><code>os</code></th><th>Access</th><th>Watch for</th></tr>
+<tr><td>IOSv 15.9</td><td><code>ios</code></td><td>SSH CLI</td><td>Legacy key exchange; modern OpenSSH refuses it by default</td></tr>
+<tr><td>IOSvL2 15.2</td><td><code>ios</code></td><td>SSH CLI</td><td>Same SSH issue; RESTCONF 404, so never a RESTCONF connection</td></tr>
+<tr><td>Cat8000V 17.16</td><td><code>iosxe</code></td><td>SSH CLI (also NETCONF/RESTCONF)</td><td>Newer than the 17.5 exam target</td></tr>
+<tr><td>N9Kv 9.3(8)</td><td><code>nxos</code></td><td>SSH CLI</td><td>Not mapped to 3.3 in the tracker, usable as an extra target</td></tr>
+</table></div>
+<p>Version caution. The getting-started page lists Python 3.7 to 3.10 and a short install matrix, which is older than the Python 3.13 pin on the workstation. The docs are undated and I did not confirm the installed pyATS version. Treat the schema as stable and check behavior in the lab. <span class="uv">⚠ unverified</span></p>
+</div>
+
+<h2 id="anat">Anatomy</h2>
+<p>A two-device skeleton assembled from the schema and getting-started pages. Key names come from the docs; the IPs and secrets are placeholders.</p>
+<pre><code>testbed:
+  name: anatomy_demo                 # optional; else file name
+  credentials:
+    default:                         # fallback for any named credential
+      username: "%ENV{LAB_USER}"     # quote: value starts with %
+      password: "%ENV{LAB_PASS}"
+    enable:
+      password: "%ASK{Enable password}"
+
+devices:
+  nx-1:                              # key = hostname in the prompt
+    os: nxos                         # picks platform behavior
+    type: switch                     # free-form, schema marks required
+    connections:
+      a:                             # name is yours
+        protocol: telnet             # console-style path
+        ip: 192.0.2.10
+        port: 2001
+      vty:
+        protocol: ssh
+        ip: 192.0.2.11
+        credentials:                 # connection-level override
+          default:
+            username: ops
+            password: "%ENC{...}"    # decoded by pyATS config key</code></pre>
+<p>Load and use:</p>
+<pre><code>from pyats.topology import loader
+tb = loader.load('anatomy.yaml')
+nx = tb.devices['nx-1']
+nx.connect(alias='ssh1', via='vty')   # opens connection 'vty' as nx.ssh1
+print(nx.ssh1.execute('show version'))</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="scroll"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Loader error on a line with <code>password: %ENV{X}</code></td><td>Markup after a colon not quoted; the docs require quotes around any <code>%</code> string</td><td><code>pyats validate testbed lab.yaml</code> (lint is on by default)</td><td>Write <code>"%ENV{X}"</code></td></tr>
+<tr><td>Connect stalls or fails at the prompt on one device only</td><td>Device key does not match the hostname in the prompt (the getting-started comment says it must) <span class="uv">⚠ symptom wording</span></td><td>Log in by hand, read the prompt; compare with the YAML key</td><td>Rename the key or the device hostname</td></tr>
+<tr><td>Login works, config mode fails</td><td><code>enable</code> credential absent, so <code>default</code> is used</td><td>Read the connect log for the password prompt stage; check the <code>enable</code> block exists</td><td>Add <code>credentials: enable: password</code></td></tr>
+<tr><td>IOSv or IOSvL2 SSH fails during key exchange</td><td>IOS 15.x offers only older key exchange</td><td><code>ssh -vv user@ip</code> from the workstation shows the negotiation error</td><td>Pass legacy options on the connection, e.g. <code>ssh_options</code> <span class="uv">⚠ key name and values untested</span></td></tr>
+<tr><td><code>AttributeError: ... has no attribute 'mgmt'</code></td><td>Connection was opened with a different alias; bare <code>connect()</code> uses <code>default</code></td><td>Re-read the <code>connect(alias=...)</code> call</td><td>Use the alias you set, or pass <code>alias='mgmt'</code></td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li><code>pyats validate testbed FILE</code> lints syntax. <code>--connect</code> makes a best-effort login to each device. <code>--no-lint</code> skips linting (<a href="https://pubhub.devnetcloud.com/media/pyats/docs/cli/pyats_validate.html" target="_blank" rel="noopener">pyats validate</a> <span class="badge">✅</span>).</li>
+<li>Offline schema lookup: <code>python -c "from pyats.topology import Device; help(Device)"</code> <span class="uv">⚠ not tested on the workstation</span>. Whether the exam VM has the docs site offline is unknown.</li>
+<li><code>pyats --help</code>, <code>pyats validate --help</code>, <code>pyats secret --help</code> for flags.</li>
+<li>Copy the docs' <code>ios_testbed.yaml</code> shape, then edit. Typing the structure from memory costs more than editing a skeleton.</li>
+<li>Never type a password inline in a file you will save in a repo. Use <code>%ENV</code> or <code>%ENC</code>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<p><b>Requirement.</b> Write <code>lab.yaml</code> for four CML devices: iosv-1 (IOSv), iosvl2-1 (IOSvL2), c8kv-1 (Cat8000V), n9kv-1 (N9Kv). Use SSH on port 22, one shared username and password from environment variables, and an enable password from the environment. All four must connect through one connection name <code>cli</code>, set as the default.</p>
+<p><b>Reference fields.</b> <code>testbed.credentials.default.{username,password}</code>, <code>testbed.credentials.enable.password</code>, <code>devices.&lt;name&gt;.{os,type,connections}</code>, <code>connections.defaults.via</code>, <code>connections.cli.{protocol,ip}</code>, markup <code>%ENV{}</code>.</p>
+<p><b>Target.</b> The four lab devices; management IPs are placeholders (10.0.0.11 to 10.0.0.14), replace with yours. <span class="uv">⚠ unverified addressing</span></p>
+<p><b>Verify.</b></p>
+<ul>
+<li><code>export LAB_USER=... LAB_PASS=... LAB_ENABLE=...</code>, then <code>pyats validate testbed lab.yaml</code> shows no lint errors.</li>
+<li><code>pyats validate testbed lab.yaml --connect</code> reports each device reachable. Expect IOSv and IOSvL2 to fail until the SSH options are fixed.</li>
+<li>In Python: <code>tb = loader.load('lab.yaml'); print({n: d.os for n, d in tb.devices.items()})</code> prints the four <code>os</code> values.</li>
+<li><code>tb.devices['c8kv-1'].connect(); print(tb.devices['c8kv-1'].execute('show version'))</code> returns IOS XE output.</li>
+</ul>
+<details><summary>Hint</summary>
+<p>Repeat the same <code>connections</code> block per device, or use YAML anchors. Device keys must equal each device's configured hostname. For the two 15.x devices the connection needs extra SSH options; check what your OpenSSH client says with <code>ssh -vv</code> first.</p></details>
+<details><summary>Solution</summary>
+<pre><code>testbed:
+  name: cml_lab
+  credentials:
+    default:
+      username: "%ENV{LAB_USER}"
+      password: "%ENV{LAB_PASS}"
+    enable:
+      password: "%ENV{LAB_ENABLE}"
+
+devices:
+  iosv-1:
+    os: ios
+    type: router
+    connections:
+      defaults:
+        via: cli
+      cli:
+        protocol: ssh
+        ip: 10.0.0.11
+        ssh_options: "-o KexAlgorithms=+diffie-hellman-group14-sha1 -o HostKeyAlgorithms=+ssh-rsa"
+  iosvl2-1:
+    os: ios
+    type: switch
+    connections:
+      defaults:
+        via: cli
+      cli:
+        protocol: ssh
+        ip: 10.0.0.12
+        ssh_options: "-o KexAlgorithms=+diffie-hellman-group14-sha1 -o HostKeyAlgorithms=+ssh-rsa"
+  c8kv-1:
+    os: iosxe
+    type: router
+    connections:
+      defaults:
+        via: cli
+      cli:
+        protocol: ssh
+        ip: 10.0.0.13
+  n9kv-1:
+    os: nxos
+    type: switch
+    connections:
+      defaults:
+        via: cli
+      cli:
+        protocol: ssh
+        ip: 10.0.0.14</code></pre>
+<p>Unverified: the <code>ssh_options</code> key name and algorithm values, <code>%ENV</code> inside credential fields, and the <code>defaults</code> placement. <span class="uv">⚠ unverified, test in lab</span> If <code>ssh_options</code> is not honored, try an <code>~/.ssh/config</code> block for the IOS hosts; whether pyATS reads it is also <span class="uv">⚠ unverified</span>.</p></details>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<ol>
+<li>A connection has no <code>credentials</code>, the device has none, and the testbed has only <code>default</code>. The task enters enable mode. Which credential does the lookup use, and in what order does it search?
+<details><summary>Answer</summary>Connection, then device, then testbed; a missing named credential (<code>enable</code>) falls back to <code>default</code> if set.</details></li>
+<li>What alias does <code>device.connect()</code> give with no arguments, and how do you open a second session on the <code>vty</code> path as <code>vty_1</code>?
+<details><summary>Answer</summary>Alias <code>default</code>. <code>device.connect(alias='vty_1', via='vty')</code>, then <code>device.vty_1.execute(...)</code>.</details></li>
+<li>Name the markups that read the shell environment, prompt the user, and decode a stored secret. Why must you quote them after a colon?
+<details><summary>Answer</summary><code>%ENV{}</code>, <code>%ASK{}</code>, <code>%ENC{}</code>. Unquoted <code>%</code> values break YAML parsing; the docs say to quote strings with <code>%</code>.</details></li>
+<li>What does <code>pyats validate testbed FILE --connect</code> do beyond linting, and which flag turns linting off?
+<details><summary>Answer</summary>It attempts <code>device.connect()</code> to each device, best effort. <code>--no-lint</code> skips linting.</details></li>
+</ol>
+<p><b>From history</b></p>
+<ol start="5">
+<li>(2026-10-28) Where do you find why a telemetry subscription is Invalid, and what was the cause in the Cisco example?
+<details><summary>Answer</summary>The Notes in the <code>show telemetry ietf subscription &lt;id&gt; detail</code> output; an extra "/" after the module prefix colon in the XPath. (Restated from the 10-28 notes.)</details></li>
+<li>(2026-10-29) A browser reaches an app by IP and rejects a certificate whose CN is that IP. Why?
+<details><summary>Answer</summary>CN is not used for service identity (RFC 9525); the IP must be in a SAN as an IP entry. (Restated from the 10-29 notes.)</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<p>All pages were fetched on 2026-11-03. The pyATS docs pages carry no version or date, so the doc version is "unstated".</p>
+<h3>Cisco</h3>
+<ul class="ref">
+<li><span class="badge">✅</span><a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html" target="_blank" rel="noopener">Topology Schema — pyATS Documentation</a> (version unstated, verified 2026-11-03). Best for exact key names, required vs optional, credential fallback.</li>
+<li><span class="badge">✅</span><a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/example.html" target="_blank" rel="noopener">Example Testbed File — pyATS Documentation</a> (unstated, 2026-11-03). Best for a full two-device NX-OS file to copy from.</li>
+<li><span class="badge">✅</span><a href="https://pubhub.devnetcloud.com/media/pyats/docs/getting_started/index.html" target="_blank" rel="noopener">Getting Started — pyATS Documentation</a> (lists Python 3.7 to 3.10, 2026-11-03). Best for the IOS example, <code>loader.load</code>, and multi-alias connects.</li>
+<li><span class="badge">✅</span><a href="https://pubhub.devnetcloud.com/media/pyats/docs/utilities/yaml_markup.html" target="_blank" rel="noopener">YAML File Markups (pyATS Documentation)</a> (unstated, 2026-11-03). Best for %ENV, %CLI, %ASK, %ENC, extends.</li>
+<li><span class="badge">✅</span><a href="https://pubhub.devnetcloud.com/media/pyats/docs/cli/pyats_validate.html" target="_blank" rel="noopener">pyats validate — pyATS Documentation</a> (unstated, 2026-11-03). Best for the check command to run before every job.</li>
+<li><span class="badge">✅</span><a href="https://developer.cisco.com/docs/pyats/connection-to-devices/" target="_blank" rel="noopener">Connection To Devices - pyATS &amp; Genie - Cisco DevNet</a> (unstated, 2026-11-03). Best for the shortest testbed to connect to execute walkthrough; subsections for connection mechanisms were not readable from the fetch.</li>
+<li><span class="badge">✅</span><a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/usage.html" target="_blank" rel="noopener">Using Topology Objects — pyATS Documentation</a> (unstated, 2026-11-03). Best for connect-to-all with <code>vias</code> and alias handling.</li>
+<li><span class="badge">✅</span><a href="https://pubhub.devnetcloud.com/media/pyats/docs/cli/pyats_secret.html" target="_blank" rel="noopener">pyats secret — pyATS Documentation</a> (unstated, 2026-11-03). Best for encoding passwords for <code>%ENC</code>.</li>
+</ul>
+<h3>Standards</h3><p>None apply to this unit.</p>
+<h3>Third-party</h3><p>None cited. The legacy SSH option guidance exists only in community posts, which this series does not cite.</p>
+
+<footer>
+<p><b>Links: 10 ✅ · 0 🔎 · 0 removed.</b> (10 distinct URLs checked and linked: 8 in Go deeper, plus Everything is an Object and Creating Topology inline, all fetched today.)</p>
+<p><b>⚠ Unverified claims, test in lab:</b> Domain 3 weight; <code>os</code> being needed to pick the right platform plugin (schema marks it optional); the <code>ssh_options</code> key and legacy algorithm values for IOSv/IOSvL2; whether pyATS honors <code>~/.ssh/config</code>; <code>%ENV{}</code> inside credential password fields; <code>connections: defaults: via</code> placement; hostname-mismatch symptom wording; installed pyATS version and Python 3.13 support; management IPs; <code>type</code> values for IOSvL2; <code>help(Device)</code> on the workstation; recall answers 5 and 6 are restated from earlier notes.</p>
+<p><b>Tomorrow:</b> Unit 23 of 49, 5.3 Use OAuth2+ to obtain an auth token (Tier 2).</p>
+</footer>
+</main>
+
+</body></html>

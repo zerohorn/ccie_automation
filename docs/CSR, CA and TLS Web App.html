@@ -1,0 +1,192 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSR, CA and TLS Web App</title>
+<style>
+:root{--bg:#fff;--fg:#1c2330;--mut:#5a6578;--card:#f3f5f9;--bd:#d5dbe5;--ac:#0b5cad;--ok:#1a7f4b;--wr:#b25e00;--bad:#b3261e;--code:#eef1f6;--s1:#cfe3fb;--s2:#d8f1e3;--s3:#fde9c9;--s4:#f7d6d3}
+@media(prefers-color-scheme:dark){:root{--bg:#10151d;--fg:#e4e9f1;--mut:#97a3b6;--card:#1a212c;--bd:#2f3a4b;--ac:#6fb0f5;--ok:#58c58a;--wr:#f0a54a;--bad:#f0807a;--code:#0b0f15;--s1:#173556;--s2:#17402c;--s3:#4a3412;--s4:#4a1f1b}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 0;font-size:13px;z-index:5;overflow-x:auto;white-space:nowrap}
+nav a{margin-right:12px;color:var(--ac);text-decoration:none}
+h1{font-size:1.6rem;margin:.6em 0 .2em}h2{font-size:1.25rem;margin:1.6em 0 .4em;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:1.05rem;margin:1.2em 0 .3em}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;margin:10px 0}
+.meta{font-size:14px;color:var(--mut)}
+.tw{overflow-x:auto;margin:10px 0}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--card)}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:6px;padding:10px;overflow-x:auto;font-size:13px;line-height:1.45}code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+svg{width:100%;height:auto;display:block;margin:10px 0}svg text{fill:var(--fg);font:12px system-ui,sans-serif}svg .b1{fill:var(--s1);stroke:var(--ac)}svg .b2{fill:var(--s2);stroke:var(--ok)}svg .b3{fill:var(--s3);stroke:var(--wr)}svg .b4{fill:var(--s4);stroke:var(--bad)}svg .ln{stroke:var(--mut);fill:none;stroke-width:1.5}svg .ar{fill:var(--mut)}svg .m{fill:var(--mut)}
+details{border:1px solid var(--bd);border-radius:6px;padding:6px 10px;margin:6px 0;background:var(--card)}summary{cursor:pointer;font-weight:600}
+.badge{display:inline-block;font-size:12px;border:1px solid var(--bd);border-radius:10px;padding:0 7px;margin-right:4px;background:var(--card)}
+.warn{color:var(--wr)}a{color:var(--ac)}
+</style></head><body><main>
+<nav><a href="#hdr">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#depth">Depth</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+
+<section id="hdr"><h1>CSR, CA and a TLS web app</h1>
+<div class="card meta"><b>2026-10-29 (Thu)</b> · Blueprint <b>5.2</b> — Create a CSR via OpenSSL, send it to a CA, secure a web app with the certificate · Domain 5 Security (15% per tracker) · Tier 2 · Read ≈ 18 min · <b>Unit 20 of 49</b></div></section>
+
+<section id="snap"><h2>Mental snapshot</h2>
+<ul>
+<li>A CSR is a signed request: subject + public key + optional attributes (e.g. requested extensions). The signature, made with the matching private key, proves the requester holds that key. It carries no issuer, validity or serial; the CA adds those.</li>
+<li>The private key never leaves the server. Only the CSR goes to the CA. If a key ever travels, you did something wrong.</li>
+<li>The CA decides what lands in the certificate. By default <code>openssl x509 -req</code> ignores extensions in the CSR, so a SAN you put in the CSR can silently vanish.</li>
+<li>Clients match the hostname against SAN entries (DNS or IP). Common Name is no longer valid for identifying a service (RFC 9525).</li>
+<li>Server presents leaf + intermediates; the client already holds the root in its trust store. Missing intermediate = chain failure.</li>
+<li>Serving: either the app loads cert + key itself (Python <code>ssl</code>) or a TLS termination proxy does and the app speaks plain HTTP behind it.</li>
+<li>Exam shape: generate key + CSR with correct subject/SAN, get it signed, install, then prove it with <code>openssl verify</code> and <code>openssl s_client</code>.</li>
+</ul></section>
+
+<section id="fit"><h2>Where this fits</h2>
+<svg viewBox="0 0 720 210" role="img" aria-label="Domain 5 neighbors and tool chain"><rect class="b3" x="10" y="20" width="130" height="50" rx="6"/><text x="75" y="42" text-anchor="middle">5.1 OWASP</text><text x="75" y="58" text-anchor="middle" class="m">comms security</text>
+<rect class="b1" x="165" y="20" width="130" height="50" rx="6" stroke-width="3"/><text x="230" y="42" text-anchor="middle">5.2 CSR + TLS</text><text x="230" y="58" text-anchor="middle" class="m">today</text>
+<rect class="b3" x="320" y="20" width="130" height="50" rx="6"/><text x="385" y="42" text-anchor="middle">5.3 OAuth2</text><text x="385" y="58" text-anchor="middle" class="m">tokens over TLS</text>
+<rect class="b3" x="475" y="20" width="110" height="50" rx="6"/><text x="530" y="42" text-anchor="middle">5.4 Secrets</text><text x="530" y="58" text-anchor="middle" class="m">Vault</text>
+<rect class="b3" x="600" y="20" width="110" height="50" rx="6"/><text x="655" y="42" text-anchor="middle">5.5 REST sec</text>
+<text x="10" y="110" class="m">Tool chain</text>
+<rect class="b2" x="10" y="120" width="120" height="50" rx="6"/><text x="70" y="142" text-anchor="middle">openssl req</text><text x="70" y="158" text-anchor="middle" class="m">key + CSR</text>
+<rect class="b2" x="190" y="120" width="130" height="50" rx="6"/><text x="255" y="142" text-anchor="middle">CA (x509 / ca)</text><text x="255" y="158" text-anchor="middle" class="m">signs, adds exts</text>
+<rect class="b2" x="380" y="120" width="130" height="50" rx="6"/><text x="445" y="142" text-anchor="middle">cert + chain</text><text x="445" y="158" text-anchor="middle" class="m">PEM files</text>
+<rect class="b2" x="570" y="120" width="140" height="50" rx="6"/><text x="640" y="142" text-anchor="middle">web app / proxy</text><text x="640" y="158" text-anchor="middle" class="m">verify with s_client</text>
+<path class="ln" d="M130 145H190M320 145H380M510 145H570"/><path class="ar" d="M190 145l-7-4v8zM380 145l-7-4v8zM570 145l-7-4v8z"/>
+<path class="ln" stroke-dasharray="4 3" d="M230 70V120"/></svg>
+<p class="meta">Same TLS plumbing you saw on 2026-10-22 (telemetry mTLS), now from the server-admin side.</p></section>
+
+<section id="depth"><h2>Fundamentals → exam depth</h2>
+<h3>L1 — concept</h3>
+<p>Public-key identity needs a third party. You make a key pair, wrap the public key and your name into a CSR (PKCS#10, <a href="https://www.rfc-editor.org/rfc/rfc2986" target="_blank" rel="noopener">RFC 2986</a><span class="badge">✅</span>), and sign it with your own private key. That self-signature prevents someone from requesting a certificate for another party's public key (RFC 2986 §3, note 2). The CA checks you, then signs a certificate binding your name to your key. A client that trusts the CA can trust the binding.</p>
+<h3>L2 — mechanics</h3>
+<svg viewBox="0 0 720 270" role="img" aria-label="Sequence: key, CSR, CA signs, server installs, client verifies">
+<g><rect class="b1" x="20" y="10" width="120" height="30" rx="5"/><text x="80" y="30" text-anchor="middle">Server admin</text>
+<rect class="b3" x="300" y="10" width="120" height="30" rx="5"/><text x="360" y="30" text-anchor="middle">CA</text>
+<rect class="b2" x="580" y="10" width="120" height="30" rx="5"/><text x="640" y="30" text-anchor="middle">Client</text></g>
+<path class="ln" d="M80 40V260M360 40V260M640 40V260"/>
+<path class="ln" d="M80 70H20"/><text x="90" y="66">1 generate key (stays local)</text>
+<path class="ln" d="M80 100H355"/><path class="ar" d="M355 100l-7-4v8z"/><text x="95" y="94">2 CSR: subject + pubkey + sig</text>
+<path class="ln" d="M360 130H365"/><text x="372" y="134">3 CA vets, adds issuer/validity/serial/exts</text>
+<path class="ln" d="M360 160H85"/><path class="ar" d="M85 160l7-4v8z"/><text x="95" y="154">4 signed cert (+ intermediates)</text>
+<text x="95" y="184">5 install: key + leaf + chain on server</text>
+<path class="ln" d="M640 210H85"/><path class="ar" d="M85 210l7-4v8z"/><text x="240" y="204">6 TLS handshake: server sends leaf + chain</text>
+<text x="330" y="236">7 client checks chain to its trust store + SAN match</text></svg>
+<p>What the CA controls matters more than what you ask for. With <code>openssl x509 -req</code>, the page says request extensions are ignored unless <code>-copy_extensions</code> is <code>copy</code>/<code>copyall</code>, and extensions you want come from <code>-extfile</code>/<code>-extensions</code> (<a href="https://docs.openssl.org/3.2/man1/openssl-x509/" target="_blank" rel="noopener">openssl-x509 3.2</a><span class="badge">✅</span>). With <code>openssl ca</code>, a policy section decides which subject fields are required, optional or must match the CA, and fields the policy does not mention are silently deleted (<a href="https://docs.openssl.org/3.0/man1/openssl-ca/" target="_blank" rel="noopener">openssl-ca 3.0</a><span class="badge">✅</span>).</p>
+<h3>Two ways to sign</h3>
+<div class="tw"><table><tr><th></th><th><code>openssl x509 -req</code> (micro CA)</th><th><code>openssl ca</code></th></tr>
+<tr><td>State kept</td><td>Optional serial file (<code>-CAcreateserial</code>); random serial if absent</td><td>Mandatory database (<code>index.txt</code>, must exist, may be empty) and serial file</td></tr>
+<tr><td>Config</td><td>None needed; <code>-extfile</code> optional</td><td>Config with <code>[ca]</code> → <code>default_ca</code> section (database, new_certs_dir, certificate, private_key, serial, default_md, policy, days)</td></tr>
+<tr><td>Subject handling</td><td>Subject copied from CSR</td><td>Filtered through policy; unlisted fields dropped unless <code>-preserveDN</code></td></tr>
+<tr><td>Default validity</td><td>30 days (<code>-days</code>)</td><td>From <code>default_days</code> / <code>-days</code></td></tr>
+<tr><td>Request extensions</td><td>Ignored unless <code>-copy_extensions</code></td><td>Same idea: <code>copy_extensions</code> is a config option, default ignore</td></tr>
+<tr><td>Use when</td><td>Lab, one-off, scripted</td><td>You need an audit trail of issued certs</td></tr></table></div>
+<h3>L3 — exam detail</h3>
+<ul>
+<li><b>SAN is the identity.</b> RFC 9525 §2: the Common Name RDN must not identify a service. DNS names match label by label, case-insensitive; a wildcard is only allowed as the whole left-most label; IP entries match exactly (§6.4) (<a href="https://www.rfc-editor.org/rfc/rfc9525" target="_blank" rel="noopener">RFC 9525</a><span class="badge">✅</span>). RFC 6125, which allowed CN fallback, is obsolete. If the exam says "reach it by IP", you need an <code>IP:</code> SAN entry.</li>
+<li><b>Extension set for a server cert:</b> <code>basicConstraints=CA:FALSE</code>, <code>keyUsage</code> (digitalSignature, keyEncipherment), <code>extendedKeyUsage=serverAuth</code>, <code>subjectAltName</code>. A CA cert needs <code>CA:TRUE</code> (<a href="https://docs.openssl.org/1.1.1/man5/x509v3_config/" target="_blank" rel="noopener">x509v3_config, 1.1.1</a><span class="badge">✅</span> — older version; syntax is stable but check your install).</li>
+<li><b>Key and CSR flags:</b> <code>-newkey rsa:2048</code> (default RSA 2048), <code>-noenc</code> to leave the key unencrypted (<code>-nodes</code> deprecated since 3.0), <code>-keyout</code>, <code>-subj "/C=US/O=Lab/CN=app.lab.local"</code>, repeatable <code>-addext "key=value"</code>. <code>-days</code> applies only with <code>-x509</code> (<a href="https://docs.openssl.org/3.6/man1/openssl-req/" target="_blank" rel="noopener">openssl-req 3.6</a><span class="badge">✅</span>).</li>
+<li><b>Chain building</b> starts at the target, finds an issuer by name, uses the trust store first, then <code>-untrusted</code> intermediates, and does not backtrack. OpenSSL ships no default trust anchors; distros configure one. <code>-verify_hostname</code> checks SAN DNS (or CN), <code>-verify_ip</code> checks SAN IP only (<a href="https://docs.openssl.org/master/man1/openssl-verification-options/" target="_blank" rel="noopener">verification options (master)</a><span class="badge">✅</span>).</li>
+<li><b>File order:</b> Python's <code>load_cert_chain</code> wants one PEM file with the certificate plus any CA certificates needed to establish its authenticity; the key can be separate; a key/cert mismatch raises <code>SSLError</code> (<a href="https://docs.python.org/3/library/ssl.html" target="_blank" rel="noopener">ssl, Python 3.15 docs</a><span class="badge">✅</span>). Leaf first, then intermediates is the convention <span class="warn">⚠ ordering not stated on that page</span>.</li>
+<li><b>Proxy vs app termination:</b> FastAPI's HTTPS page says TLS is normally terminated by a separate proxy (Traefik, Caddy, Nginx, HAProxy) that forwards plain HTTP, and that certificates are obtained from a third party, not generated (<a href="https://fastapi.tiangolo.com/deployment/https/" target="_blank" rel="noopener">About HTTPS</a><span class="badge">✅</span>). The page gives no uvicorn/Flask flags.</li>
+</ul>
+<svg viewBox="0 0 720 150" role="img" aria-label="Chain of trust"><rect class="b3" x="10" y="40" width="150" height="60" rx="6"/><text x="85" y="66" text-anchor="middle">Root CA</text><text x="85" y="84" text-anchor="middle" class="m">in client trust store</text>
+<rect class="b3" x="210" y="40" width="150" height="60" rx="6"/><text x="285" y="66" text-anchor="middle">Intermediate</text><text x="285" y="84" text-anchor="middle" class="m">server must send it</text>
+<rect class="b2" x="410" y="40" width="150" height="60" rx="6"/><text x="485" y="66" text-anchor="middle">Leaf (server)</text><text x="485" y="84" text-anchor="middle" class="m">SAN, serverAuth</text>
+<rect class="b1" x="600" y="40" width="110" height="60" rx="6"/><text x="655" y="66" text-anchor="middle">Client</text><text x="655" y="84" text-anchor="middle" class="m">-CAfile root</text>
+<path class="ln" d="M160 70H210M360 70H410M560 70H600"/><path class="ar" d="M210 70l-7-4v8zM410 70l-7-4v8z"/><text x="160" y="30" class="m">signs</text><text x="360" y="30" class="m">signs</text><text x="510" y="130" class="m">-untrusted supplies the middle; -CAfile supplies the root</text></svg>
+</section>
+
+<section id="anat"><h2>Anatomy</h2>
+<p>Pinned to OpenSSL as documented above (3.0–3.6 pages; workstation build ⚠ unverified — run <code>openssl version</code>).</p>
+<pre><code># key + CSR in one command (req page: -newkey, -noenc, -keyout, -subj, -addext)
+openssl req -new -newkey rsa:2048 -noenc -keyout app.key -out app.csr \
+  -subj "/O=Lab/CN=app.lab.local" \
+  -addext "subjectAltName=DNS:app.lab.local,IP:10.10.10.20"
+
+# inspect what you are about to send
+openssl req -in app.csr -noout -text -verify</code></pre>
+<pre><code># extension file the CA side controls (x509v3_config syntax)
+[server_ext]
+basicConstraints=CA:FALSE
+keyUsage=digitalSignature,keyEncipherment
+extendedKeyUsage=serverAuth
+subjectAltName=DNS:app.lab.local,IP:10.10.10.20</code></pre>
+<pre><code># client-side proof
+openssl verify -CAfile ca.crt -verify_hostname app.lab.local app.crt
+openssl s_client -connect 10.10.10.20:8443 -servername app.lab.local \
+  -CAfile ca.crt -verify_return_error -brief</code></pre>
+<p class="meta">s_client: without <code>-verify_return_error</code> the handshake continues after certificate errors, so you see all problems (<a href="https://docs.openssl.org/3.0/man1/openssl-s_client/" target="_blank" rel="noopener">openssl-s_client 3.0</a><span class="badge">✅</span>). <span class="warn">⚠ unverified — test in lab:</span> <code>DNS:</code> form inside <code>-addext</code>, <code>-verify</code> exit behavior on 3.0 (the 3.6 page says exit 1 since 3.3), <code>-verify_hostname</code> combined with <code>-verify</code> flags on your build.</p></section>
+
+<section id="bf"><h2>Break/fix</h2>
+<div class="tw"><table><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Client says hostname mismatch</td><td>Cert has only CN, or SAN lacks the name/IP used</td><td><code>openssl x509 -in app.crt -noout -text</code> and look at SAN; <code>openssl verify -verify_hostname …</code> / <code>-verify_ip …</code></td><td>Re-issue with SAN covering exactly what clients type (RFC 9525: no CN fallback)</td></tr>
+<tr><td>CSR had a SAN but the issued cert does not</td><td><code>x509 -req</code> ignores request extensions by default</td><td>Compare <code>openssl req -in app.csr -noout -text</code> with the cert text</td><td>Supply <code>-extfile</code>/<code>-extensions</code>, or <code>-copy_extensions copy</code> <span class="warn">⚠ on 3.0 build</span></td></tr>
+<tr><td>App will not start: <code>SSLError</code> loading cert chain</td><td>Key does not match certificate (documented to raise <code>SSLError</code>)</td><td>Compare public keys: <code>openssl req -in app.csr -noout -pubkey</code> vs the cert's public key <span class="warn">⚠ x509 <code>-pubkey</code> not checked on a fetched page</span></td><td>Pair the right key with the right cert; if the key was regenerated, make a new CSR</td></tr>
+<tr><td>Browser OK, <code>openssl s_client</code> or a script fails on chain</td><td>Intermediate not sent; client lacks it</td><td><code>openssl s_client -connect … -showcerts</code> (shows what the server sent, not a verified chain); <code>openssl verify -untrusted inter.crt …</code></td><td>Serve leaf + intermediates in one PEM; give the client the root via <code>-CAfile</code></td></tr>
+<tr><td><code>openssl ca</code> fails or subject comes back short</td><td>Missing/empty <code>index.txt</code> or serial; or policy section drops unlisted DN fields</td><td>Check the files named in the CA section; compare subject in CSR vs cert</td><td>Create <code>index.txt</code> (empty) and a hex <code>serial</code>; list the fields in the policy or use <code>-preserveDN</code></td></tr></table></div>
+<p class="meta">Also: a cert that worked yesterday and fails today after a 30-day lab run — default <code>x509 -days</code> is 30. Check <code>-enddate</code> <span class="warn">⚠ flag not on a fetched page; <code>-text</code> shows validity</span>.</p></section>
+
+<section id="speed"><h2>Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>openssl req -help</code>, <code>openssl x509 -help</code>, <code>openssl ca -help</code>: option lists without a browser.</li>
+<li><code>man openssl-req</code>, <code>man openssl-x509</code>, <code>man x509v3_config</code> <span class="warn">⚠ man pages installed on the workstation?</span></li>
+<li>Always <code>-noout -text</code> before and after signing, and diff the SAN lines.</li>
+<li><code>python3 -c "import ssl;help(ssl.SSLContext.load_cert_chain)"</code> for the loader contract.</li>
+<li>Keep one scratch dir per task; name files <code>app.key app.csr app.crt ca.key ca.crt</code> so you never swap them under time pressure.</li>
+</ul></section>
+
+<section id="drill"><h2>Micro-drill (≈10 min)</h2>
+<div class="card"><b>Requirement.</b> On the Candidate Workstation, create a throwaway CA, issue a server certificate for <code>app.lab.local</code> that is also valid for IP <code>127.0.0.1</code>, serve a trivial HTTPS endpoint on port 8443 with Python, and prove the chain with <code>openssl s_client</code> without disabling verification.<br>
+<b>Target:</b> Candidate Workstation (Ubuntu 24.04), loopback only. No lab device involved.<br>
+<b>Reference:</b> <code>req</code> flags in Anatomy; <code>x509 -req -CA -CAkey -CAcreateserial -extfile</code>; <code>ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER).load_cert_chain(cert, key)</code>.<br>
+<b>Verify:</b> (1) cert text shows both SAN entries and <code>CA:FALSE</code>; (2) <code>openssl verify -CAfile ca.crt app.crt</code> prints OK; (3) <code>s_client … -verify_return_error</code> completes; (4) repeat with <code>-servername other.lab.local</code> logic via <code>openssl verify -verify_hostname other.lab.local</code> and confirm it fails.</div>
+<details><summary>Hint</summary><p>Make the CA with <code>openssl req -x509 -newkey rsa:2048 -noenc -keyout ca.key -out ca.crt -subj "/CN=Lab CA" -addext "basicConstraints=critical,CA:TRUE" -days 365</code> (x509 flags per req page). The server's extension file must contain the SAN; a SAN only in the CSR will not survive.</p></details>
+<details><summary>Solution</summary><pre><code>openssl req -new -newkey rsa:2048 -noenc -keyout app.key -out app.csr -subj "/CN=app.lab.local"
+cat &gt; ext.cnf &lt;&lt;'X'
+basicConstraints=CA:FALSE
+keyUsage=digitalSignature,keyEncipherment
+extendedKeyUsage=serverAuth
+subjectAltName=DNS:app.lab.local,IP:127.0.0.1
+X
+openssl x509 -req -in app.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 90 -extfile ext.cnf -out app.crt
+openssl verify -CAfile ca.crt app.crt
+python3 - &lt;&lt;'P'
+import ssl, http.server
+ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ctx.load_cert_chain("app.crt", "app.key")
+s = http.server.HTTPServer(("127.0.0.1", 8443), http.server.SimpleHTTPRequestHandler)
+s.socket = ctx.wrap_socket(s.socket, server_side=True)
+s.serve_forever()
+P
+# other shell
+openssl s_client -connect 127.0.0.1:8443 -servername app.lab.local -CAfile ca.crt -verify_return_error -brief</code></pre>
+<p class="warn">⚠ unverified — test in lab: the <code>wrap_socket</code> server pattern, the <code>-addext basicConstraints=critical,CA:TRUE</code> form, and the output wording of <code>-brief</code>. Python 3.14's <code>python -m http.server --tls-cert/--tls-key</code> exists in the docs, but the workstation pin is 3.13, so do not rely on it.</p></details></section>
+
+<section id="recall"><h2>Recall check</h2>
+<ol>
+<li>What is in a CSR, what is not, and what does its signature prove? <details><summary>Answer</summary>Version 0, subject, subject public key info, optional attributes (e.g. requested extensions), signed by the subject's private key. No issuer, validity or serial. The signature stops someone requesting a cert for another party's public key (RFC 2986 §3, §4).</details></li>
+<li>The CSR carried a SAN; the issued cert has none. Why, and name two fixes. <details><summary>Answer</summary>x509 ignores request extensions by default. Use <code>-extfile</code>/<code>-extensions</code>, or <code>-copy_extensions copy</code> (for <code>ca</code>, the config option).</details></li>
+<li>Name the three CA-section artifacts <code>openssl ca</code> insists on and one surprise about the policy section. <details><summary>Answer</summary>Database file (<code>index.txt</code>, may be empty), serial file with a valid hex serial, and CA cert/key; policy silently drops DN fields it does not list unless <code>-preserveDN</code>.</details></li>
+<li>A browser reaches the app by IP and rejects the cert, whose CN is the IP. Why? <details><summary>Answer</summary>CN is not used to identify a service (RFC 9525 §2); the cert needs an <code>IP:</code> SAN, matched octet-for-octet.</details></li>
+<li><i>(from 2026-10-22)</i> Your openssl-signed device key will not import into IOS XE. Likely cause? <details><summary>Answer</summary>The 17.5 gNMI guide says the device key must be des3-encrypted before <code>crypto pki import … pem terminal</code> with a password (stored in the 10-22 notes).</details></li>
+<li><i>(from 2026-10-26)</i> A Pod's readiness probe fails: is it restarted, and what happens to Service traffic? <details><summary>Answer</summary>Not restarted; its IP is removed from the Service's EndpointSlices.</details></li>
+</ol></section>
+
+<section id="deeper"><h2>Go deeper</h2>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2986" target="_blank" rel="noopener">RFC 2986 — PKCS #10 Certification Request Syntax</a> <span class="badge">✅</span> RFC · verified 2026-10-29 · CSR structure and signature (§3, §4.1–4.2).</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9525" target="_blank" rel="noopener">RFC 9525: Service Identity in TLS</a> <span class="badge">✅</span> RFC (Nov 2023, obsoletes 6125) · verified 2026-10-29 · SAN-only matching, wildcard rule.</li>
+</ul>
+<h3>Third-party (official docs)</h3>
+<ul>
+<li><a href="https://docs.openssl.org/3.6/man1/openssl-req/" target="_blank" rel="noopener">openssl-req</a> <span class="badge">✅</span> OpenSSL 3.6 · verified 2026-10-29 · every CSR flag; check against your installed version.</li>
+<li><a href="https://docs.openssl.org/3.2/man1/openssl-x509/" target="_blank" rel="noopener">openssl-x509</a> <span class="badge">✅</span> OpenSSL 3.2 · verified 2026-10-29 · micro-CA signing, <code>-copy_extensions</code>.</li>
+<li><a href="https://docs.openssl.org/3.0/man1/openssl-ca/" target="_blank" rel="noopener">openssl-ca</a> <span class="badge">✅</span> OpenSSL 3.0 · verified 2026-10-29 · config sections, database/serial, policy.</li>
+<li><a href="https://docs.openssl.org/1.1.1/man5/x509v3_config/" target="_blank" rel="noopener">x509v3_config</a> <span class="badge">✅</span> OpenSSL 1.1.1 (old) · verified 2026-10-29 · extension syntax.</li>
+<li><a href="https://docs.python.org/3/library/ssl.html" target="_blank" rel="noopener">ssl — TLS/SSL wrapper for socket objects</a> <span class="badge">✅</span> Python 3.15 docs (pin 3.13) · verified 2026-10-29 · <code>load_cert_chain</code>.</li>
+<li><a href="https://fastapi.tiangolo.com/deployment/https/" target="_blank" rel="noopener">About HTTPS - FastAPI</a> <span class="badge">✅</span> current · verified 2026-10-29 · TLS termination proxy model.</li>
+</ul>
+<p class="meta">Not Cisco-owned topic; no cisco.com links today.</p></section>
+
+<footer class="card"><b>Links: 10 ✅ · 0 🔎 · 0 removed</b> (10 unique URLs; 2 are inline-only: verification options, s_client).<br>
+<b>⚠ Unverified:</b> Domain 5 weight (from tracker summary); workstation OpenSSL version/man pages; <code>DNS:</code> form in <code>-addext</code>; <code>-copy_extensions</code> on 3.0 x509; <code>x509 -pubkey</code>/<code>-enddate</code>; leaf-first ordering; <code>wrap_socket</code> drill; uvicorn/Flask TLS flags (no allowlisted page found); error strings; recall answers 5–6 restated from earlier pages. Flask CLI/server pages fetched: no HTTPS section. RFC 5280 section numbers from TOC only; last ~13K of RFC 6125/5280 unread.<br>
+<b>Tomorrow:</b> Friday weekly review 5 (units 17–20: 4.3.b-d, 2.1, 3.5.f-g, 5.2).</footer>
+</main></body></html>
+
+</body></html>

@@ -1,0 +1,325 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Weekly Review 5</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single 860px column, sticky TOC, SVG figures between tables; utilitarian study page. */
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --fg:#1b2430; --muted:#566272; --line:#d5dae1;
+  --accent:#0b6e8a; --accent-soft:#e1f1f6; --ok:#17794a; --warn:#9a5b00; --warn-soft:#fbefd9;
+  --code-bg:#eceff3; --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171d; --card:#1a212a; --fg:#e4e9ef; --muted:#9aa7b6; --line:#2f3946;
+  --accent:#5cc3de; --accent-soft:#17323b; --ok:#5fd08f; --warn:#f0b35a; --warn-soft:#352a14;
+  --code-bg:#0e1318; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171d; --card:#1a212a; --fg:#e4e9ef; --muted:#9aa7b6; --line:#2f3946;
+  --accent:#5cc3de; --accent-soft:#17323b; --ok:#5fd08f; --warn:#f0b35a; --warn-soft:#352a14;
+  --code-bg:#0e1318; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.55;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:860px;margin:0 auto}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:6px 14px;flex-wrap:wrap;padding:8px 0;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none;white-space:nowrap}
+nav.toc a:hover,nav.toc a:focus-visible{text-decoration:underline}
+h1{font-size:1.9rem;line-height:1.2;margin:20px 0 6px;text-wrap:balance}
+h2{font-size:1.3rem;margin:36px 0 10px;padding-top:6px;text-wrap:balance;scroll-margin-top:60px}
+h3{font-size:1.02rem;margin:20px 0 6px}
+p{margin:8px 0;max-width:70ch}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.hdr dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:10px 0 0;font-size:14px}
+.hdr dt{color:var(--muted)} .hdr dd{margin:0;min-width:0}
+.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fig{margin:14px 0}
+.fig svg{width:100%;height:auto;display:block;max-width:560px;margin:0 auto}
+.fig figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:4px}
+.s-box{fill:var(--card);stroke:var(--line);stroke-width:1.2}
+.s-hi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4}
+.s-bad{fill:var(--warn-soft);stroke:var(--warn);stroke-width:1.2}
+.s-t{fill:var(--fg);font:13px var(--font)} .s-m{fill:var(--muted);font:11.5px var(--font)}
+.s-b{fill:var(--fg);font:600 13px var(--font)}
+.s-ln{stroke:var(--muted);stroke-width:1.4;fill:none}
+.s-ar{fill:var(--muted)}
+.tw{overflow-x:auto;margin:10px 0;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{background:var(--accent-soft);font-weight:600} tr:last-child td{border-bottom:0}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font:13px/1.45 var(--mono);margin:8px 0}
+code{font-family:var(--mono);font-size:.9em;background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre code{background:none;padding:0;font-size:inherit}
+details{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:6px 0;padding:8px 12px}
+summary{cursor:pointer;font-weight:600}
+details>*:not(summary){margin-top:8px}
+.q{margin:14px 0 4px;font-weight:600}
+.tag{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--accent-soft);color:var(--accent);margin-right:6px;letter-spacing:.04em}
+.warn{background:var(--warn-soft);border:1px solid var(--warn);border-radius:6px;padding:8px 12px;font-size:14px;color:var(--fg)}
+.badge{font-size:12px;color:var(--ok);font-weight:600;white-space:nowrap}
+ul.links{list-style:none;padding:0;margin:8px 0;display:grid;gap:10px}
+ul.links li{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 12px;min-width:0;overflow-wrap:anywhere}
+ul.links .m{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+ul.chk{list-style:none;padding:0;display:grid;gap:8px}
+ul.chk label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+ul.chk input{margin-top:5px;flex:none}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:480px){h1{font-size:1.5rem}.hdr dl{grid-template-columns:1fr}.hdr dt{margin-top:6px}}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Page sections">
+  <a href="#fit">Week map</a><a href="#depth">Cross-topic</a><a href="#breakfix">Break/fix</a><a href="#speed">Speed notes</a>
+  <a href="#drill">Integration drill</a><a href="#recall">Recall</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a><a href="#footer">Audit</a>
+</nav>
+
+<header class="card hdr" style="margin-top:16px">
+  <div class="kicker">Friday 2026-10-30 · Weekly review 5 · CCIE Automation v1.1</div>
+  <h1>Weekly Review 5</h1>
+  <dl>
+    <dt>Covers</dt><dd>4.3.b-d Pods, probes, kubectl · 2.1 Python REST API · 3.5.f-g Confirm and triage telemetry · 5.2 CSR, CA, TLS web app</dd>
+    <dt>Domains</dt><dd>4 (containers), 2 (automation), 3 (telemetry/APIs), 5 (security). Exam weights not restated here (unverified).</dd>
+    <dt>Tier</dt><dd>Mixed: T2 (4.3.b-d, 5.2) and T1 (2.1, 3.5.f-g)</dd>
+    <dt>Unit</dt><dd>Review of units 17–20 of 49 (first pass)</dd>
+    <dt>Read time</dt><dd>about 18 min, plus the optional 10-minute drill</dd>
+  </dl>
+</header>
+
+<h2 id="fit">1. Where the week fits</h2>
+<p>All four topics sit on one request path. A client reaches an API over TLS, the API answers with the right status, the platform decides whether the instance is fit to receive traffic, and telemetry tells you whether any of it is working. Each layer has its own "looks healthy" signal that can be wrong. That is the review theme: <strong>a green indicator at one layer proves nothing about the layer above it.</strong></p>
+
+<figure class="fig">
+<svg viewBox="0 0 400 350" role="img" aria-labelledby="f1t f1d">
+  <title id="f1t">Request path with the four topics</title>
+  <desc id="f1d">Five stacked layers from client down to telemetry, each with the blueprint item and the false-green signal.</desc>
+  <rect class="s-box" x="10" y="8" width="380" height="50" rx="5"/>
+  <text class="s-b" x="22" y="29">Client (curl, browser, collector)</text>
+  <text class="s-m" x="22" y="47">connects by IP or name, checks the cert</text>
+  <rect class="s-hi" x="10" y="82" width="380" height="54" rx="5"/>
+  <text class="s-b" x="22" y="103">5.2  TLS: CSR → CA → cert with SAN</text>
+  <text class="s-m" x="22" y="122">false green: cert installed, but only CN carries the IP</text>
+  <rect class="s-hi" x="10" y="160" width="380" height="54" rx="5"/>
+  <text class="s-b" x="22" y="181">2.1  Python REST API (FastAPI)</text>
+  <text class="s-m" x="22" y="200">false green: 200 with empty body for a missing id</text>
+  <rect class="s-hi" x="10" y="238" width="380" height="54" rx="5"/>
+  <text class="s-b" x="22" y="259">4.3.b-d  Pod: probes, restarts, kubectl</text>
+  <text class="s-m" x="22" y="278">false green: Running, but not Ready (or liveness kills a slow boot)</text>
+  <rect class="s-box" x="10" y="316" width="380" height="30" rx="5"/>
+  <text class="s-b" x="22" y="336">3.5.f-g  Telemetry: is data arriving?</text>
+  <g class="s-ln"><path d="M200 58V80"/><path d="M200 136V158"/><path d="M200 214V236"/><path d="M200 292V314"/></g>
+  <g class="s-ar"><path d="M195 76l5 7 5-7z"/><path d="M195 154l5 7 5-7z"/><path d="M195 232l5 7 5-7z"/><path d="M195 310l5 7 5-7z"/></g>
+</svg>
+<figcaption>Figure 1. The week as one path. Blue layers are this week's units.</figcaption>
+</figure>
+
+<h2 id="depth">2. The week in one table</h2>
+<p>Same question at every layer: what does "healthy" mean, and what fools you?</p>
+<div class="tw"><table>
+<thead><tr><th>Unit</th><th>Healthy signal</th><th>Trap</th><th>First command</th></tr></thead>
+<tbody>
+<tr><td>5.2 TLS</td><td>Handshake verifies against your CA</td><td>Request SAN not copied to the issued cert; CN is not used for service identity</td><td><code>openssl s_client -connect HOST:PORT -verify_ip IP -CAfile ca.pem</code></td></tr>
+<tr><td>2.1 REST API</td><td>Right status and <code>detail</code> body</td><td>Handler returns 200 with nothing; wrong status code on create</td><td><code>curl -i</code>, then <code>/docs</code> and <code>/openapi.json</code></td></tr>
+<tr><td>4.3.b-d Pods</td><td>Ready condition true, endpoints present</td><td>Liveness restarts a slow starter; readiness failure restarts nothing, it only removes the Pod from the Service</td><td><code>kubectl describe pod</code>, <code>kubectl logs POD --previous</code></td></tr>
+<tr><td>3.5.f-g Telemetry</td><td>Receiver connected, data at collector</td><td>Subscription <em>Valid</em> but receiver <em>Connecting</em>; Invalid from one stray <code>/</code> in an XPath</td><td><code>show telemetry ietf subscription &lt;id&gt; detail</code>, <code>show telemetry internal connection</code></td></tr>
+</tbody></table></div>
+
+<h3>Receiver states you must read correctly</h3>
+<p>RFC 8639 defines four receiver states. IOS XE prints its own strings (<code>rcvr-state-connecting</code>, <code>rcvr-state-connected</code> in the 17.5 guide), and the separate <code>show telemetry internal connection</code> shows Active or Connecting per transport connection. These are different views of one pipeline. Do not compare them literally.</p>
+
+<figure class="fig">
+<svg viewBox="0 0 400 200" role="img" aria-labelledby="f2t f2d">
+  <title id="f2t">RFC 8639 receiver states</title>
+  <desc id="f2d">Four receiver states: connecting, active, suspended, disconnected. Connecting moves to disconnected on timeout.</desc>
+  <rect class="s-hi" x="14" y="30" width="110" height="44" rx="5"/><text class="s-b" x="69" y="57" text-anchor="middle">connecting</text>
+  <rect class="s-box" x="276" y="30" width="110" height="44" rx="5"/><text class="s-b" x="331" y="57" text-anchor="middle">active</text>
+  <rect class="s-box" x="276" y="120" width="110" height="44" rx="5"/><text class="s-b" x="331" y="147" text-anchor="middle">suspended</text>
+  <rect class="s-bad" x="14" y="120" width="110" height="44" rx="5"/><text class="s-b" x="69" y="147" text-anchor="middle">disconnected</text>
+  <path class="s-ln" d="M69 74V118"/><path class="s-ar" d="M64 114l5 7 5-7z"/>
+  <text class="s-m" x="78" y="100">publisher times out</text>
+  <text class="s-m" x="200" y="196" text-anchor="middle">other transitions: RFC 8639 s2.5.1, Figure 9 (not redrawn here)</text>
+</svg>
+<figcaption>Figure 2. The one transition worth memorizing: connecting to disconnected on timeout.</figcaption>
+</figure>
+
+<h3>Triage order</h3>
+<p>When a service "doesn't work", walk outside-in and stop at the first failure. This beats starting at the layer you know best.</p>
+<figure class="fig">
+<svg viewBox="0 0 400 450" role="img" aria-labelledby="f3t f3d">
+  <title id="f3t">Outside-in triage flow</title>
+  <desc id="f3d">Four checks in order: TLS, HTTP status, Pod readiness, telemetry. Each failure points at the unit to revisit.</desc>
+  <rect class="s-hi" x="10" y="8" width="230" height="40" rx="5"/><text class="s-b" x="22" y="32">Symptom: client sees nothing or wrong</text>
+  <rect class="s-box" x="10" y="86" width="230" height="52" rx="5"/><text class="s-t" x="22" y="108">TLS verifies by IP and name?</text><text class="s-m" x="22" y="126">s_client -verify_ip / -verify_hostname</text>
+  <rect class="s-box" x="10" y="176" width="230" height="52" rx="5"/><text class="s-t" x="22" y="198">Status and body correct?</text><text class="s-m" x="22" y="216">curl -i, check /openapi.json</text>
+  <rect class="s-box" x="10" y="266" width="230" height="52" rx="5"/><text class="s-t" x="22" y="288">Pod Ready, endpoints present?</text><text class="s-m" x="22" y="306">describe, logs --previous</text>
+  <rect class="s-box" x="10" y="356" width="230" height="52" rx="5"/><text class="s-t" x="22" y="378">Data reaching the collector?</text><text class="s-m" x="22" y="396">subscription detail, internal connection</text>
+  <g class="s-ln"><path d="M125 48V84"/><path d="M125 138V174"/><path d="M125 228V264"/><path d="M125 318V354"/>
+    <path d="M240 112H262"/><path d="M240 202H262"/><path d="M240 292H262"/><path d="M240 382H262"/></g>
+  <g class="s-ar"><path d="M120 80l5 7 5-7z"/><path d="M120 170l5 7 5-7z"/><path d="M120 260l5 7 5-7z"/><path d="M120 350l5 7 5-7z"/></g>
+  <text class="s-m" x="132" y="68">yes</text><text class="s-m" x="132" y="158">yes</text><text class="s-m" x="132" y="248">yes</text><text class="s-m" x="132" y="338">yes</text>
+  <rect class="s-bad" x="262" y="92" width="130" height="40" rx="5"/><text class="s-t" x="270" y="108">no: 5.2</text><text class="s-m" x="270" y="124">SAN, chain, CA</text>
+  <rect class="s-bad" x="262" y="182" width="130" height="40" rx="5"/><text class="s-t" x="270" y="198">no: 2.1</text><text class="s-m" x="270" y="214">handler, status</text>
+  <rect class="s-bad" x="262" y="272" width="130" height="40" rx="5"/><text class="s-t" x="270" y="288">no: 4.3</text><text class="s-m" x="270" y="304">probes, restarts</text>
+  <rect class="s-bad" x="262" y="362" width="130" height="40" rx="5"/><text class="s-t" x="270" y="378">no: 3.5</text><text class="s-m" x="270" y="394">receiver, VRF, XPath</text>
+</svg>
+<figcaption>Figure 3. Outside-in triage. Each "no" names the unit to reread.</figcaption>
+</figure>
+
+<h3>Anatomy: two details that decide the answer</h3>
+<p>The 2.1 and 5.2 items look unrelated until you read the exact lines. The first shows the pattern the FastAPI "Handling Errors" tutorial uses for a 404. The second shows why <code>openssl x509 -req</code> does not carry a CSR's SAN unless you tell it to: the x509 manual says extensions in the request are not copied by default, and <code>-copy_extensions copy</code> changes that.</p>
+<pre><code>raise HTTPException(status_code=404, detail="Item not found")   # body: {"detail": "Item not found"}
+
+openssl x509 -req -in srv.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
+    -copy_extensions copy -out srv.pem                          # keeps the CSR's SAN</code></pre>
+
+<h2 id="breakfix">3. Break/fix</h2>
+<div class="tw"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Client rejects the cert when reaching the server by IP</td><td>IP is only in the CN; service identity comes from SAN (RFC 9525)</td><td><code>openssl s_client -connect IP:PORT -verify_ip IP -CAfile ca.pem</code></td><td>Reissue with an IP SAN in the CSR and copy it with <code>-copy_extensions copy</code> (or <code>-extfile</code>)</td></tr>
+<tr><td>Lookup of a missing id returns 200 with no data</td><td>Handler returns instead of raising</td><td><code>curl -i https://HOST/items/nope</code></td><td><code>raise HTTPException(status_code=404, detail=...)</code></td></tr>
+<tr><td>Pod in CrashLoopBackOff on a slow boot</td><td>Liveness probe fires before the app is up</td><td><code>kubectl describe pod</code>; <code>kubectl logs POD --previous</code></td><td>Add a startup probe with enough failure budget ⚠ numbers from 2026-10-26 page</td></tr>
+<tr><td>Subscription <em>Valid</em>, nothing at the collector</td><td>Receiver stuck Connecting: reachability, port, firewall, or missing source VRF/address</td><td><code>show telemetry internal connection</code>; ping and port test from the device</td><td>Fix path or add source VRF/address; last resort, <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/epc/configuration/xe-17/epc-xe-17-book/nm-packet-capture-xe.html" target="_blank" rel="noopener">Embedded Packet Capture</a> <span class="badge">✅</span></td></tr>
+<tr><td>Subscription <em>Invalid</em></td><td>XPath syntax error, for example an extra <code>/</code> after the module prefix colon</td><td><code>show telemetry ietf subscription &lt;id&gt; detail</code>, read Notes</td><td>Correct the filter and recreate</td></tr>
+</tbody></table></div>
+
+<h2 id="speed">4. Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>openssl x509 -help</code>, <code>openssl req -help</code>: flag lists without a browser. Man pages <code>openssl-x509</code>, <code>openssl-req</code> if installed ⚠.</li>
+<li>FastAPI serves its own reference once running: <code>/docs</code>, <code>/redoc</code>, <code>/openapi.json</code>.</li>
+<li><code>kubectl explain pod.spec.containers.livenessProbe</code> ⚠ no cluster built yet per tracker.</li>
+<li>On Cat8000V, <code>show telemetry ietf subscription ?</code> lists the sub-commands in your release.</li>
+</ul>
+
+<h2 id="drill">5. Integration drill (about 10 min)</h2>
+<div class="card">
+<p><span class="tag">UNITS</span>5.2 + 2.1 + 4.3.c (readiness logic) · optional 3.5.f step</p>
+<p><strong>Target:</strong> Candidate Workstation (Ubuntu 24.04, uv). Optional last step on Cat8000V (17.16). No cluster needed: the readiness check is a shell exit code.</p>
+<p><strong>Requirement.</strong></p>
+<ol>
+<li>Build a lab CA and a server certificate whose SAN contains the workstation IP, signed by that CA.</li>
+<li>Write a FastAPI app with <code>GET /healthz</code> returning <code>{"status":"ok"}</code> and <code>GET /items/{name}</code> that returns 404 with a <code>detail</code> body for an unknown name.</li>
+<li>Serve it over TLS on port 8443. Prove the cert verifies by IP with <code>s_client</code>, then show the 200 and the 404 with <code>curl -i --cacert</code>.</li>
+<li>Write a one-line readiness check from <code>curl</code> that exits 0 when healthy and non-zero when not. Stop the server and show the exit code change.</li>
+<li>Optional: if the TIG dial-out is configured, show the receiver connection as Active on Cat8000V and name the command you used.</li>
+</ol>
+<p><strong>Reference fields:</strong> <code>openssl req -new -newkey -noenc -keyout -subj -addext</code> · <code>openssl x509 -req -CA -CAkey -CAcreateserial -copy_extensions</code> · <code>HTTPException(status_code, detail)</code> · <code>s_client -connect -verify_ip -CAfile</code>.</p>
+<p><strong>Verify:</strong> verification reports success for the IP; <code>/items/nope</code> returns 404 with <code>{"detail": ...}</code>; <code>/openapi.json</code> lists both paths; the readiness command flips exit status when you stop uvicorn.</p>
+<details><summary>Hint</summary>
+<p>Put the IP SAN in the CSR with <code>-addext</code>, then make the signing step keep it. Without that second part the issued cert has no SAN and step 3 fails. For the readiness line, <code>curl</code> has an option that turns HTTP errors into a failing exit code ⚠ confirm in <code>curl --help all</code>.</p></details>
+<details><summary>Solution (⚠ unverified — test in lab)</summary>
+<pre><code>openssl req -x509 -new -newkey rsa:2048 -noenc -keyout ca.key -subj "/CN=lab-ca" -days 30 -out ca.pem
+openssl req -new -newkey rsa:2048 -noenc -keyout srv.key -subj "/CN=ws" \
+    -addext "subjectAltName=IP:10.0.0.5" -out srv.csr
+openssl x509 -req -in srv.csr -CA ca.pem -CAkey ca.key -CAcreateserial \
+    -copy_extensions copy -days 30 -out srv.pem
+
+# app.py
+from fastapi import FastAPI, HTTPException
+app = FastAPI()
+items = {"gi1": "up"}
+
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
+@app.get("/items/{name}")
+async def item(name: str):
+    if name not in items:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return {"item": items[name]}
+
+uvicorn app:app --host 0.0.0.0 --port 8443 --ssl-keyfile srv.key --ssl-certfile srv.pem
+openssl s_client -connect 10.0.0.5:8443 -verify_ip 10.0.0.5 -CAfile ca.pem -verify_return_error -brief
+curl -i --cacert ca.pem https://10.0.0.5:8443/items/nope
+curl -fsS --cacert ca.pem https://10.0.0.5:8443/healthz; echo $?
+
+# optional, Cat8000V
+show telemetry internal connection</code></pre>
+<p class="small">10.0.0.5 is a placeholder; use your workstation IP. The uvicorn TLS flags, <code>-fsS</code> exit behavior, and combining <code>-addext</code> with <code>-copy_extensions</code> were not confirmed against an allowlisted page this run.</p></details>
+</div>
+
+<h2 id="recall">6. Recall check</h2>
+<p>Three per topic. Answer aloud before opening.</p>
+
+<h3>4.3.b-d Pods, probes, kubectl</h3>
+<p class="q">1. A Pod shows CrashLoopBackOff and RESTARTS keeps rising. Which command shows the crashed instance's output, and what are the restart-delay timing facts?</p>
+<details><summary>Answer</summary><p><code>kubectl logs POD --previous</code>. The delay starts at 10 s, doubles, caps at 300 s, and resets after 10 minutes of clean running. ⚠ Numbers verified 2026-10-26 from page source; the rendered page body was not readable today.</p></details>
+<p class="q">2. An app takes 4 minutes to boot and a liveness probe (period 10, threshold 3) keeps killing it. What do you add?</p>
+<details><summary>Answer</summary><p>A startup probe on the same endpoint with period 10 and a failure threshold of at least 24 (for example 30), so the liveness probe only starts after startup succeeds. ⚠ Same caveat as above.</p></details>
+<p class="q">3. Readiness fails on one Pod. Is it restarted, and what happens to Service traffic?</p>
+<details><summary>Answer</summary><p>No restart. Its IP is removed from the Service's endpoints, so it stops receiving traffic. The Probes page summary states that Kubernetes can stop sending traffic to containers that are not ready.</p></details>
+
+<h3>2.1 Python REST API</h3>
+<p class="q">4. A POST handler is declared with <code>item: Item</code> and <code>q: str</code>. Where does each value come from?</p>
+<details><summary>Answer</summary><p><code>item</code> is parsed from the JSON body (a Pydantic model); <code>q</code> is a query-string parameter. ⚠ From the 2026-10-27 page, not re-fetched today.</p></details>
+<p class="q">5. A lookup returns 200 with nothing for a missing id. What is the fix and what shows in the body?</p>
+<details><summary>Answer</summary><p>Raise <code>HTTPException(status_code=404, detail="Item not found")</code>. Body: <code>{"detail": "Item not found"}</code>. The detail value can be any JSON-convertible value, not only a string.</p></details>
+<p class="q">6. Name the three built-in URLs FastAPI serves and what each is.</p>
+<details><summary>Answer</summary><p><code>/docs</code> (Swagger UI), <code>/redoc</code> (ReDoc), <code>/openapi.json</code> (the generated OpenAPI schema that feeds both).</p></details>
+
+<h3>3.5.f-g Confirm and triage telemetry</h3>
+<p class="q">7. Subscription is Valid but <code>show telemetry internal connection</code> says Connecting. Name the checks.</p>
+<details><summary>Answer</summary><p>Ping the receiver from the device, test the receiver port (the Cisco example shows a refused connection), check for a firewall and for the right port number, and on VRF devices set the source VRF or source address. Healthy shows Active.</p></details>
+<p class="q">8. Where do you find why a subscription is Invalid, and what was the cause in the Cisco example?</p>
+<details><summary>Answer</summary><p>The Notes field of <code>show telemetry ietf subscription &lt;id&gt; detail</code>. The XPath had an extra slash after the module prefix colon (<code>/memory-ios-xe-oper:/memory-statistics/...</code> instead of <code>...oper:memory-statistics/...</code>).</p></details>
+<p class="q">9. How many receiver states does RFC 8639 define, and what does a timeout do?</p>
+<details><summary>Answer</summary><p>Four: connecting, active, suspended, disconnected. Timeout is the transition from connecting to disconnected when the publisher cannot reach the receiver. With multiple receivers on one configured subscription, the 17.5 guide says only the first valid receiver is used.</p></details>
+
+<h3>5.2 CSR, CA, TLS web app</h3>
+<p class="q">10. The CSR carried a SAN but the issued cert has none. Why, and name two fixes.</p>
+<details><summary>Answer</summary><p><code>openssl x509 -req</code> ignores request extensions unless told otherwise. Use <code>-copy_extensions copy</code> (or <code>copyall</code>), or supply the extension via <code>-extfile</code>.</p></details>
+<p class="q">11. A browser reaches the app by IP and rejects a cert whose CN is that IP. Why, and how do you reproduce the check with openssl?</p>
+<details><summary>Answer</summary><p>RFC 9525 says the Common Name must not be used to identify a service. An IP identity must match an iPAddress entry in subjectAltName. Reproduce with <code>-verify_ip</code>, which checks only SAN IP entries; <code>-verify_hostname</code> checks DNS SAN and falls back to CN.</p></details>
+<p class="q">12. What do <code>-CA</code> and <code>-CAcreateserial</code> do on <code>openssl x509</code>?</p>
+<details><summary>Answer</summary><p><code>-CA</code> makes the command act as a micro CA and sets the issuer to the CA cert's subject. <code>-CAcreateserial</code> creates the serial-number file if missing and writes a random serial for the new cert.</p></details>
+
+<h2 id="self">7. Self-assessment</h2>
+<p>Tick what you could do cold, on the workstation, in under five minutes. Ticks are not saved. Anything unticked: add <code>weak:</code> to that unit's line in <code>topic-queue.md</code>.</p>
+<ul class="chk">
+<li><label><input type="checkbox" id="c1"><span><strong>4.3.b-d</strong> I can diagnose CrashLoopBackOff, write a startup probe with correct numbers, and say what readiness failure does and does not do.</span></label></li>
+<li><label><input type="checkbox" id="c2"><span><strong>2.1</strong> I can write a FastAPI app with a body model, a 201 create, a 404, and find the endpoints in <code>/openapi.json</code> without notes.</span></label></li>
+<li><label><input type="checkbox" id="c3"><span><strong>3.5.f-g</strong> I can go from "Valid but silent" to a named cause using three commands, including the VRF angle.</span></label></li>
+<li><label><input type="checkbox" id="c4"><span><strong>5.2</strong> I can issue a cert with an IP SAN from a CSR and prove it verifies by IP.</span></label></li>
+<li><label><input type="checkbox" id="c5"><span><strong>Cross-topic</strong> I did the drill and the readiness exit code changed when I stopped the server.</span></label></li>
+</ul>
+<p class="warn">Gap to flag: the tracker shows no Kubernetes cluster and no Cat8000V dial-out to the TIG stack yet. Two of this week's four units have never been exercised in the lab. Building a k3s or kind cluster and finishing the dial-out is a better use of the weekend than rereading.</p>
+
+<h2 id="deeper">8. Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="links">
+<li><a href="https://www.cisco.com/c/en/us/support/docs/ios-nx-os-software/ios-xe-17/217427-configure-model-driven-telemetry-on-cisc.html" target="_blank" rel="noopener">Configure Model-driven Telemetry on Cisco IOS-XE Devices with YANG Suite</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">Tested on IOS XE 17.3.3. Best for the Connecting versus Active check and the Invalid XPath example.</span></li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_ietf_telemetry.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - Model-Driven Telemetry</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">IOS XE 17.5 (lab runs 17.16). Best for show commands, receiver state strings, first-valid-receiver rule.</span></li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/epc/configuration/xe-17/epc-xe-17-book/nm-packet-capture-xe.html" target="_blank" rel="noopener">Embedded Packet Capture Configuration Guide, Cisco IOS XE 17 - Embedded Packet Capture Overview</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">IOS XE 17. Best for proving whether telemetry packets leave the router.</span></li>
+</ul>
+<h3>Standards</h3>
+<ul class="links">
+<li><a href="https://www.rfc-editor.org/rfc/rfc9525" target="_blank" rel="noopener">RFC 9525: Service Identity in TLS</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">RFC. Best for why CN is ignored and how IP identities match.</span></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8639" target="_blank" rel="noopener">RFC 8639: Subscription to YANG Notifications</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">RFC. Best for the receiver state machine in section 2.5.1.</span></li>
+</ul>
+<h3>Third-party</h3>
+<ul class="links">
+<li><a href="https://docs.openssl.org/3.2/man1/openssl-x509/" target="_blank" rel="noopener">openssl-x509 - OpenSSL Documentation</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">OpenSSL 3.2. Best for <code>-req</code>, <code>-CA</code>, <code>-CAcreateserial</code>, <code>-copy_extensions</code>.</span></li>
+<li><a href="https://docs.openssl.org/master/man1/openssl-verification-options/" target="_blank" rel="noopener">openssl-verification-options - OpenSSL Documentation</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">OpenSSL master. Best for <code>-verify_ip</code> and <code>-verify_hostname</code> semantics.</span></li>
+<li><a href="https://fastapi.tiangolo.com/tutorial/handling-errors/" target="_blank" rel="noopener">Handling Errors - FastAPI</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">Current docs, no version shown. Best for HTTPException and the detail body.</span></li>
+<li><a href="https://fastapi.tiangolo.com/tutorial/first-steps/" target="_blank" rel="noopener">First Steps - FastAPI</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">Current docs. Best for <code>fastapi dev</code>, <code>/docs</code>, <code>/redoc</code>, <code>/openapi.json</code>.</span></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/pods/probes/" target="_blank" rel="noopener">Liveness, Readiness, and Startup Probes | Kubernetes</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">Docs main branch (modified 2026-06-30); pin is 1.33. Page body did not render through the fetch tool today; only the summary line was checked.</span></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" target="_blank" rel="noopener">Pod Lifecycle | Kubernetes</a> <span class="badge">✅ verified 2026-10-30</span><span class="m">Docs main branch (modified 2026-07-27); pin is 1.33. Same body-render limit; backoff numbers come from the 2026-10-26 run.</span></li>
+</ul>
+
+<h2 id="footer">Audit</h2>
+<p><strong>Links: 11 ✅ · 0 🔎 · 0 removed</strong></p>
+<p>Unverified claims on this page:</p>
+<ul class="small">
+<li>Restart backoff numbers and startup-probe sizing (Kubernetes page bodies unreadable by the fetch tool today; values from 2026-10-26 source markdown, newer than the 1.33 pin).</li>
+<li>FastAPI body versus query source for <code>item</code> and <code>q</code> (2026-10-27 page, not re-fetched).</li>
+<li>Drill commands: <code>req -x509 -new -newkey -noenc</code> combination, <code>-addext</code> with <code>-copy_extensions copy</code>, <code>subjectAltName=IP:</code> syntax, uvicorn <code>--ssl-keyfile/--ssl-certfile</code>, curl failure-exit behavior, <code>-brief</code> with <code>-verify_return_error</code>.</li>
+<li>Cat8000V 17.16 behavior of <code>show telemetry internal connection</code> and receiver strings (docs are 17.5 and 17.3.3).</li>
+<li>Man pages, <code>kubectl explain</code>, and a Kubernetes cluster on the workstation.</li>
+<li>Exam domain weights (not restated).</li>
+</ul>
+<p><strong>Tomorrow:</strong> no page on Saturday or Sunday. Next page is Monday 2026-11-02, unit 21: 2.8.a-c Terraform loop control, variables, and resource graphs (Tier 3).</p>
+</div>
+
+</body></html>

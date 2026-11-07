@@ -1,0 +1,336 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Python CLI over REST</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single reading column, sticky TOC, sections as numbered layers; accent = signal teal */
+:root{--bg:#f6f8f8;--fg:#14201f;--mut:#5a6b69;--card:#ffffff;--line:#d3dddb;--acc:#0b7a75;--acc2:#b45309;--codebg:#eaf0ef;--ok:#17803d;--warn:#a16207;--bad:#b42318;
+--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1514;--fg:#e2ecea;--mut:#92a8a5;--card:#162120;--line:#2a3b39;--acc:#4fd1c5;--acc2:#f6ad55;--codebg:#101a19;--ok:#4ade80;--warn:#facc15;--bad:#f87171;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1514;--fg:#e2ecea;--mut:#92a8a5;--card:#162120;--line:#2a3b39;--acc:#4fd1c5;--acc2:#f6ad55;--codebg:#101a19;--ok:#4ade80;--warn:#facc15;--bad:#f87171;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--font);margin:0;padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:860px;margin:0 auto}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 0;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px}
+nav a{color:var(--mut);text-decoration:none}nav a:hover{color:var(--acc)}
+a{color:var(--acc)}
+header.card{margin-top:20px;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:18px 20px}
+.eyebrow{font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+h1{font-size:clamp(26px,5vw,36px);line-height:1.15;margin:6px 0 10px;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 10px;font-size:13px;color:var(--mut)}
+.meta span{border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+h2{font-size:22px;margin:40px 0 10px;text-wrap:balance;border-top:1px solid var(--line);padding-top:20px}
+h3{font-size:17px;margin:22px 0 6px}
+.lay{font:600 12px var(--mono);color:var(--acc2);letter-spacing:.06em;text-transform:uppercase}
+p,li{max-width:70ch}
+ul{padding-left:20px}li{margin:4px 0}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font:600 12px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+tr:last-child td{border-bottom:0}
+pre{background:var(--codebg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;font:13px/1.5 var(--mono);margin:10px 0}
+code{font-family:var(--mono);font-size:.9em}
+p code,li code,td code{background:var(--codebg);padding:1px 5px;border-radius:4px}
+svg{width:100%;height:auto;display:block;max-width:480px;margin:12px auto}
+.fig{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px;margin:14px 0}
+.cap{font-size:13px;color:var(--mut);text-align:center}
+.s-box{fill:var(--card);stroke:var(--acc);stroke-width:1.5}
+.s-box2{fill:var(--codebg);stroke:var(--line);stroke-width:1.2}
+.s-hot{fill:var(--codebg);stroke:var(--acc2);stroke-width:1.5}
+.s-t{fill:var(--fg);font:13px var(--font)}.s-m{fill:var(--mut);font:11px var(--font)}.s-b{fill:var(--fg);font:600 13px var(--font)}
+.s-l{stroke:var(--mut);stroke-width:1.3;fill:none}.s-ac{stroke:var(--acc);stroke-width:1.8;fill:none}.s-ah{fill:var(--acc)}.s-bad{fill:var(--bad);font:600 11px var(--font)}
+details{border:1px solid var(--line);border-radius:8px;background:var(--card);margin:8px 0;padding:6px 12px}
+summary{cursor:pointer;font-weight:600;font-size:14px}
+.badge{display:inline-block;font:600 11px var(--mono);border-radius:4px;padding:1px 6px;margin-right:6px;border:1px solid var(--line)}
+.b-ok{color:var(--ok)}.b-warn{color:var(--warn)}
+.ref{list-style:none;padding:0}.ref li{border-bottom:1px solid var(--line);padding:8px 0}
+.ref small{display:block;color:var(--mut)}
+.snap{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:8px;padding:6px 16px}
+footer{margin-top:40px;border-top:1px solid var(--line);padding-top:16px;font-size:14px;color:var(--mut)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+</style>
+<div class="wrap">
+<nav><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anatomy">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+
+<header class="card">
+<div class="eyebrow">2026-11-05 · Thursday</div>
+<h1>Blueprint 2.2: a Python CLI that wraps a REST API</h1>
+<div class="meta"><span>Domain 2 (weight ⚠ unverified)</span><span>Tier 1 (gap)</span><span>Unit 24 of 49</span><span>~18 min read</span><span>Lab: Cat8000V RESTCONF</span></div>
+</header>
+
+<h2 id="snap">Mental snapshot</h2>
+<div class="snap"><ul>
+<li>A CLI app is five thin layers: parse argv, resolve config and credentials, call the API, check status, render output. Each layer fails differently, so each gets its own exit code or message.</li>
+<li><code>argparse</code> is stdlib, so it runs on the workstation with nothing installed. It exits with status 2 on bad arguments by itself.</li>
+<li><code>requests</code> has no default timeout and no default retries. You add both, every time.</li>
+<li>HTTP success is not <code>r.json()</code> success. A 204 has no body and a 500 can carry JSON. Check status first, parse second.</li>
+<li>Data goes to stdout, diagnostics go to stderr, and the exit status tells a calling script what happened. That is what makes the tool pipeable.</li>
+<li>Credentials come from environment variables or a prompt, never from a flag you type into shell history.</li>
+<li>Paginated APIs (Meraki) hand you the next page in a <code>Link</code> header, and <code>requests</code> parses it into <code>r.links</code>.</li>
+</ul></div>
+
+<h2 id="fit">Where this fits</h2>
+<div class="fig">
+<svg viewBox="0 0 380 270" role="img" aria-label="Blueprint neighbors and tool chain for item 2.2">
+<text class="s-m" x="10" y="16">BLUEPRINT NEIGHBORS (domain 2)</text>
+<rect class="s-box2" x="10" y="24" width="105" height="46" rx="6"/><text class="s-b" x="18" y="44">2.1 REST API</text><text class="s-m" x="18" y="60">you build the server</text>
+<rect class="s-hot" x="137" y="24" width="106" height="46" rx="6"/><text class="s-b" x="145" y="44">2.2 CLI app</text><text class="s-m" x="145" y="60">you build the client</text>
+<rect class="s-box2" x="265" y="24" width="105" height="46" rx="6"/><text class="s-b" x="273" y="44">2.3 new API</text><text class="s-m" x="273" y="60">read docs, call it</text>
+<path class="s-l" d="M115 47H137M243 47H265"/>
+<rect class="s-box2" x="10" y="82" width="170" height="38" rx="6"/><text class="s-t" x="18" y="106">2.4–2.6 RESTCONF / NETCONF</text>
+<rect class="s-box2" x="198" y="82" width="172" height="38" rx="6"/><text class="s-t" x="206" y="106">3.1 scripts against APIs</text>
+<path class="s-l" d="M190 70V82"/>
+<text class="s-m" x="10" y="150">TOOL CHAIN INSIDE ONE RUN</text>
+<rect class="s-box" x="10" y="158" width="68" height="40" rx="6"/><text class="s-t" x="18" y="183">argparse</text>
+<rect class="s-box" x="96" y="158" width="68" height="40" rx="6"/><text class="s-t" x="104" y="183">config</text>
+<rect class="s-box" x="182" y="158" width="86" height="40" rx="6"/><text class="s-t" x="190" y="183">Session</text>
+<rect class="s-box" x="286" y="158" width="84" height="40" rx="6"/><text class="s-t" x="294" y="183">render</text>
+<path class="s-ac" d="M78 178H96M164 178H182M268 178H286"/>
+<rect class="s-box2" x="182" y="214" width="188" height="40" rx="6"/><text class="s-t" x="190" y="232">Cat8000V /restconf</text><text class="s-m" x="190" y="247">IOS XE 17.16 in lab</text>
+<path class="s-ac" d="M225 198V214"/>
+</svg>
+<div class="cap">The blueprint text is "Build/manage/operate a Python-based CLI app that uses a REST API." Verb: build and operate, so expect to write one and fix a broken one.</div>
+</div>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+<div class="lay">L1 · Concept</div>
+<p>A CLI over a REST API translates a command line into HTTP and back. <code>devcli get logging</code> becomes a GET with headers, a timeout and credentials, and the response becomes text on stdout. Everything interesting is in the seams: what happens when argv is wrong, the device is unreachable, the certificate is self-signed, the server says 401, or the body is empty.</p>
+<p>You already know the server side of this from RESTCONF. On IOS XE 17.5 the root is <code>/restconf</code>, the media types are <code>application/yang-data+json</code> and <code>+xml</code>, and the verbs map as GET read, PATCH update, PUT create or replace, POST create or invoke, DELETE remove (<a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">RESTCONF Protocol, 17.5</a>). The client's job is to speak that correctly and report failures honestly.</p>
+
+<div class="lay">L2 · Mechanics</div>
+<h3>Parsing</h3>
+<p>Build one parser with subcommands. <code>add_subparsers(dest=..., required=True)</code> makes the subcommand mandatory; <code>required</code> defaults to False, so without it a bare invocation parses fine and your dispatch crashes. <code>set_defaults(func=handler)</code> on each subparser lets you call <code>args.func(args)</code> with no if-chain (<a href="https://docs.python.org/3/library/argparse.html" target="_blank" rel="noopener">argparse reference</a>). Invalid arguments print usage to stderr and exit with status 2 on their own. <code>choices=</code> is checked after <code>type=</code> conversion, and a <code>type</code> function that raises <code>ArgumentTypeError</code>, <code>TypeError</code> or <code>ValueError</code> becomes a clean usage error; other exceptions are not caught.</p>
+<p>The tutorial covers the option shapes you need: positional versus optional, <code>action="store_true"</code> for flags, mutually exclusive groups for <code>--quiet</code> versus <code>--verbose</code>, and <code>action="count"</code> for <code>-vvv</code>. With <code>count</code>, set <code>default=0</code>, otherwise an unused option is <code>None</code> and the comparison raises <code>TypeError</code> (<a href="https://docs.python.org/3/howto/argparse.html" target="_blank" rel="noopener">Argparse Tutorial</a>).</p>
+
+<h3>Config and credentials</h3>
+<p>Resolve in a fixed order: flag, then environment variable, then prompt. Use <code>getpass.getpass()</code> for the prompt; it does not echo, and if echo-free input is unavailable it warns and reads from stdin (<a href="https://docs.python.org/3.13/library/getpass.html" target="_blank" rel="noopener">getpass, 3.13</a>). Keep the password out of argv. Anything on the command line lands in shell history and the process list (general practice ⚠, not from a fetched page).</p>
+
+<h3>Calling the API</h3>
+<p>Use one <code>requests.Session</code> per run. It keeps headers, auth and cookies on the object and reuses the TCP connection; method-level arguments override session values for that call only (<a href="https://requests.readthedocs.io/en/latest/user/advanced/" target="_blank" rel="noopener">Requests: Advanced Usage</a>). Three defaults bite:</p>
+<ul>
+<li><b>No timeout.</b> "If no timeout is specified explicitly, requests do not time out." Pass <code>timeout=(connect, read)</code>. The read value is the gap between bytes, not a wall-clock limit.</li>
+<li><b>No retries.</b> Mount an <code>HTTPAdapter</code> with urllib3 <code>Retry</code> if you want them. Be careful with non-idempotent verbs.</li>
+<li><b>Verification is on.</b> A self-signed Cat8000V raises <code>SSLError</code>. Point <code>verify=</code> at a CA file, or set <code>REQUESTS_CA_BUNDLE</code>. <code>verify=False</code> disables checking and the docs warn it opens you to man-in-the-middle attacks.</li>
+</ul>
+<p>Then the response (<a href="https://requests.readthedocs.io/en/latest/user/quickstart/" target="_blank" rel="noopener">Requests: Quickstart</a>). <code>raise_for_status()</code> raises <code>HTTPError</code> for 4xx and 5xx. <code>r.json()</code> raises <code>requests.exceptions.JSONDecodeError</code> on a 204 or invalid JSON, and a JSON body does not mean success, since servers can return error details as JSON with a 500. Order: status, then body.</p>
+
+<h3>Pagination and async tasks</h3>
+<p>Meraki paginates with <code>perPage</code>, <code>startingAfter</code> and <code>endingBefore</code>, and returns a <code>Link</code> header with <code>first</code>, <code>prev</code>, <code>next</code> and <code>last</code> relations (<a href="https://developer.cisco.com/meraki/api-v1/pagination/" target="_blank" rel="noopener">Meraki pagination</a>). Requests parses that header into <code>r.links</code>, so following pages is <code>r.links.get("next")</code> until it is absent. Catalyst Center works differently: write calls return a <code>taskId</code>, you GET <code>/api/v1/task/&lt;id&gt;</code> and read <code>isError</code>; auth is a Basic POST to <code>/dna/system/api/v1/auth/token</code> and then an <code>X-Auth-Token</code> header on every call (<a href="https://developer.cisco.com/docs/catalyst-center/api-quick-start/" target="_blank" rel="noopener">API Quick Start, 3.1.6</a>). A CLI for that API needs a <code>--wait</code> flag for the poll loop.</p>
+
+<div class="fig">
+<svg viewBox="0 0 380 440" role="img" aria-label="Flow of one CLI run with exit codes">
+<text class="s-m" x="10" y="16">ONE RUN, TOP TO BOTTOM</text>
+<rect class="s-box" x="10" y="26" width="200" height="44" rx="6"/><text class="s-b" x="20" y="46">1 parse argv</text><text class="s-m" x="20" y="62">argparse, choices, required subcommand</text>
+<rect class="s-hot" x="240" y="30" width="130" height="36" rx="6"/><text class="s-bad" x="250" y="46">exit 2</text><text class="s-m" x="250" y="60">usage to stderr</text>
+<path class="s-l" d="M210 48H240"/>
+<rect class="s-box" x="10" y="90" width="200" height="44" rx="6"/><text class="s-b" x="20" y="110">2 config + credentials</text><text class="s-m" x="20" y="126">flag, env var, getpass</text>
+<rect class="s-hot" x="240" y="94" width="130" height="36" rx="6"/><text class="s-bad" x="250" y="110">exit 2 or 1</text><text class="s-m" x="250" y="124">missing host/user</text>
+<path class="s-l" d="M210 112H240"/>
+<rect class="s-box" x="10" y="154" width="200" height="44" rx="6"/><text class="s-b" x="20" y="174">3 request</text><text class="s-m" x="20" y="190">Session, headers, timeout, verify</text>
+<rect class="s-hot" x="240" y="158" width="130" height="36" rx="6"/><text class="s-bad" x="250" y="174">exit 3 (yours)</text><text class="s-m" x="250" y="188">Timeout, SSLError</text>
+<path class="s-l" d="M210 176H240"/>
+<rect class="s-box" x="10" y="218" width="200" height="44" rx="6"/><text class="s-b" x="20" y="238">4 check status</text><text class="s-m" x="20" y="254">raise_for_status, then body</text>
+<rect class="s-hot" x="240" y="222" width="130" height="36" rx="6"/><text class="s-bad" x="250" y="238">exit 1</text><text class="s-m" x="250" y="252">HTTPError: 401, 404, 500</text>
+<path class="s-l" d="M210 240H240"/>
+<rect class="s-box" x="10" y="282" width="200" height="44" rx="6"/><text class="s-b" x="20" y="302">5 decode + render</text><text class="s-m" x="20" y="318">204 = no body; json.dumps</text>
+<rect class="s-box2" x="240" y="286" width="130" height="36" rx="6"/><text class="s-b" x="250" y="302">exit 0</text><text class="s-m" x="250" y="316">data on stdout</text>
+<path class="s-l" d="M210 304H240"/>
+<path class="s-ac" d="M110 70V90M110 134V154M110 198V218M110 262V282"/>
+<text class="s-m" x="10" y="356">Streams: data on stdout. Logs, warnings, error text on stderr.</text>
+<text class="s-m" x="10" y="374">Exit 2 for syntax errors and 1 for other errors is the Unix</text>
+<text class="s-m" x="10" y="388">convention the sys docs cite. Codes above 2 are a house choice.</text>
+<text class="s-m" x="10" y="412">Rule: every red box is a test you can run in the lab.</text>
+</svg>
+<div class="cap">The exit-code map is the design. Write it before the code.</div>
+</div>
+
+<div class="lay">L3 · Exam detail</div>
+<div class="tw"><table>
+<tr><th>Choice</th><th>argparse</th><th>click</th><th>typer</th></tr>
+<tr><td>Install needed</td><td>No, stdlib</td><td>Yes (installed on workstation ⚠ unverified)</td><td>Yes (⚠ unverified)</td></tr>
+<tr><td>Subcommands</td><td><code>add_subparsers</code> + <code>set_defaults(func=)</code></td><td><code>@click.group()</code> + <code>@group.command()</code></td><td>Built on click, from type hints</td></tr>
+<tr><td>Bad usage</td><td>stderr usage, exit 2</td><td>Own usage error handling (exit code ⚠ not on fetched page)</td><td>Same family as click ⚠</td></tr>
+<tr><td>Packaging doc says</td><td>Fine for most needs, more code</td><td>Recommended for advanced users</td><td>Used in the guide's example</td></tr>
+<tr><td>Exam pick</td><td><b>Default choice</b></td><td>Only if you know it is present</td><td>Same</td></tr>
+</table></div>
+<p>The packaging guide frames it the same way: argparse is in the standard library and covers most needs, click is the advanced option, and typer sits on top of click (<a href="https://packaging.python.org/en/latest/guides/creating-command-line-tools/" target="_blank" rel="noopener">Creating and packaging command-line tools</a>). In click, options belong to the command that defines them, so they go after the subcommand name (<a href="https://click.palletsprojects.com/en/stable/commands-and-groups/" target="_blank" rel="noopener">Click: Commands and Groups</a>). Under exam pressure, use the library that cannot be missing.</p>
+<p>Exit status mechanics: <code>sys.exit(0)</code> or <code>sys.exit()</code> is success, an integer is the status, and a string is printed to stderr with status 1. <code>finally</code> blocks still run (<a href="https://docs.python.org/3.13/library/sys.html" target="_blank" rel="noopener">sys, 3.13</a>). Logging goes through <code>logging</code>; with no configuration, warnings and above already print to stderr via the last-resort handler, and <code>basicConfig(level=...)</code> sets the root level, which is WARNING by default (<a href="https://docs.python.org/3.13/library/logging.html" target="_blank" rel="noopener">logging, 3.13</a>). Map <code>-v</code> counts to levels and nothing else needs to change. For output, <code>json.dumps(obj, indent=2, sort_keys=True)</code> gives stable, readable text, and <code>python -m json.tool</code> validates what you printed (<a href="https://docs.python.org/3.13/library/json.html" target="_blank" rel="noopener">json, 3.13</a>).</p>
+<p>Two version notes. The argparse pages fetched are Python 3.15.2 docs and the pin is 3.13; everything used here is old API (<code>add_subparsers(required=)</code> arrived in 3.7), but <code>prog</code> defaults changed in 3.14, so help text may differ. Requests docs are 2.34.2; the workstation version is unknown.</p>
+
+<div class="fig">
+<svg viewBox="0 0 380 330" role="img" aria-label="Sequence: CLI, Session, API with pagination loop">
+<text class="s-b" x="40" y="18">CLI</text><text class="s-b" x="160" y="18">Session</text><text class="s-b" x="290" y="18">API</text>
+<path class="s-l" d="M60 26V320M180 26V320M310 26V320" stroke-dasharray="4 4"/>
+<path class="s-ac" d="M60 52H176"/><polygon class="s-ah" points="176,48 184,52 176,56"/><text class="s-m" x="66" y="46">get(url, timeout=(3.05,27))</text>
+<path class="s-ac" d="M180 80H306"/><polygon class="s-ah" points="306,76 314,80 306,84"/><text class="s-m" x="186" y="74">GET + Accept + auth</text>
+<path class="s-l" d="M308 112H184"/><polygon points="188,108 180,112 188,116" fill="var(--mut)"/><text class="s-m" x="186" y="106">200 + Link: rel="next"</text>
+<path class="s-l" d="M176 140H64"/><polygon points="68,136 60,140 68,144" fill="var(--mut)"/><text class="s-m" x="66" y="134">raise_for_status, r.json()</text>
+<rect class="s-hot" x="20" y="158" width="340" height="86" rx="6" fill="none"/><text class="s-m" x="28" y="174">loop while r.links.get("next")</text>
+<path class="s-ac" d="M180 196H306"/><polygon class="s-ah" points="306,192 314,196 306,200"/><text class="s-m" x="186" y="190">GET next url</text>
+<path class="s-l" d="M308 228H184"/><polygon points="188,224 180,228 188,232" fill="var(--mut)"/><text class="s-m" x="186" y="222">200 (last page: no next)</text>
+<path class="s-l" d="M176 290H64"/><polygon points="68,286 60,290 68,294" fill="var(--mut)"/><text class="s-m" x="66" y="284">list of all items</text>
+<text class="s-m" x="66" y="312">print to stdout, exit 0</text>
+</svg>
+<div class="cap">Meraki-style pagination. Cat8000V RESTCONF has no such loop; the same skeleton just runs once.</div>
+</div>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Annotated fragments, pinned to Python 3.13 and Requests 2.x. These show the shape, not the drill answer.</p>
+<pre><code># parser: required subcommand, dispatch by set_defaults
+p = argparse.ArgumentParser(prog="devcli")
+p.add_argument("-v", "--verbose", action="count", default=0)   # default=0, or None breaks comparisons
+sub = p.add_subparsers(dest="cmd", required=True)              # required=True or args.func may not exist
+g = sub.add_parser("get", help="GET a RESTCONF path")
+g.add_argument("path")
+g.add_argument("--format", choices=["json", "raw"], default="json")
+g.set_defaults(func=cmd_get)
+args = p.parse_args()                                          # bad input: usage on stderr, exit 2</code></pre>
+<pre><code># client: one Session, explicit timeout, status before body
+s = requests.Session()
+s.headers.update({"Accept": "application/yang-data+json"})    # media type per 17.5 RESTCONF guide
+s.auth = (user, pw)                                            # basic auth, as the guide's examples use
+r = s.get(f"https://{host}/restconf/data/{path}", timeout=(3.05, 27))
+r.raise_for_status()                                           # HTTPError on 4xx/5xx
+body = r.json() if r.content else None                         # 204 has no body ⚠ r.content check is my idiom</code></pre>
+<pre><code># entrypoint: map failure classes to exit codes, data to stdout, text to stderr
+def main():
+    try:
+        args = build_parser().parse_args()
+        return args.func(args)
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP error: {e}", file=sys.stderr); return 1
+    except requests.exceptions.Timeout:
+        print("timed out", file=sys.stderr); return 3
+if __name__ == "__main__":
+    sys.exit(main())</code></pre>
+<pre><code># packaging: installable command name (Packaging User Guide form)
+[project.scripts]
+devcli = "devcli.cli:main"</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Command hangs when the device is down or filtered</td><td>No <code>timeout</code>; requests waits forever by default</td><td><code>time python -m devcli ...</code> against a dead IP; Ctrl-C trace shows socket read</td><td><code>timeout=(3.05, 27)</code> on every call, or set it once in a wrapper</td></tr>
+<tr><td><code>SSLError</code> against Cat8000V</td><td>Verification on by default; device cert is not trusted</td><td><code>curl -v https://HOST/restconf/</code> shows the verify failure</td><td><code>verify="/path/ca.pem"</code> or <code>REQUESTS_CA_BUNDLE</code>; <code>verify=False</code> only as a labelled lab shortcut</td></tr>
+<tr><td><code>JSONDecodeError</code> after a successful PUT, PATCH or DELETE</td><td>RESTCONF returns 204 with no body for those; <code>r.json()</code> fails on empty</td><td>Print <code>r.status_code</code> and <code>len(r.content)</code></td><td>Check status and body before decoding</td></tr>
+<tr><td>Exit code 0 with a 401 message on screen</td><td>No <code>raise_for_status()</code>; error JSON parsed like data</td><td><code>devcli get x; echo $?</code></td><td>Call <code>raise_for_status()</code> first; return 1 from the handler</td></tr>
+<tr><td><code>AttributeError: 'Namespace' object has no attribute 'func'</code></td><td><code>add_subparsers</code> without <code>required=True</code>, run with no subcommand</td><td><code>devcli</code> alone, no args</td><td><code>required=True</code> on <code>add_subparsers</code></td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (workstation, offline)</h2>
+<ul>
+<li><code>python -m pydoc argparse</code> or <code>python -c "import argparse; help(argparse.ArgumentParser.add_subparsers)"</code> gives signatures offline. ⚠ pydoc output on the workstation untested.</li>
+<li><code>python -m devcli --help</code> and <code>python -m devcli get --help</code> prove the parser before any network call. Needs a <code>__main__.py</code>; the packaging guide shows that layout.</li>
+<li><code>python -m json.tool</code> after a pipe checks that stdout is clean JSON: <code>devcli get logging/monitor/severity | python -m json.tool</code>.</li>
+<li><code>echo $?</code> after each failure case. Test all five red boxes from the flow figure.</li>
+<li><code>python -c "import requests; print(requests.__version__)"</code> to confirm the library is present before relying on it. ⚠ not confirmed on the Candidate Workstation.</li>
+<li><code>curl -k -u user https://HOST/restconf/data/... -H 'Accept: application/yang-data+json'</code> as a control: if curl works and the CLI does not, the bug is yours.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 minutes)</h2>
+<p><b>Target:</b> Cat8000V (IOS XE 17.16), RESTCONF enabled with <code>restconf</code> and <code>ip http secure-server</code>. IOSv and IOSvL2 have no RESTCONF; do not use them.</p>
+<p><b>Requirement:</b> write <code>devcli</code> with two subcommands. <code>get PATH</code> prints the RESTCONF response as sorted, indented JSON on stdout. <code>status</code> prints just the HTTP status code. Host from <code>--host</code> or <code>DEVCLI_HOST</code>; user from <code>--user</code> or <code>DEVCLI_USER</code>; password from <code>DEVCLI_PASS</code> or a prompt. Exit codes: 0 success, 1 HTTP error, 2 usage, 3 timeout or TLS failure. Errors to stderr only.</p>
+<p><b>Reference:</b> URI <code>https://HOST/restconf/data/Cisco-IOS-XE-native:native/logging/monitor/severity</code> (example from the 17.5 guide; present on 17.16 ⚠). Header <code>Accept: application/yang-data+json</code>.</p>
+<p><b>Verify:</b></p>
+<ul>
+<li><code>devcli get Cisco-IOS-XE-native:native/logging/monitor/severity | python -m json.tool</code> succeeds; <code>echo $?</code> is 0.</li>
+<li>Wrong password: nothing on stdout, message on stderr, status 1.</li>
+<li>Unroutable host: returns in under about 30 seconds with status 3.</li>
+<li>No subcommand: usage, status 2.</li>
+<li>Missing path on the device: status 1, not a traceback.</li>
+</ul>
+<details><summary>Hint</summary><p>Build the parser first and test <code>--help</code>. Make one function <code>call(args)</code> that returns the Response, and have both handlers use it. Catch exceptions in <code>main()</code> only. Use <code>requests.exceptions.Timeout</code> and <code>SSLError</code> for the 3 case. ⚠ whether <code>SSLError</code> is a subclass of another exception you also catch: test in lab.</p></details>
+<details><summary>Solution (⚠ unverified — test in lab)</summary>
+<pre><code>import argparse, getpass, json, os, sys
+import requests
+
+def call(a):
+    pw = os.environ.get("DEVCLI_PASS") or getpass.getpass("Password: ")
+    s = requests.Session()
+    s.headers.update({"Accept": "application/yang-data+json"})
+    s.auth = (a.user, pw)
+    url = f"https://{a.host}/restconf/data/{a.path}"
+    return s.get(url, timeout=(3.05, 27), verify=a.verify)
+
+def cmd_get(a):
+    r = call(a); r.raise_for_status()
+    print(json.dumps(r.json() if r.content else None, indent=2, sort_keys=True))
+    return 0
+
+def cmd_status(a):
+    print(call(a).status_code); return 0
+
+def parser():
+    p = argparse.ArgumentParser(prog="devcli")
+    p.add_argument("--host", default=os.environ.get("DEVCLI_HOST"))
+    p.add_argument("--user", default=os.environ.get("DEVCLI_USER"))
+    p.add_argument("--verify", default=True)   # pass a CA file path; lab shortcut: False is not parseable here
+    sub = p.add_subparsers(dest="cmd", required=True)
+    g = sub.add_parser("get"); g.add_argument("path"); g.set_defaults(func=cmd_get)
+    st = sub.add_parser("status"); st.add_argument("path"); st.set_defaults(func=cmd_status)
+    return p
+
+def main():
+    a = parser().parse_args()
+    if not (a.host and a.user):
+        print("host and user required", file=sys.stderr); return 2
+    try:
+        return a.func(a)
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP error: {e}", file=sys.stderr); return 1
+    except (requests.exceptions.Timeout, requests.exceptions.SSLError) as e:
+        print(f"transport error: {e}", file=sys.stderr); return 3
+
+if __name__ == "__main__":
+    sys.exit(main())</code></pre></details>
+
+<h2 id="recall">Recall check</h2>
+<p><b>Today</b></p>
+<ol>
+<li>Running your CLI with no arguments crashes with <code>AttributeError</code> on <code>args.func</code>. Why, and what is the fix?
+<details><summary>Answer</summary><p><code>add_subparsers</code> defaults to <code>required=False</code>, so a bare run parses and no subparser set <code>func</code>. Pass <code>required=True</code>; argparse then prints usage and exits 2.</p></details></li>
+<li>A request hangs against a powered-off router. What is the library default and what do you pass?
+<details><summary>Answer</summary><p>No timeout by default. Pass <code>timeout=</code>, as one number or a <code>(connect, read)</code> tuple. The read value is time between bytes, not total time.</p></details></li>
+<li>A PATCH succeeds but your code raises <code>JSONDecodeError</code>. Why, and what order do you check things in?
+<details><summary>Answer</summary><p>RESTCONF returns 204 No Content for PUT, PATCH and DELETE, and <code>r.json()</code> raises on an empty body. Check status (<code>raise_for_status</code>), then check there is a body, then decode.</p></details></li>
+<li>Which stream carries data and which carries errors, and what exit statuses do argparse errors and <code>sys.exit("msg")</code> give?
+<details><summary>Answer</summary><p>Data to stdout, errors and logs to stderr. Argparse usage errors exit 2. <code>sys.exit("msg")</code> prints the string to stderr and exits 1.</p></details></li>
+</ol>
+<p><b>From earlier pages</b></p>
+<ol start="5">
+<li>(2026-10-28) A subscription says Valid but <code>show telemetry internal connection</code> says Connecting. Name three checks and the VRF-related settings.
+<details><summary>Answer</summary><p>Ping the receiver, test the receiver port from a host, check firewall and port number. VRF settings: source VRF and source address on the subscription. (Restated from the 10-28 history entry.)</p></details></li>
+<li>(2026-11-02) How many graph nodes does <code>terraform apply</code> walk in parallel by default, what changes it, and what does <code>depends_on</code> cost?
+<details><summary>Answer</summary><p>10; <code>-parallelism</code> changes it; <code>depends_on</code> makes plans more conservative, with more replacements and more known-after-apply values. (Restated from the 11-02 history entry.)</p></details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="ref">
+<li><span class="badge b-ok">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x, RESTCONF Protocol</a><small>IOS XE 17.5 · verified 2026-11-05 · Best for: media types, verb semantics, 200/201/204 examples, depth and fields.</small></li>
+<li><span class="badge b-ok">✅</span><a href="https://developer.cisco.com/docs/catalyst-center/api-quick-start/" target="_blank" rel="noopener">API Quick Start - Cisco Catalyst Center API 3.1.6</a><small>3.1.6 · verified 2026-11-05 · Best for: token POST, X-Auth-Token, taskId polling with isError.</small></li>
+<li><span class="badge b-ok">✅</span><a href="https://developer.cisco.com/meraki/api-v1/pagination/" target="_blank" rel="noopener">Pagination - Meraki Dashboard API v1</a><small>v1 · verified 2026-11-05 · Best for: perPage, startingAfter, Link header relations.</small></li>
+</ul>
+<h3>Standards</h3>
+<p>None fetched this run. Search: "RFC 8040 RESTCONF Protocol" if you want the status-code rules at the source.</p>
+<h3>Third-party</h3>
+<ul class="ref">
+<li><span class="badge b-ok">✅</span><a href="https://docs.python.org/3/library/argparse.html" target="_blank" rel="noopener">argparse — Parser for command-line options, arguments and subcommands</a><small>Python 3.15.2 docs (pin 3.13) · verified 2026-11-05 · Best for: subparsers, set_defaults, exit status 2, type/choices.</small></li>
+<li><span class="badge b-ok">✅</span><a href="https://requests.readthedocs.io/en/latest/user/advanced/" target="_blank" rel="noopener">Advanced Usage — Requests 2.34.2</a><small>Requests 2.34.2 · verified 2026-11-05 · Best for: Session, verify, timeouts, Retry, r.links.</small></li>
+<li><span class="badge b-ok">✅</span><a href="https://requests.readthedocs.io/en/latest/user/quickstart/" target="_blank" rel="noopener">Quickstart — Requests 2.34.2</a><small>Requests 2.34.2 · verified 2026-11-05 · Best for: raise_for_status, json() failure modes, params.</small></li>
+<li><span class="badge b-ok">✅</span><a href="https://packaging.python.org/en/latest/guides/creating-command-line-tools/" target="_blank" rel="noopener">Creating and packaging command-line tools - Python Packaging User Guide</a><small>current · verified 2026-11-05 · Best for: [project.scripts], src layout, __main__.py.</small></li>
+<li><span class="badge b-ok">✅</span><a href="https://docs.python.org/3/howto/argparse.html" target="_blank" rel="noopener">Argparse Tutorial</a><small>Python 3.15.2 docs · verified 2026-11-05 · Best for: flags, count verbosity, mutually exclusive options.</small></li>
+</ul>
+<p>Also cited inline and verified: <a href="https://click.palletsprojects.com/en/stable/commands-and-groups/" target="_blank" rel="noopener">Click: Basic Commands, Groups, Context (8.5.x)</a>, <a href="https://docs.python.org/3.13/library/getpass.html" target="_blank" rel="noopener">getpass (3.13)</a>, <a href="https://docs.python.org/3.13/library/sys.html" target="_blank" rel="noopener">sys (3.13)</a>, <a href="https://docs.python.org/3.13/library/logging.html" target="_blank" rel="noopener">logging (3.13)</a>, <a href="https://docs.python.org/3.13/library/json.html" target="_blank" rel="noopener">json (3.13)</a>.</p>
+
+<footer>
+<p><b>Links: 13 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified, test in lab:</b> Domain 2 weight; <code>Cisco-IOS-XE-native:native/logging/monitor/severity</code> on 17.16; click, typer and requests present on the Candidate Workstation; pydoc offline output; <code>r.content</code> emptiness check as the 204 test; whether SSLError is caught by the Timeout clause (it is not in the solution); passing <code>--verify</code> as a string path; password-in-argv risk (general practice); click usage-error exit code; Retry default method list; Cat8000V certificate trust state; Meraki list responses being plain arrays; exit codes above 2 are a house convention.</p>
+<p><b>Version flags:</b> argparse and tutorial pages are Python 3.15.2 vs pin 3.13; getpass, sys, logging, json are 3.13; Requests docs 2.34.2; Click docs 8.5.x; Cisco RESTCONF guide 17.5 vs lab 17.16.</p>
+<p><b>Tomorrow:</b> Friday weekly review 6 (units 21–24: Terraform loops/variables/graph, pyATS testbed, OAuth2 tokens, this CLI page).</p>
+</footer>
+</div>
+
+</body></html>

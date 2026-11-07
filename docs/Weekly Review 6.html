@@ -1,0 +1,354 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Weekly Review 6</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single column, sticky TOC, review sheets per unit, workbook drill. */
+:root{--bg:#f6f7f9;--fg:#15202b;--muted:#566474;--card:#ffffff;--line:#d5dbe3;--accent:#0b6bcb;--accent-soft:#e3effb;--ok:#14733f;--warn:#9a5b00;--code-bg:#eef1f5;--svg-a:#0b6bcb;--svg-b:#14733f;--svg-c:#9a5b00;--svg-d:#7a3fb0;--svg-fill:#ffffff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f151c;--fg:#e3e9f0;--muted:#98a6b6;--card:#171f29;--line:#2c3744;--accent:#5aa7f0;--accent-soft:#16283a;--ok:#4cc081;--warn:#e0a24a;--code-bg:#1b2430;--svg-a:#5aa7f0;--svg-b:#4cc081;--svg-c:#e0a24a;--svg-d:#b98ae8;--svg-fill:#171f29;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f151c;--fg:#e3e9f0;--muted:#98a6b6;--card:#171f29;--line:#2c3744;--accent:#5aa7f0;--accent-soft:#16283a;--ok:#4cc081;--warn:#e0a24a;--code-bg:#1b2430;--svg-a:#5aa7f0;--svg-b:#4cc081;--svg-c:#e0a24a;--svg-d:#b98ae8;--svg-fill:#171f29;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:860px;margin:0 auto}
+h1,h2,h3{line-height:1.25;text-wrap:balance}
+h2{font-size:1.35rem;margin:2.2rem 0 .6rem;padding-top:.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.05rem;margin:1.4rem 0 .4rem}
+a{color:var(--accent)}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:8px max(16px,env(safe-area-inset-left,0px));display:flex;gap:6px 14px;flex-wrap:wrap;font-size:.8rem}
+nav.toc a{text-decoration:none;color:var(--muted)}nav.toc a:hover{color:var(--accent)}
+.hdr{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-top:18px}
+.hdr h1{margin:0 0 6px;font-size:1.7rem}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:.9rem}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;padding:1px 8px;border-radius:99px;border:1px solid var(--line);letter-spacing:.03em;white-space:nowrap}
+.t1{color:var(--ok);border-color:var(--ok)}.t2{color:var(--accent);border-color:var(--accent)}.t3{color:var(--warn);border-color:var(--warn)}
+.tw{overflow-x:auto;margin:.8rem 0}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem}
+th,td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;font-size:.82rem;line-height:1.45;margin:.6rem 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em}
+p code,li code,td code{background:var(--code-bg);padding:0 4px;border-radius:3px}
+svg{width:100%;height:auto;display:block}
+figure{margin:1rem 0;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px}
+figcaption{font-size:.82rem;color:var(--muted);margin-top:4px}
+details{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 12px;margin:.4rem 0}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.q{margin:.8rem 0}.q b.u{color:var(--accent)}
+.unv{color:var(--warn)}
+ul{padding-left:1.2rem}li{margin:.25rem 0}
+.sa label{display:block;margin:.35rem 0}
+footer{margin-top:2.4rem;padding-top:1rem;border-top:1px solid var(--line);font-size:.9rem}
+.s{font-size:12px;fill:var(--fg)}.sm{font-size:11px;fill:var(--muted)}
+</style>
+<nav class="toc" aria-label="Contents">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#sheets">Sheets</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a>
+</nav>
+<main>
+<div class="hdr">
+<h1>Weekly Review 6</h1>
+<div class="meta"><span>Fri 2026-11-06</span><span>Units 21-24 of 49: 2.8.a-c, 3.3.a, 5.3, 2.2</span><span>Domains 2, 3, 5 (weights ⚠ unverified)</span><span>~18 min read</span></div>
+<p style="margin:.6rem 0 0"><span class="pill t3">T3 2.8.a-c</span> <span class="pill t1">T1 3.3.a</span> <span class="pill t2">T2 5.3</span> <span class="pill t1">T1 2.2</span> &nbsp;Review only, no new topic. Exam v1.1.</p>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li><b>Terraform 2.8:</b> <code>for_each</code> takes a map or a set of strings and the keys must be known at plan time. Lists need <code>toset()</code> (order and duplicates lost). The graph walk runs 10 nodes at a time by default, <code>-parallelism</code> changes it.</li>
+<li><b>pyATS 3.3.a:</b> a testbed is YAML with <code>devices</code>, each with <code>connections</code>. Credentials resolve connection, then device, then testbed. A missing named credential falls back to <code>default</code>.</li>
+<li><b>OAuth2 5.3:</b> auth code + PKCE for apps with a browser; the code is single use and short lived; the redirect URI must match; refresh tokens may rotate (Meraki does).</li>
+<li><b>Python CLI 2.2:</b> argparse subcommands are optional unless <code>required=True</code>. <code>requests</code> has no default timeout. 204 has no body, so guard <code>.json()</code>.</li>
+<li>Common thread: all four fail quietly. Empty subcommand, hanging request, a credential found in the wrong layer, a refresh token you forgot to save, a count index that shifted.</li>
+<li>The drill below chains three of them: a CLI that reads device inventory, emits a pyATS testbed, probes RESTCONF, and feeds the same inventory to Terraform.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<figure>
+<svg viewBox="0 0 480 270" role="img" aria-label="Week map: inventory source feeds CLI, pyATS testbed, Terraform, with OAuth2 token guarding API calls">
+<rect x="10" y="10" width="140" height="48" rx="6" fill="var(--svg-fill)" stroke="var(--svg-a)"/><text class="s" x="80" y="31" text-anchor="middle">Source of truth</text><text class="sm" x="80" y="47" text-anchor="middle">devices.json (2.6)</text>
+<rect x="170" y="10" width="140" height="48" rx="6" fill="var(--svg-fill)" stroke="var(--svg-b)"/><text class="s" x="240" y="31" text-anchor="middle">Python CLI 2.2</text><text class="sm" x="240" y="47" text-anchor="middle">argparse + requests</text>
+<rect x="330" y="10" width="140" height="48" rx="6" fill="var(--svg-fill)" stroke="var(--svg-d)"/><text class="s" x="400" y="31" text-anchor="middle">OAuth2 token 5.3</text><text class="sm" x="400" y="47" text-anchor="middle">Bearer on API calls</text>
+<line x1="150" y1="34" x2="170" y2="34" stroke="var(--fg)"/><line x1="310" y1="34" x2="330" y2="34" stroke="var(--fg)" stroke-dasharray="4 3"/>
+<line x1="240" y1="58" x2="240" y2="96" stroke="var(--fg)"/>
+<rect x="170" y="96" width="140" height="48" rx="6" fill="var(--svg-fill)" stroke="var(--svg-c)"/><text class="s" x="240" y="117" text-anchor="middle">pyATS testbed 3.3.a</text><text class="sm" x="240" y="133" text-anchor="middle">devices + credentials</text>
+<line x1="80" y1="58" x2="80" y2="170" stroke="var(--fg)"/><line x1="80" y1="170" x2="170" y2="170" stroke="var(--fg)"/>
+<rect x="170" y="150" width="140" height="48" rx="6" fill="var(--svg-fill)" stroke="var(--svg-a)"/><text class="s" x="240" y="171" text-anchor="middle">Terraform 2.8.a-c</text><text class="sm" x="240" y="187" text-anchor="middle">for_each over same map</text>
+<line x1="310" y1="120" x2="350" y2="120" stroke="var(--fg)"/><line x1="310" y1="174" x2="350" y2="174" stroke="var(--fg)"/>
+<rect x="350" y="96" width="120" height="102" rx="6" fill="var(--svg-fill)" stroke="var(--line)"/><text class="s" x="410" y="122" text-anchor="middle">Lab targets</text><text class="sm" x="410" y="142" text-anchor="middle">Cat8000V RESTCONF</text><text class="sm" x="410" y="158" text-anchor="middle">IOSv/IOSvL2 SSH</text><text class="sm" x="410" y="174" text-anchor="middle">DevNet APIC (TF)</text>
+<text class="sm" x="10" y="232">Solid = used in this week's drill. Dashed = stretch (token helper).</text>
+<text class="sm" x="10" y="250">No cisco.ios collection on the workstation; CLI work is pyATS or Python.</text>
+</svg>
+<figcaption>The four units as one tool chain.</figcaption>
+</figure>
+
+<h2 id="sheets">Review sheets: fundamentals to exam depth</h2>
+
+<h3>2.8.a-c Terraform: loops, variables, graph</h3>
+<p><b>L1.</b> Terraform builds a dependency graph from references between resources, then walks it. <code>count</code> and <code>for_each</code> multiply a resource into instances. Variables feed values in.</p>
+<p><b>L2.</b> <code>for_each</code> accepts a map or a set of strings. A list is not converted for you; wrap it with <code>toset()</code>, which drops order and duplicates. Inside the block <code>each.key</code> is the map key or set member, and <code>each.value</code> is the map value (equal to the key for a set). The graph walk is depth-first, a node starts when its dependencies finish, and a semaphore caps concurrent nodes at 10 by default.</p>
+<p><b>L3.</b> Keys must be known before remote operations, so you cannot key off a value that only exists after apply. Sensitive values and impure functions such as <code>uuid</code> or <code>timestamp</code> are rejected as keys. The flag is <code>-parallelism=N</code> on plan, apply and destroy. Use <code>count</code> only for on/off (0 or 1); index-based addressing shifts when you remove an early item <span class="unv">(⚠ not on the fetched count page)</span>.</p>
+<div class="tw"><table>
+<tr><th></th><th><code>count</code></th><th><code>for_each</code></th></tr>
+<tr><td>Input</td><td>number</td><td>map or set of strings</td></tr>
+<tr><td>Address</td><td><code>res[0]</code></td><td><code>res["name"]</code></td></tr>
+<tr><td>Remove first item</td><td>later indexes shift ⚠</td><td>only that key is destroyed</td></tr>
+<tr><td>Best for</td><td>conditional 0/1</td><td>named, stable sets of devices or tenants</td></tr>
+</table></div>
+
+<h3>3.3.a pyATS testbed files</h3>
+<p><b>L1.</b> The testbed file is the inventory pyATS uses to connect. It is YAML: a <code>testbed</code> block, a <code>devices</code> map, and per-device <code>connections</code>.</p>
+<p><b>L2.</b> Credentials can sit at testbed, device or connection level. A lookup starts at the child and walks to the parent. If the named credential (for example <code>enable</code>) is not found anywhere, the lookup falls back to <code>default</code>. Connection keys include <code>protocol</code>, <code>ip</code> (may be a hostname), <code>port</code>, <code>class</code>. <code>via</code> and <code>alias</code> defaults live under <code>connections.defaults</code>, not on a connection.</p>
+<p><b>L3.</b> The schema marks <code>os</code> optional, yet every example sets it; plugin selection depends on it <span class="unv">(⚠ unverified)</span>. Markups keep secrets out of the file: <code>%ENV{name}</code> reads the shell, <code>%ASK{prompt}</code> prompts, <code>%ENC{text}</code> decodes a stored secret, <code>%CLI{arg}</code> reads a command-line argument. Quote any value starting with <code>%</code>, always after a colon. <code>extends:</code> layers testbed files, last in the list is the base.</p>
+<figure>
+<svg viewBox="0 0 480 170" role="img" aria-label="Credential lookup order: connection, device, testbed, then default">
+<g class="s"><rect x="8" y="30" width="100" height="50" rx="6" fill="var(--svg-fill)" stroke="var(--svg-a)"/><text x="58" y="52" text-anchor="middle">connection</text><text class="sm" x="58" y="68" text-anchor="middle">enable?</text>
+<rect x="136" y="30" width="100" height="50" rx="6" fill="var(--svg-fill)" stroke="var(--svg-b)"/><text x="186" y="52" text-anchor="middle">device</text><text class="sm" x="186" y="68" text-anchor="middle">enable?</text>
+<rect x="264" y="30" width="100" height="50" rx="6" fill="var(--svg-fill)" stroke="var(--svg-c)"/><text x="314" y="52" text-anchor="middle">testbed</text><text class="sm" x="314" y="68" text-anchor="middle">enable?</text>
+<rect x="392" y="30" width="80" height="50" rx="6" fill="var(--svg-fill)" stroke="var(--svg-d)"/><text x="432" y="52" text-anchor="middle">default</text><text class="sm" x="432" y="68" text-anchor="middle">last resort</text></g>
+<g stroke="var(--fg)"><line x1="108" y1="55" x2="136" y2="55"/><line x1="236" y1="55" x2="264" y2="55"/><line x1="364" y1="55" x2="392" y2="55"/></g>
+<text class="sm" x="122" y="48" text-anchor="middle">miss</text><text class="sm" x="250" y="48" text-anchor="middle">miss</text><text class="sm" x="378" y="48" text-anchor="middle">miss</text>
+<text class="sm" x="8" y="110">First hit wins. Child overrides parent for the same credential name.</text>
+<text class="sm" x="8" y="128">Found nowhere under that name: use default if one is set.</text>
+</svg>
+<figcaption>Credential resolution, per the Topology Schema page.</figcaption>
+</figure>
+
+<h3>5.3 OAuth2: obtain a token</h3>
+<p><b>L1.</b> OAuth2 lets an app act on a user's behalf with a short-lived token instead of the user's password. RFC 6749 defines four grants: authorization code, implicit, resource owner password credentials, client credentials.</p>
+<p><b>L2.</b> Authorization code: send the user to the authorize endpoint, receive a code on your redirect URI, POST it to the token endpoint, get an access token (and often a refresh token). If the authorization request carried <code>redirect_uri</code>, the token request must repeat it identically.</p>
+<p><b>L3.</b> PKCE (RFC 7636): verifier is 43-128 characters from unreserved characters; S256 challenge is base64url (no padding) of SHA-256 of the verifier. <code>code_challenge</code> goes in the authorization request, <code>code_verifier</code> in the token request. If <code>code_challenge_method</code> is omitted it means <code>plain</code>, so send <code>S256</code>. Meraki specifics: auth code and refresh grants, code valid 10 min, access token 60 min, refresh token revoked after 90 days idle, refresh rotates (store the new one), client authenticates with HTTP Basic, host <code>as.meraki.com</code>.</p>
+<figure>
+<svg viewBox="0 0 480 300" role="img" aria-label="Authorization code with PKCE sequence between app, browser, authorization server, and API">
+<g class="s" text-anchor="middle"><text x="50" y="18">App</text><text x="170" y="18">User agent</text><text x="300" y="18">Auth server</text><text x="430" y="18">API</text></g>
+<g stroke="var(--line)"><line x1="50" y1="26" x2="50" y2="290"/><line x1="170" y1="26" x2="170" y2="290"/><line x1="300" y1="26" x2="300" y2="290"/><line x1="430" y1="26" x2="430" y2="290"/></g>
+<g stroke="var(--fg)" fill="none"><line x1="50" y1="50" x2="170" y2="50"/><line x1="170" y1="82" x2="300" y2="82"/><line x1="300" y1="114" x2="170" y2="114" stroke-dasharray="4 3"/><line x1="170" y1="140" x2="50" y2="140" stroke-dasharray="4 3"/><line x1="50" y1="178" x2="300" y2="178"/><line x1="300" y1="206" x2="50" y2="206" stroke-dasharray="4 3"/><line x1="50" y1="244" x2="430" y2="244"/><line x1="430" y1="270" x2="50" y2="270" stroke-dasharray="4 3"/></g>
+<g class="sm"><text x="54" y="44">1 make verifier, S256 challenge</text><text x="174" y="76">2 /authorize + challenge, state</text><text x="176" y="108">3 user consents</text><text x="54" y="134">4 redirect: code + state</text><text x="54" y="172">5 POST /token code, verifier, redirect_uri</text><text x="54" y="200">6 access (+ refresh) token</text><text x="54" y="238">7 Authorization: Bearer token</text><text x="260" y="264">8 200 / 401 / 403</text></g>
+</svg>
+<figcaption>Steps 1 and 5 are the PKCE pair. Step 4: check <code>state</code> before using the code.</figcaption>
+</figure>
+
+<h3>2.2 Python CLI over a REST API</h3>
+<p><b>L1.</b> A CLI is argument parsing, an HTTP client, and output with sane exit codes.</p>
+<p><b>L2.</b> <code>add_subparsers()</code> has <code>required=False</code> by default, so no subcommand leaves <code>args.func</code> undefined. Pass <code>required=True</code>. <code>set_defaults(func=handler)</code> attaches the handler to each subparser. A parse error prints usage to stderr and exits 2. <code>requests</code> applies no timeout unless you pass one; <code>timeout=(connect, read)</code> sets both. <code>verify=True</code> is the default and raises <code>SSLError</code> on a self-signed cert; point <code>verify</code> at a CA file or set <code>REQUESTS_CA_BUNDLE</code>. No retries by default; mount an <code>HTTPAdapter</code> with <code>Retry</code>.</p>
+<p><b>L3.</b> RESTCONF on IOS XE 17.5: PATCH updates, PUT creates or replaces, POST creates; success examples are 200 (read), 201 (create), 204 (PUT/PATCH/DELETE with no body). Calling <code>.json()</code> on a 204 raises, so test status and body first. Media type is <code>application/yang-data+json</code>. Device needs <code>restconf</code>, <code>ip http secure-server</code> and a privilege-15 AAA user.</p>
+<figure>
+<svg viewBox="0 0 480 130" role="img" aria-label="CLI request handling flow">
+<g class="s"><rect x="6" y="40" width="82" height="44" rx="6" fill="var(--svg-fill)" stroke="var(--svg-a)"/><text x="47" y="66" text-anchor="middle">parse args</text>
+<rect x="106" y="40" width="82" height="44" rx="6" fill="var(--svg-fill)" stroke="var(--svg-b)"/><text x="147" y="66" text-anchor="middle">request</text>
+<rect x="206" y="40" width="82" height="44" rx="6" fill="var(--svg-fill)" stroke="var(--svg-c)"/><text x="247" y="66" text-anchor="middle">check status</text>
+<rect x="306" y="40" width="82" height="44" rx="6" fill="var(--svg-fill)" stroke="var(--svg-d)"/><text x="347" y="66" text-anchor="middle">body?</text>
+<rect x="406" y="40" width="68" height="44" rx="6" fill="var(--svg-fill)" stroke="var(--svg-a)"/><text x="440" y="66" text-anchor="middle">stdout</text></g>
+<g stroke="var(--fg)"><line x1="88" y1="62" x2="106" y2="62"/><line x1="188" y1="62" x2="206" y2="62"/><line x1="288" y1="62" x2="306" y2="62"/><line x1="388" y1="62" x2="406" y2="62"/></g>
+<text class="sm" x="47" y="104" text-anchor="middle">exit 2 on error</text><text class="sm" x="147" y="104" text-anchor="middle">timeout=(c,r)</text><text class="sm" x="247" y="104" text-anchor="middle">4xx/5xx → stderr</text><text class="sm" x="347" y="104" text-anchor="middle">204 = none</text><text class="sm" x="440" y="104" text-anchor="middle">data only</text>
+</svg>
+<figcaption>Order of checks. Data on stdout, errors on stderr.</figcaption>
+</figure>
+
+<h2 id="anat">Anatomy</h2>
+<p>Short snippets, pinned to the versions above. Not the drill answer.</p>
+<pre><code># Terraform (pin 1.13; for_each rules are unchanged in the 1.17 docs fetched)
+resource "terraform_data" "x" {
+  for_each = toset(var.names)   # list(string) -> set
+  input    = each.key
+}</code></pre>
+<pre><code># pyATS testbed fragment (fetched schema; %ENV in password ⚠ unverified)
+testbed:
+  credentials:
+    default:
+      username: "%ENV{LAB_USER}"
+      password: "%ENV{LAB_PASS}"
+devices:
+  r1:
+    os: iosxe
+    type: router
+    connections:
+      defaults: {class: unicon.Unicon}
+      cli: {protocol: ssh, ip: 10.0.0.11}</code></pre>
+<pre><code># PKCE pair (RFC 7636 s4.1, s4.2)
+import secrets, hashlib, base64
+v = secrets.token_urlsafe(32)                      # 43 chars
+c = base64.urlsafe_b64encode(hashlib.sha256(v.encode()).digest()).rstrip(b"=").decode()</code></pre>
+<pre><code># CLI skeleton
+sub = p.add_subparsers(required=True, dest="cmd")
+s = sub.add_parser("probe"); s.set_defaults(func=cmd_probe)
+r = requests.get(url, timeout=(3, 10))</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>pyATS connect uses the wrong password for enable</td><td>No <code>enable</code> credential at any level, so <code>default</code> is used</td><td>Read the testbed: which levels define <code>enable</code>? <code>pyats validate testbed tb.yaml</code> ⚠</td><td>Add <code>enable</code> at the right level, or fix the child that overrides it</td></tr>
+<tr><td><code>for_each</code> errors on <code>var.names</code></td><td>Value is a list; only map or set of strings accepted</td><td>Read the plan error; <code>terraform console</code>, <code>type(var.names)</code> ⚠</td><td><code>toset(var.names)</code> or build a map with a <code>for</code> expression</td></tr>
+<tr><td>Token POST fails with <code>invalid_grant</code></td><td>Code expired or reused, <code>redirect_uri</code> differs, or verifier does not hash to the challenge</td><td>Compare the two redirect strings byte for byte; recompute S256 from the stored verifier</td><td>Restart the flow; keep the verifier and exact redirect URI</td></tr>
+<tr><td>CLI with no arguments: <code>AttributeError</code> on <code>args.func</code></td><td><code>required=False</code> default on subparsers</td><td><code>python inv.py --devices d.json</code> and read the traceback</td><td><code>add_subparsers(required=True, dest="cmd")</code></td></tr>
+<tr><td>PATCH succeeded but script raises <code>JSONDecodeError</code></td><td>204 No Content: nothing to decode</td><td>Print <code>r.status_code</code> and <code>len(r.content)</code></td><td>Branch on status and body before <code>.json()</code></td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline, workstation)</h2>
+<ul>
+<li>Terraform: <code>terraform console</code> to test <code>toset()</code>/<code>for</code> expressions; <code>terraform graph | dot -Tpng</code> if Graphviz exists ⚠; <code>terraform plan -parallelism=1</code> to serialize.</li>
+<li>pyATS: <code>pyats validate testbed FILE</code> lints; <code>--connect</code> tries each device ⚠ (from 11-03 fetch); <code>python -c "from pyats.topology import loader; t=loader.load('tb.yaml'); print(t.devices)"</code> ⚠.</li>
+<li>Python: <code>python -m json.tool</code> to pretty print; <code>pydoc argparse</code> / <code>help(requests.get)</code> for signatures ⚠.</li>
+<li>PKCE check in shell: <code>printf %s "$V" | openssl dgst -sha256 -binary | openssl base64 -A | tr '+/' '-_' | tr -d =</code> ⚠.</li>
+<li>Devices: <code>show running-config | section restconf</code> and <code>show platform software yang-management process</code> ⚠ on Cat8000V.</li>
+</ul>
+
+<h2 id="drill">Integration drill (~15 min, trim as needed)</h2>
+<p><b>Units combined:</b> 2.2 + 3.3.a + 2.8, stretch 5.3. <b>Target:</b> Cat8000V for RESTCONF; IOSv/IOSvL2 appear in the testbed only (SSH, legacy KEX/cipher settings may be needed). No <code>cisco.ios</code> collection assumed.</p>
+<p><b>Requirement.</b></p>
+<ul>
+<li>One file <code>inv.py</code>: <code>--devices FILE</code> plus subcommands <code>testbed</code> and <code>probe</code>. No subcommand prints usage and exits 2.</li>
+<li><code>testbed</code>: print a pyATS testbed YAML from the JSON inventory. Credentials from the environment, never in the file.</li>
+<li><code>probe</code>: for devices with <code>restconf: true</code>, GET the hostname leaf with an explicit connect/read timeout. Exit non-zero if any device fails. Handle an empty body.</li>
+<li>Terraform: the same <code>devices.json</code> drives a <code>for_each</code> resource. Removing one device must plan exactly one destroy.</li>
+<li>Stretch (5.3): add <code>pkce</code> subcommand printing a verifier and its S256 challenge.</li>
+</ul>
+<p><b>Reference.</b> Inventory keys: <code>ip, os, type, restconf</code>. Path: <code>/restconf/data/Cisco-IOS-XE-native:native/hostname</code> ⚠ unverified on 17.16. Header: <code>Accept: application/yang-data+json</code>. Env: <code>LAB_USER</code>, <code>LAB_PASS</code>.</p>
+<p><b>Verify.</b></p>
+<ul>
+<li><code>python inv.py --devices devices.json</code> → usage on stderr, exit 2.</li>
+<li><code>python inv.py --devices devices.json testbed &gt; tb.yaml; pyats validate testbed tb.yaml</code> ⚠.</li>
+<li><code>python inv.py --devices devices.json probe; echo $?</code> → 0 on success, non-zero with the device unreachable.</li>
+<li><code>terraform init &amp;&amp; terraform plan</code> shows <code>terraform_data.dev["csr1"]</code> etc.; delete a key and re-plan: one destroy ⚠.</li>
+<li>Stretch: verifier length 43.</li>
+</ul>
+<figure>
+<svg viewBox="0 0 480 120" role="img" aria-label="Drill pipeline">
+<g class="s"><rect x="6" y="36" width="90" height="46" rx="6" fill="var(--svg-fill)" stroke="var(--svg-a)"/><text x="51" y="64" text-anchor="middle">devices.json</text>
+<rect x="130" y="6" width="100" height="40" rx="6" fill="var(--svg-fill)" stroke="var(--svg-b)"/><text x="180" y="30" text-anchor="middle">inv.py testbed</text>
+<rect x="130" y="76" width="100" height="40" rx="6" fill="var(--svg-fill)" stroke="var(--svg-b)"/><text x="180" y="100" text-anchor="middle">inv.py probe</text>
+<rect x="264" y="6" width="100" height="40" rx="6" fill="var(--svg-fill)" stroke="var(--svg-c)"/><text x="314" y="30" text-anchor="middle">pyats validate</text>
+<rect x="264" y="76" width="100" height="40" rx="6" fill="var(--svg-fill)" stroke="var(--svg-d)"/><text x="314" y="100" text-anchor="middle">Cat8000V</text>
+<rect x="388" y="36" width="86" height="46" rx="6" fill="var(--svg-fill)" stroke="var(--svg-a)"/><text x="431" y="64" text-anchor="middle">terraform</text></g>
+<g stroke="var(--fg)"><line x1="96" y1="52" x2="130" y2="26"/><line x1="96" y1="66" x2="130" y2="96"/><line x1="230" y1="26" x2="264" y2="26"/><line x1="230" y1="96" x2="264" y2="96"/><line x1="96" y1="59" x2="388" y2="59" stroke-dasharray="3 4"/></g>
+</svg>
+<figcaption>One inventory, three consumers.</figcaption>
+</figure>
+<details><summary>Hint</summary>
+<ul><li>Put <code>--devices</code> on the main parser, handlers on subparsers via <code>set_defaults(func=...)</code>.</li><li>Quote the <code>%ENV</code> strings in YAML.</li><li>In Terraform, <code>jsondecode(file(...))</code> gives an object; <code>for_each</code> accepts it as a map.</li><li>For the probe, branch on <code>r.content</code> before <code>.json()</code>.</li></ul></details>
+<details><summary>Solution (⚠ unverified — test in lab)</summary>
+<pre><code>#!/usr/bin/env python3
+import argparse, base64, hashlib, json, os, secrets, sys
+import requests
+
+def load(path):
+    with open(path) as f:
+        return json.load(f)
+
+def cmd_testbed(a):
+    out = ["testbed:", "  name: lab", "  credentials:", "    default:",
+           '      username: "%ENV{LAB_USER}"', '      password: "%ENV{LAB_PASS}"',
+           "devices:"]
+    for n, d in load(a.devices).items():
+        out += [f"  {n}:", f"    os: {d['os']}", f"    type: {d['type']}",
+                "    connections:", "      cli:", "        protocol: ssh",
+                f"        ip: {d['ip']}"]
+    print("\n".join(out))
+    return 0
+
+def cmd_probe(a):
+    bad = 0
+    verify = False if a.insecure else (a.cafile or True)
+    auth = (os.environ["LAB_USER"], os.environ["LAB_PASS"])
+    for n, d in load(a.devices).items():
+        if not d.get("restconf"):
+            continue
+        url = f"https://{d['ip']}/restconf/data/Cisco-IOS-XE-native:native/hostname"
+        try:
+            r = requests.get(url, auth=auth, verify=verify, timeout=(3, 10),
+                             headers={"Accept": "application/yang-data+json"})
+            r.raise_for_status()
+            print(n, r.status_code, r.json() if r.content else "")
+        except requests.RequestException as e:
+            print(n, "ERROR", e, file=sys.stderr)
+            bad += 1
+    return 3 if bad else 0
+
+def cmd_pkce(a):
+    v = secrets.token_urlsafe(32)
+    c = base64.urlsafe_b64encode(hashlib.sha256(v.encode()).digest()).rstrip(b"=").decode()
+    print(len(v), v, c)
+    return 0
+
+p = argparse.ArgumentParser(prog="inv")
+p.add_argument("--devices", required=True)
+sub = p.add_subparsers(required=True, dest="cmd")
+sub.add_parser("testbed").set_defaults(func=cmd_testbed)
+pr = sub.add_parser("probe")
+pr.add_argument("--cafile"); pr.add_argument("--insecure", action="store_true")
+pr.set_defaults(func=cmd_probe)
+sub.add_parser("pkce").set_defaults(func=cmd_pkce)
+a = p.parse_args()
+sys.exit(a.func(a))</code></pre>
+<pre><code># main.tf
+locals { devices = jsondecode(file("${path.module}/devices.json")) }
+resource "terraform_data" "dev" {
+  for_each = local.devices
+  input    = each.value.ip
+}
+# devices.json (placeholder IPs)
+# {"csr1":{"ip":"10.0.0.11","os":"iosxe","type":"router","restconf":true},
+#  "iosv1":{"ip":"10.0.0.12","os":"ios","type":"router","restconf":false},
+#  "sw1":{"ip":"10.0.0.13","os":"ios","type":"switch","restconf":false}}</code></pre></details>
+
+<h2 id="recall">Recall check (12 questions, 3 per unit)</h2>
+<p>Answers are collapsed. Items marked ⚠ rest on an earlier fetch not repeated today.</p>
+
+<p><b>2.8 Terraform</b></p>
+<div class="q"><details><summary>1. You delete the first item of a list that drives <code>count</code>. What happens, and what is the safer pattern?</summary>Instances after it shift down an index, so Terraform plans changes for them ⚠. Use <code>for_each</code> over a map or set with stable keys.</details></div>
+<div class="q"><details><summary>2. <code>for_each = var.names</code> fails when <code>names</code> is <code>list(string)</code>. Why, and two fixes?</summary>Only a map or a set of strings is accepted. Wrap with <code>toset()</code> (order and duplicates lost), or build a map with a <code>for</code> expression.</details></div>
+<div class="q"><details><summary>3. Default apply concurrency, the flag that changes it, and what does <code>depends_on</code> cost?</summary>10 nodes; <code>-parallelism=N</code> on plan, apply, destroy. <code>depends_on</code> makes plans more conservative, with more values known only after apply ⚠ (11-02 fetch).</details></div>
+
+<p><b>3.3.a pyATS testbed</b></p>
+<div class="q"><details><summary>4. A connection and its device define no credentials; the testbed defines only <code>default</code>. A task needs <code>enable</code>. What is used and in what order is it searched?</summary>Search connection, device, testbed for <code>enable</code>; not found, so <code>default</code> is used.</details></div>
+<div class="q"><details><summary>5. Where do <code>via</code> and <code>alias</code> defaults live, and what alias does <code>connect()</code> with no arguments give?</summary>Under <code>connections.defaults</code>. Alias is <code>default</code> ⚠ (11-03 fetch). A second session: <code>connect(alias='vty_1', via='vty')</code> ⚠.</details></div>
+<div class="q"><details><summary>6. Name three markups for secrets or input, and the quoting rule.</summary><code>%ENV{}</code>, <code>%ASK{}</code>, <code>%ENC{}</code> (also <code>%CLI{}</code>). Quote any value starting with <code>%</code>, always right after a colon.</details></div>
+
+<p><b>5.3 OAuth2</b></p>
+<div class="q"><details><summary>7. A token POST returns <code>invalid_grant</code>. Three client-side checks?</summary>Code expired or already used (Meraki: 10 min); <code>redirect_uri</code> not identical to the authorization request; PKCE verifier does not hash to the stored challenge. (Error code name per RFC 6749 s5.2 ⚠, section unread today.)</details></div>
+<div class="q"><details><summary>8. PKCE: verifier rules, challenge derivation, and which request carries which?</summary>Verifier 43-128 chars from letters, digits, <code>-._~</code>. S256 challenge = base64url, no padding, of SHA-256 of the verifier. <code>code_challenge</code> (+ method <code>S256</code>) in the authorization request; <code>code_verifier</code> in the token request. Omitted method means <code>plain</code>.</details></div>
+<div class="q"><details><summary>9. Meraki lifetimes, and what must your script do after each refresh?</summary>Code 10 min, access 60 min, refresh revoked after 90 days idle. Refresh rotates: save the new refresh token at once, the old one is revoked. Token endpoint uses Basic auth.</details></div>
+
+<p><b>2.2 Python CLI</b></p>
+<div class="q"><details><summary>10. Running the CLI with no arguments raises <code>AttributeError</code> on <code>args.func</code>. Why and fix?</summary><code>add_subparsers</code> is optional by default (<code>required=False</code>). Pass <code>required=True</code>; argparse then prints usage and exits 2.</details></div>
+<div class="q"><details><summary>11. A request to a powered-off router hangs; another to a self-signed device fails. Defaults and fixes?</summary>No timeout by default; pass <code>timeout=(connect, read)</code>. <code>verify=True</code> raises <code>SSLError</code>; pass a CA file path or set <code>REQUESTS_CA_BUNDLE</code>. <code>verify=False</code> is for testing only.</details></div>
+<div class="q"><details><summary>12. PATCH succeeds, then <code>.json()</code> raises. Why, and the check order? Which codes appear in the IOS XE 17.5 examples?</summary>204 has no body. Check status, then whether a body exists, then decode. Examples: 200 read, 201 create, 204 for PUT/PATCH/DELETE.</details></div>
+
+<h2 id="self">Self-assessment</h2>
+<p>If you cannot answer cold, add <code>weak:</code> to that unit's line in <code>topic-queue.md</code>. It feeds the Tier 1 rebuild.</p>
+<div class="sa">
+<label><input type="checkbox" id="c1"> 2.8: I can write a <code>for_each</code> over a map, address an instance, and predict the plan after removing a key.</label>
+<label><input type="checkbox" id="c2"> 2.8: I can state the default parallelism and where the flag goes.</label>
+<label><input type="checkbox" id="c3"> 3.3.a: I can write a testbed with credentials at two levels and predict which one wins.</label>
+<label><input type="checkbox" id="c4"> 3.3.a: I know which markup to use for each secret source and when to quote.</label>
+<label><input type="checkbox" id="c5"> 5.3: I can draw the code + PKCE exchange and say what each request carries.</label>
+<label><input type="checkbox" id="c6"> 5.3: I can list three causes of <code>invalid_grant</code>.</label>
+<label><input type="checkbox" id="c7"> 2.2: I can write a subcommand CLI with a handler per command, a timeout, and correct exit codes without docs.</label>
+<label><input type="checkbox" id="c8"> 2.2: I handle 204 and TLS verification without looking it up.</label>
+</div>
+
+<h2 id="deeper">Go deeper</h2>
+<p>All verified 2026-11-06 by fetching the URL this run.</p>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html" target="_blank" rel="noopener">Topology Schema — pyATS Documentation</a> <span class="pill">✅</span> undated · verified 2026-11-06. Best for credential levels, fallback to default, connection keys, <code>extends</code>.</li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/utilities/yaml_markup.html" target="_blank" rel="noopener">YAML File Markups</a> <span class="pill">✅</span> undated · verified 2026-11-06. Best for the full markup table and the quoting rule.</li>
+<li><a href="https://developer.cisco.com/meraki/api-v1/oauth-overview/" target="_blank" rel="noopener">Overview - Meraki Dashboard API v1 - Cisco Meraki Developer Hub</a> <span class="pill">✅</span> Meraki v1 · verified 2026-11-06. Best for real token lifetimes and refresh rotation.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - RESTCONF Protocol</a> <span class="pill">✅</span> IOS XE 17.5 · verified 2026-11-06. Best for enable steps, method table, status codes.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6749" target="_blank" rel="noopener">RFC 6749: The OAuth 2.0 Authorization Framework</a> <span class="pill">✅</span> RFC · verified 2026-11-06. Best for grants and the redirect_uri rule (s4.1.3). Section 5.2 not read today.</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7636" target="_blank" rel="noopener">RFC 7636: Proof Key for Code Exchange by OAuth Public Clients</a> <span class="pill">✅</span> RFC · verified 2026-11-06. Best for verifier and S256 rules.</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://developer.hashicorp.com/terraform/internals/graph" target="_blank" rel="noopener">Dependency Graph | Terraform | HashiCorp Developer</a> <span class="pill">✅</span> docs v1.17.x (pin 1.13) · verified 2026-11-06. Best for the walk, 10-node default, <code>-parallelism</code>.</li>
+<li><a href="https://docs.python.org/3.13/library/argparse.html" target="_blank" rel="noopener">argparse — Parser for command-line options, arguments and subcommands (Python 3.13.18)</a> <span class="pill">✅</span> Python 3.13 · verified 2026-11-06. Best for subparsers, <code>set_defaults</code>, exit 2.</li>
+</ul>
+
+<footer>
+<p><b>Links: 8 ✅ · 0 🔎 · 0 removed.</b> Also fetched, not linked: Terraform <code>for_each</code> page, Requests Advanced Usage (2.34.2), tracker.</p>
+<p><b>⚠ Unverified claims:</b> domain weights; count index shifting; <code>depends_on</code> cost and variable precedence (11-02 fetch); <code>connect()</code> default alias, <code>pyats validate</code> flags, <code>%ENV</code> in credential password fields (11-03 fetch); RFC 6749 s5.2 error names; Cat8000V 17.16 hostname path; Graphviz, pyats, requests, terraform, Python 3.13 on the workstation; <code>terraform_data</code> with no provider download; <code>Retry</code> default behavior; all drill code; placeholder IPs 10.0.0.11-13.</p>
+<p><b>Version flags:</b> Terraform docs v1.17.x vs pin 1.13; Cisco RESTCONF 17.5 vs lab 17.16; Python docs 3.13 matched; Requests 2.34.2.</p>
+<p><b>Tomorrow:</b> Monday 2026-11-09, Unit 25 of 49: 3.3.b pyATS/Genie, gather config and operational state via parsers and models.</p>
+</footer>
+</main>
+
+</body></html>
