@@ -1,0 +1,370 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly Review 8</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1f23;--muted:#5d6470;--card:#ffffff;--line:#d9dce2;--accent:#1f5fae;--accent2:#b5532a;--ok:#2d7a46;--warn:#9a6a00;--code:#f1f2f5;--c1:#dbe8f8;--c2:#f8e3d8;--c3:#dff0e3;--c4:#efe4f6}
+@media (prefers-color-scheme:dark){:root{--bg:#15171b;--fg:#e6e8eb;--muted:#9aa2ad;--card:#1d2026;--line:#343944;--accent:#7fb0ef;--accent2:#ec9a74;--ok:#79c793;--warn:#e0b553;--code:#23272f;--c1:#1f3550;--c2:#4a2d20;--c3:#1f3a28;--c4:#3a2a47}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav.toc{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;overflow-x:auto;white-space:nowrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none;margin-right:14px}
+h1{font-size:1.6rem;margin:0 0 4px}h2{font-size:1.25rem;margin:36px 0 10px;border-bottom:2px solid var(--line);padding-bottom:4px}h3{font-size:1.05rem;margin:20px 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:16px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:14px}
+.tw{overflow-x:auto;margin:12px 0}table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--code)}
+pre{background:var(--code);border-radius:8px;padding:12px;overflow-x:auto;font-size:13px;line-height:1.45}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+details{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+.b{display:inline-block;font-size:12px;padding:0 6px;border-radius:10px;border:1px solid var(--line);margin-left:4px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}
+a{color:var(--accent)}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font-family:system-ui,sans-serif}
+.s1{fill:var(--c1);stroke:var(--accent)}.s2{fill:var(--c2);stroke:var(--accent2)}.s3{fill:var(--c3);stroke:var(--ok)}.s4{fill:var(--c4);stroke:var(--muted)}
+.ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+ul.refs li{margin-bottom:8px}
+.small{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<nav class="toc"><a href="#hdr">Header</a><a href="#snap">Snapshot</a><a href="#fit">Week map</a><a href="#depth">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Integration drill</a><a href="#recall">Recall</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a><a href="#foot">Footer</a></nav>
+<main>
+
+<section id="hdr" class="card">
+<h1>Weekly Review 8</h1>
+<div class="meta">
+<span>Friday 2026-11-20</span>
+<span>Covers units 29–32 of 49: 5.5 · 2.9.b · 2.9.a · 3.1 (ACI)</span>
+<span>Domains: 5 Security, 2 Build, 3 Network apps</span>
+<span>Weights: ⚠ not verified this run</span>
+<span>Tiers: T1 (2.9.a, 2.9.b) · T2 (5.5, 3.1)</span>
+<span>Read time: ~18 min (+ drill ~25 min)</span>
+</div>
+<p class="small">No new topic today. Pages reviewed: <a href="https://claude.ai/artifact/158QMo7kRPRyUEdgbD7mQY" target="_blank" rel="noopener">Securing a REST API</a> · <a href="https://claude.ai/artifact/SnQ4xkNF6HM6R2eiGCKTkV" target="_blank" rel="noopener">NSO Service YANG</a> · <a href="https://claude.ai/artifact/HsRAVLfPrfftPwHtzyhTfr" target="_blank" rel="noopener">NSO Service Templates</a> · <a href="https://claude.ai/artifact/EN7FkAA18TdJgAJFCo7BAq" target="_blank" rel="noopener">Python Against APIC</a></p>
+</section>
+
+<section id="snap">
+<h2>Mental snapshot</h2>
+<ul>
+<li><b>401 vs 403 is a contract.</b> 401 means "who are you?" (missing or bad credential, send <code>WWW-Authenticate</code>). 403 means "I know you, and the answer is no" (for example <code>insufficient_scope</code>).</li>
+<li><b>Never let the token pick its own crypto.</b> Pin the accepted algorithms on decode. Compare secrets in constant time, and compute HMACs over the raw bytes you received.</li>
+<li><b>An NSO service is a YANG list plus two statements:</b> <code>uses ncs:service-data</code> and <code>ncs:servicepoint NAME</code>. That name is the join key to the template and to the Python callback.</li>
+<li><b>Templates are captured, not typed.</b> <code>| display xml-template</code> turns real device config into a template. You then swap the literals for <code>{XPath}</code> or <code>{$VAR}</code>.</li>
+<li><b>NSO fails quietly.</b> An XPath that returns nothing is silently skipped. <code>commit dry-run | debug template</code> is how you see what happened.</li>
+<li><b>APIC REST is GET/POST/DELETE over DNs.</b> Authenticate with <code>aaaLogin</code>, keep the cookie in a <code>requests.Session</code>, and use <code>query-target</code> vs <code>rsp-subtree</code> to choose what you select and what comes back.</li>
+<li><b>Theme of the week:</b> each of these tools has one identifier that ties the pieces together (token scope, servicepoint name, DN). Most failures come from a mismatch on that identifier.</li>
+</ul>
+</section>
+
+<section id="fit">
+<h2>Where this week fits</h2>
+<svg viewBox="0 0 760 300" role="img" aria-label="Week 8 topic map">
+<rect x="10" y="20" width="230" height="110" rx="10" class="s2"/>
+<text x="125" y="48" text-anchor="middle" font-size="16" font-weight="700">5.5 Secure REST API</text>
+<text x="125" y="72" text-anchor="middle" font-size="13">Bearer / API key / HMAC</text>
+<text x="125" y="92" text-anchor="middle" font-size="13">401 vs 403, alg pinning</text>
+<text x="125" y="112" text-anchor="middle" font-size="12">builds on 5.3 OAuth, 5.4 Vault</text>
+<rect x="265" y="20" width="230" height="110" rx="10" class="s1"/>
+<text x="380" y="48" text-anchor="middle" font-size="16" font-weight="700">2.9.b Service YANG</text>
+<text x="380" y="72" text-anchor="middle" font-size="13">list + service-data</text>
+<text x="380" y="92" text-anchor="middle" font-size="13">+ servicepoint, leafref</text>
+<text x="380" y="112" text-anchor="middle" font-size="12">when / must</text>
+<rect x="520" y="20" width="230" height="110" rx="10" class="s1"/>
+<text x="635" y="48" text-anchor="middle" font-size="16" font-weight="700">2.9.a Service template</text>
+<text x="635" y="72" text-anchor="middle" font-size="13">display xml-template</text>
+<text x="635" y="92" text-anchor="middle" font-size="13">{XPath} · tags · apply()</text>
+<text x="635" y="112" text-anchor="middle" font-size="12">next: 2.9.c-d actions, logs</text>
+<path class="ln" d="M495 75 H520" marker-end="url(#a)"/>
+<rect x="265" y="175" width="230" height="105" rx="10" class="s3"/>
+<text x="380" y="203" text-anchor="middle" font-size="16" font-weight="700">3.1 Python vs APIC</text>
+<text x="380" y="227" text-anchor="middle" font-size="13">aaaLogin → Session cookie</text>
+<text x="380" y="247" text-anchor="middle" font-size="13">/api/mo · /api/class</text>
+<text x="380" y="267" text-anchor="middle" font-size="12">same objects as 2.7 / 2.8</text>
+<rect x="10" y="175" width="230" height="105" rx="10" class="s4"/>
+<text x="125" y="208" text-anchor="middle" font-size="14" font-weight="700">Integration drill</text>
+<text x="125" y="232" text-anchor="middle" font-size="13">A: FastAPI guard (5.5)</text>
+<text x="125" y="252" text-anchor="middle" font-size="13">→ APIC calls (3.1)</text>
+<text x="125" y="272" text-anchor="middle" font-size="13">B: NSO pkg on paper (2.9)</text>
+<path class="ln" d="M125 130 V175" marker-end="url(#a)"/>
+<path class="ln" d="M265 228 H240" marker-end="url(#a)"/>
+<path class="ln" d="M500 130 L240 200" stroke-dasharray="4 4"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--muted)"/></marker></defs>
+</svg>
+<p class="small">The dashed line shows that Part B of the drill reuses the 2.9 pieces. NSO is still unbuilt in the lab, so Part B is a paper exercise.</p>
+</section>
+
+<section id="depth">
+<h2>Fundamentals → exam depth, consolidated</h2>
+<h3>L1: what each topic is for</h3>
+<p>The four units cover two different jobs. 5.5 and 3.1 are both about HTTP APIs: 5.5 from the server side (how you protect an endpoint) and 3.1 from the client side (how you talk to someone else's endpoint, here APIC). 2.9.a and 2.9.b are the two halves of an NSO service package. The YANG module is the input contract (what an operator may type), and the template is the output mapping (what lands on the device). An exam task in either pair is most likely to fail at the seam between the halves, not inside either one.</p>
+
+<h3>L2: mechanics side by side</h3>
+<div class="tw"><table>
+<tr><th>Unit</th><th>Join key</th><th>Where it's declared</th><th>Where it's consumed</th><th>Mismatch symptom</th></tr>
+<tr><td>5.5</td><td>Token algorithm, audience, scope</td><td>Issuer (signing key, claims)</td><td>Verifier: <code>decode(..., algorithms=[...], audience=...)</code></td><td>401 on every call, or forged tokens accepted if alg isn't pinned</td></tr>
+<tr><td>5.5 webhook</td><td>Shared secret + exact raw body</td><td>Webhook registration</td><td>Receiver HMAC check</td><td>Every signature fails although the secret is correct</td></tr>
+<tr><td>2.9.b</td><td><code>ncs:servicepoint NAME</code></td><td>Service YANG</td><td>Template <code>servicepoint=</code> attr / Python <code>register_service</code></td><td><code>oper-status file-load-error</code>, "Unknown servicepoint"</td></tr>
+<tr><td>2.9.a</td><td><code>{/leaf}</code> XPath into the service instance</td><td>Service YANG leaf names</td><td>Template variables</td><td>Commit succeeds, config silently missing</td></tr>
+<tr><td>3.1 ACI</td><td>DN (chain of RNs)</td><td>MIT object naming</td><td><code>/api/mo/&lt;dn&gt;.json</code>, payload nesting</td><td>Object created in the wrong place, or "rename" creates a second object</td></tr>
+</table></div>
+
+<h3>L3: exam-depth details to keep straight</h3>
+<p><b>5.5.</b> RFC 6750 §3.1 maps <code>invalid_token</code> to 401 and <code>insufficient_scope</code> to 403. FastAPI's security classes (<code>APIKeyHeader</code>, <code>HTTPBearer</code>, …) now return 401 "Not authenticated" with a <code>WWW-Authenticate</code> header when the credential is missing. Before 0.122.0 they returned 403, and the FastAPI how-to shows the subclass override (<code>make_not_authenticated_error</code>) that restores the old behaviour. If a test harness expects 403 for a missing key, that version change is the first thing to check. RFC 8725 is the reason the verifier, not the token, chooses the algorithm. For Webex, <code>X-Spark-Signature</code> is an HMAC-SHA1 of the request body. Hash the bytes before any JSON parsing and compare with <code>hmac.compare_digest</code>.</p>
+<p><b>2.9.b.</b> The <code>when</code> statement makes its parent conditional. The NSO 6.5 YANG page says the node cannot be configured while the expression is false, and is deleted automatically if it later becomes false. <code>must</code> rejects the commit and shows its <code>error-message</code>. Per the <code>ncsc</code> man page, NSO 6.5 does not support some YANG 1.1 features (empty type in a leaf-list, <code>anydata</code>), and it accepts a leafref inside a union without validating it.</p>
+<p><b>2.9.a.</b> Template tag inheritance: <code>merge</code> and <code>nocreate</code> pass down to children until another tag appears. <code>create</code> and <code>replace</code> apply only to the node they sit on, and that node's children behave as <code>merge</code>. Put <code>nocreate</code> on the device node so a typo in a device name can't create a new device entry. An empty node-set result is ignored. That is a feature when you use it on purpose and a bug when the XPath has a typo.</p>
+<p><b>3.1 ACI.</b> The APIC REST guide lists POST, GET and DELETE as the operations, and says you cannot rename an existing object. <code>query-target</code> (<code>self|children|subtree</code>) plus <code>target-subtree-class</code> choose which objects you select. <code>rsp-subtree</code> (<code>no|children|full</code>) chooses how much of each selected object comes back. <code>page-size</code> controls paging. In this run's fetch, the following were present only in the tool's summary and not in text I could read verbatim: delete via <code>status="deleted"</code>, page numbering from 0, and a new token on every <code>aaaRefresh</code>. They're marked ⚠ below.</p>
+
+<svg viewBox="0 0 760 250" role="img" aria-label="Request through guard to APIC sequence">
+<text x="70" y="22" text-anchor="middle" font-size="13" font-weight="700">Client</text>
+<text x="300" y="22" text-anchor="middle" font-size="13" font-weight="700">FastAPI guard (5.5)</text>
+<text x="560" y="22" text-anchor="middle" font-size="13" font-weight="700">APIC (3.1)</text>
+<line x1="70" y1="30" x2="70" y2="240" class="ln" stroke-dasharray="3 3"/>
+<line x1="300" y1="30" x2="300" y2="240" class="ln" stroke-dasharray="3 3"/>
+<line x1="560" y1="30" x2="560" y2="240" class="ln" stroke-dasharray="3 3"/>
+<path class="ln" d="M70 55 H296" marker-end="url(#a2)"/><text x="183" y="50" text-anchor="middle" font-size="12">GET /tenants + X-API-Key</text>
+<rect x="305" y="62" width="180" height="34" rx="6" class="s2"/><text x="395" y="84" text-anchor="middle" font-size="12">compare_digest → 401?</text>
+<path class="ln" d="M300 115 H556" marker-end="url(#a2)"/><text x="430" y="110" text-anchor="middle" font-size="12">POST /api/aaaLogin.json</text>
+<path class="ln" d="M560 140 H304" marker-end="url(#a2)"/><text x="430" y="135" text-anchor="middle" font-size="12">token + cookie (Session keeps it)</text>
+<path class="ln" d="M300 170 H556" marker-end="url(#a2)"/><text x="430" y="165" text-anchor="middle" font-size="12">GET /api/class/fvTenant.json</text>
+<path class="ln" d="M560 195 H304" marker-end="url(#a2)"/><text x="430" y="190" text-anchor="middle" font-size="12">imdata[]</text>
+<path class="ln" d="M300 225 H74" marker-end="url(#a2)"/><text x="183" y="220" text-anchor="middle" font-size="12">[names] or 502 on APIC error</text>
+<defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--muted)"/></marker></defs>
+</svg>
+<p class="small">Sequence for drill Part A. The 502 mapping is a design choice (upstream failure), not something from a source.</p>
+</section>
+
+<section id="anat">
+<h2>Anatomy: the four shapes to recognise</h2>
+<p>These are short reminders, not the drill solution.</p>
+<pre><code># 5.5 — verifier picks the algorithm (PyJWT 2.x usage)
+claims = jwt.decode(tok, key, algorithms=["HS256"], audience="ccie-api")
+# 5.5 — webhook: HMAC over the RAW bytes, constant-time compare
+mac = hmac.new(secret, raw_body, hashlib.sha1).hexdigest()
+ok  = hmac.compare_digest(mac, request_headers["X-Spark-Signature"])</code></pre>
+<pre><code>// 2.9.b — what makes a list a service (NSO 6.5 "Develop a Simple Service")
+list my-svc {
+  key name;
+  uses ncs:service-data;
+  ncs:servicepoint my-svc-servicepoint;
+  leaf name { type string; }
+  leaf-list device { type leafref { path "/ncs:devices/ncs:device/ncs:name"; } }
+}</code></pre>
+<pre><code>&lt;!-- 2.9.a — template skeleton (namespaces from NSO 6.5 docs) --&gt;
+&lt;config-template xmlns="http://tail-f.com/ns/config/1.0" servicepoint="my-svc-servicepoint"&gt;
+  &lt;devices xmlns="http://tail-f.com/ns/ncs"&gt;
+    &lt;device tags="nocreate"&gt;
+      &lt;name&gt;{/device}&lt;/name&gt;   &lt;!-- leaf-list → one pass per device --&gt;
+      &lt;config&gt; ...captured NED XML with {$VAR} / {/leaf}... &lt;/config&gt;
+    &lt;/device&gt;
+  &lt;/devices&gt;
+&lt;/config-template&gt;</code></pre>
+<pre><code># 3.1 — APIC login with a Session (LTRDCN-3225 pattern)
+s = requests.Session(); s.verify = False          # lab only
+r = s.post(f"https://{apic}/api/aaaLogin.json", timeout=10,
+           json={"aaaUser": {"attributes": {"name": u, "pwd": p}}})
+token = r.json()["imdata"][0]["aaaLogin"]["attributes"]["token"]</code></pre>
+<p class="small">⚠ The <code>servicepoint=</code> attribute on <code>config-template</code> is for a pure template service. In python-and-template packages the template is applied from Python and the attribute may be absent (2.9.a page flagged this). Test in lab.</p>
+</section>
+
+<section id="bf">
+<h2>Break/fix: one row per failure mode</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Test expects 403 for a missing API key, gets 401</td><td>FastAPI ≥ 0.122.0 changed the default</td><td><code>pip show fastapi</code> / <code>uv pip list</code></td><td>Update the test, or subclass and override <code>make_not_authenticated_error</code></td></tr>
+<tr><td>Every Webex webhook fails signature check</td><td>HMAC computed over re-serialized JSON, or the wrong algorithm for the header</td><td>Log <code>len(raw_body)</code> and the header name you're checking</td><td>Hash <code>await request.body()</code> ⚠; SHA-1 for <code>X-Spark-Signature</code></td></tr>
+<tr><td>Package won't load after <code>packages reload</code></td><td>Template servicepoint ≠ YANG servicepoint</td><td><code>show packages package &lt;pkg&gt; oper-status</code></td><td>Align the names; reload</td></tr>
+<tr><td>Commit OK, device config missing a line</td><td>XPath typo returns an empty node-set, which is ignored</td><td><code>commit dry-run | debug template</code></td><td>Fix the leaf name in <code>{...}</code></td></tr>
+<tr><td>APIC script works, then starts failing after ~10 min</td><td>Session expired (⚠ default timeout and status code not re-confirmed this run)</td><td>Re-run <code>aaaLogin</code>; compare</td><td>Call <code>aaaRefresh</code> before expiry and replace the stored token/cookie</td></tr>
+</table></div>
+</section>
+
+<section id="speed">
+<h2>Speed notes (offline on the workstation)</h2>
+<ul>
+<li><b>FastAPI / PyJWT / requests:</b> <code>python -m pydoc fastapi.security.APIKeyHeader</code>, <code>python -m pydoc jwt.decode</code>, <code>python -m pydoc requests.Session</code> ⚠ (needs the packages in the active uv env).</li>
+<li><b>hmac:</b> <code>python -m pydoc hmac.compare_digest</code>. The stdlib is always present.</li>
+<li><b>NSO YANG:</b> <code>ncsc -c</code> errors give file:line. <code>ncsc --list-errors</code> lists the error codes, per the 6.5 man page.</li>
+<li><b>NSO templates:</b> don't hand-write device XML. Use <code>show running-config devices device X config ... | display xml-template</code>, then <code>commit dry-run | debug template</code>. NSO CLI <code>?</code> after <code>| debug</code> shows the options.</li>
+<li><b>APIC:</b> to learn a class name and payload shape, do the action once in the GUI and read the API Inspector output (⚠ not re-read this run). Then copy the DN into <code>/api/mo/&lt;dn&gt;.json?rsp-subtree=full</code>.</li>
+</ul>
+</section>
+
+<section id="drill">
+<h2>Integration drill (~25 min)</h2>
+<div class="card">
+<p><b>Requirement, Part A (runnable): 5.5 + 3.1.</b> Build a FastAPI app with one route, <code>GET /tenants</code>. It must:</p>
+<ul>
+<li>require an <code>X-API-Key</code> header, compared in constant time against <code>API_KEY</code> from the environment;</li>
+<li>return 401 with <code>WWW-Authenticate: APIKey</code> when the key is missing or wrong;</li>
+<li>on success, log in to the DevNet ACI sandbox with a <code>requests.Session</code>, run a class query for <code>fvTenant</code>, and return a JSON list of tenant names;</li>
+<li>map any APIC failure to 502 and never echo APIC credentials in the error.</li>
+</ul>
+<p><b>Requirement, Part B (paper, NSO not built): 2.9.a + 2.9.b.</b> Given this provided device config on an IOS (cisco-ios-cli) device, write the service YANG and the XML template for a service <code>loop</code> with keys <code>name</code>, a <code>device</code> leafref, an <code>id</code> (uint16), and an <code>ip</code> (inet:ipv4-address). Add a <code>must</code> that rejects <code>id</code> 0 with a clear message.</p>
+<pre><code>interface Loopback10
+ ip address 10.10.10.1 255.255.255.255</code></pre>
+<p><b>Reference fields:</b> <code>/api/aaaLogin.json</code>, <code>imdata[].fvTenant.attributes.name</code>, <code>uses ncs:service-data</code>, <code>ncs:servicepoint</code>, <code>tags="nocreate"</code>, <code>{/id}</code>, <code>{/ip}</code>.</p>
+<p><b>Target:</b> Part A: Candidate Workstation (uv env) → DevNet "ACI Simulator Always On". Part B: paper, or ncsc if you have an NSO install.</p>
+<p><b>Verify:</b></p>
+<ul>
+<li>A1: <code>curl -i localhost:8000/tenants</code> → 401 with the header.</li>
+<li>A2: with the right key → 200 and a list that includes <code>common</code> ⚠ (sandbox tenants vary).</li>
+<li>A3: set a wrong APIC password → 502, and no password in the body.</li>
+<li>B1: every <code>{...}</code> path in the template names a leaf that exists in your YANG.</li>
+<li>B2: the servicepoint string matches exactly in both files.</li>
+</ul>
+</div>
+<details><summary>Hint</summary>
+<p>Part A: use <code>Header(alias="X-API-Key")</code> or <code>APIKeyHeader(auto_error=False)</code> so the 401 is yours, and use <code>secrets.compare_digest</code>. Give every request a <code>timeout=</code>, because requests has no default. Part B: capture first, then parametrise. The interface name in the captured XML becomes <code>{/id}</code>.</p>
+</details>
+<details><summary>Solution (⚠ untested: not run against the sandbox; NED element names unverified)</summary>
+<pre><code>import os, secrets, requests, urllib3
+from fastapi import FastAPI, Header, HTTPException
+urllib3.disable_warnings()
+app = FastAPI()
+APIC, U, P, KEY = (os.environ[k] for k in ("APIC_HOST","APIC_USER","APIC_PASS","API_KEY"))
+
+def guard(key: str | None):
+    if key is None or not secrets.compare_digest(key, KEY):
+        raise HTTPException(401, "Not authenticated", headers={"WWW-Authenticate": "APIKey"})
+
+@app.get("/tenants")
+def tenants(x_api_key: str | None = Header(default=None, alias="X-API-Key")):
+    guard(x_api_key)
+    s = requests.Session(); s.verify = False
+    try:
+        r = s.post(f"https://{APIC}/api/aaaLogin.json", timeout=10,
+                   json={"aaaUser": {"attributes": {"name": U, "pwd": P}}})
+        r.raise_for_status()
+        q = s.get(f"https://{APIC}/api/class/fvTenant.json", timeout=15)
+        q.raise_for_status()
+    except requests.RequestException:
+        raise HTTPException(502, "APIC request failed")
+    return [o["fvTenant"]["attributes"]["name"] for o in q.json()["imdata"]]</code></pre>
+<pre><code>module loop {
+  yang-version 1.1;
+  namespace "urn:ccie-lab:loop"; prefix loop;
+  import ietf-inet-types { prefix inet; }
+  import tailf-ncs { prefix ncs; }
+  list loop {
+    key name;
+    uses ncs:service-data;
+    ncs:servicepoint loop-servicepoint;
+    leaf name { type string; }
+    leaf device { mandatory true;
+      type leafref { path "/ncs:devices/ncs:device/ncs:name"; } }
+    leaf id { type uint16;
+      must ". != 0" { error-message "Loopback id 0 is not allowed"; } }
+    leaf ip { type inet:ipv4-address; }
+  }
+}</code></pre>
+<pre><code>&lt;config-template xmlns="http://tail-f.com/ns/config/1.0" servicepoint="loop-servicepoint"&gt;
+  &lt;devices xmlns="http://tail-f.com/ns/ncs"&gt;
+    &lt;device tags="nocreate"&gt;
+      &lt;name&gt;{/device}&lt;/name&gt;
+      &lt;config&gt;
+        &lt;interface xmlns="urn:ios"&gt;
+          &lt;Loopback&gt;
+            &lt;name&gt;{/id}&lt;/name&gt;
+            &lt;ip&gt;&lt;address&gt;&lt;primary&gt;
+              &lt;address&gt;{/ip}&lt;/address&gt;
+              &lt;mask&gt;255.255.255.255&lt;/mask&gt;
+            &lt;/primary&gt;&lt;/address&gt;&lt;/ip&gt;
+          &lt;/Loopback&gt;
+        &lt;/interface&gt;
+      &lt;/config&gt;
+    &lt;/device&gt;
+  &lt;/devices&gt;
+&lt;/config-template&gt;</code></pre>
+<p class="small">⚠ The NED element path (<code>interface/Loopback/ip/address/primary</code>) comes from the 2.9.a page's unverified list. Capture it with <code>display xml-template</code> instead of trusting this.</p>
+</details>
+</section>
+
+<section id="recall">
+<h2>Recall check: 12 questions</h2>
+<h3>5.5 Securing a REST API</h3>
+<details><summary>1. A request carries a well-formed, unexpired JWT whose scope lacks the needed value. Which status and error code? And for a missing token?</summary><p>403 with <code>error="insufficient_scope"</code> (RFC 6750 §3.1). A missing or invalid token gets 401, with <code>invalid_token</code> when a token was sent, plus a <code>WWW-Authenticate</code> header.</p></details>
+<details><summary>2. Why pass <code>algorithms=[...]</code> to the decoder instead of reading <code>alg</code> from the token header?</summary><p>The header is controlled by whoever sent the token. If the verifier trusts it, an attacker can try <code>alg: none</code> or an RS256→HS256 key-confusion attack. RFC 8725 says the verifier decides which algorithms it accepts.</p></details>
+<details><summary>3. A Webex webhook receiver rejects every event, though the secret is right. Most likely cause and fix?</summary><p>The HMAC is computed over parsed and re-serialized JSON, so the bytes differ from what Webex signed. Hash the raw body, use SHA-1 for <code>X-Spark-Signature</code>, and compare with <code>hmac.compare_digest</code>.</p></details>
+<h3>2.9.b NSO service YANG</h3>
+<details><summary>4. Which two statements turn a YANG list into an NSO service, and what do you see if the template's name doesn't match?</summary><p><code>uses ncs:service-data</code> and <code>ncs:servicepoint NAME</code>. A mismatch leaves the package at <code>oper-status file-load-error</code> with "Unknown servicepoint" in <code>error-info</code>.</p></details>
+<details><summary>5. A leaf with <code>when</code> and a leaf with <code>must</code> both evaluate false. What does the operator see?</summary><p><code>when</code>: the node can't be configured. If it already exists and the condition becomes false, it is deleted automatically, with no error. <code>must</code>: the commit is rejected and its <code>error-message</code> is shown.</p></details>
+<details><summary>6. Name two YANG 1.1 features NSO 6.5 doesn't support, and one it accepts but doesn't enforce.</summary><p>Not supported: the empty type in a leaf-list, and <code>anydata</code>. Accepted but not validated: a leafref inside a union. Source: <code>ncsc</code> man page.</p></details>
+<h3>2.9.a NSO service templates</h3>
+<details><summary>7. Give the one-liner that captures r1's DNS config straight into a package as a template, and the name Python uses to apply it.</summary><p><code>show running-config devices device r1 config ip name-server | display xml-template | save packages/&lt;pkg&gt;/templates/&lt;name&gt;.xml</code>. Apply it with <code>Template(service).apply('&lt;name&gt;', vars)</code>, without the .xml extension.</p></details>
+<details><summary>8. A template contains <code>{/devcie}</code> by mistake. What happens at commit, and how do you find it?</summary><p>The XPath returns an empty node-set, which NSO ignores, so the config is silently missing. <code>commit dry-run | debug template</code> shows each expression's result and context.</p></details>
+<details><summary>9. Which template tags are inherited by children and which are not? What goes on <code>&lt;device&gt;</code>?</summary><p><code>merge</code> and <code>nocreate</code> are inherited until a new tag appears. <code>create</code> and <code>replace</code> apply only to their own node, and that node's children use merge. Put <code>nocreate</code> on <code>&lt;device&gt;</code>.</p></details>
+<h3>3.1 Python against APIC</h3>
+<details><summary>10. Name the three APIC session endpoints and the token-handling detail that breaks naive caching.</summary><p><code>aaaLogin</code> (POST with name and pwd), <code>aaaRefresh</code>, and <code>aaaLogout</code>. On the 11-19 page, a refresh returned a new token, so replace the stored one, and the default timeout was 600 s. ⚠ This run could not confirm either detail verbatim.</p></details>
+<details><summary>11. Which HTTP verbs does APIC accept, and why can't you rename a bridge domain?</summary><p>GET, POST and DELETE; there is no PUT. The name is part of the DN, and the guide states you cannot rename an existing object. To change a name, create a new object and delete the old one. You can also delete with a POST that sets <code>status="deleted"</code> (⚠ summary-only this run).</p></details>
+<details><summary>12. Which query parameters choose what gets selected, and which choose what comes back?</summary><p>Selection: <code>query-target</code> (self/children/subtree), <code>target-subtree-class</code>, <code>query-target-filter</code>. Response: <code>rsp-subtree</code> (no/children/full), <code>rsp-subtree-class</code>, <code>rsp-subtree-include</code>, <code>rsp-prop-include</code>.</p></details>
+</section>
+
+<section id="self">
+<h2>Self-assessment: flag units as <code>weak:</code></h2>
+<p>Add <code>weak:</code> to the unit's line in <code>daily-notes/topic-queue.md</code> if you can't tick every box from memory.</p>
+<div class="tw"><table>
+<tr><th>Unit</th><th>I can, without notes…</th></tr>
+<tr><td>29 · 5.5</td><td>☐ write a 401/403 decision for missing, invalid and under-scoped tokens · ☐ decode a JWT with alg, aud and exp checks · ☐ verify an HMAC webhook over the raw body · ☐ explain the FastAPI 0.122.0 status change</td></tr>
+<tr><td>30 · 2.9.b</td><td>☐ write a service list with service-data, servicepoint and a device leafref · ☐ use when vs must correctly · ☐ read an <code>ncsc</code> error and fix it</td></tr>
+<tr><td>31 · 2.9.a</td><td>☐ capture config with <code>display xml-template</code> · ☐ parametrise it with <code>{/leaf}</code> and <code>{$VAR}</code> · ☐ debug with <code>commit dry-run | debug template</code> · ☐ choose the right tags</td></tr>
+<tr><td>32 · 3.1 ACI</td><td>☐ log in, query and create a tenant/BD/EPG with requests · ☐ build DN URLs · ☐ use query-target vs rsp-subtree · ☐ handle session expiry</td></tr>
+</table></div>
+<p class="small">Honest read: 2.9.a and 2.9.b are paper-only until NSO 6.5 is running, and the tracker says not to defer it to the last month. Unit 34 (2.9.c-d, actions and the Python VM log) is next week and is mostly operational. Without an instance it will also be reading only, so this is the point to build NSO.</p>
+</section>
+
+<section id="deeper">
+<h2>Go deeper: the week's best links (all re-verified today)</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/templates.md" target="_blank" rel="noopener">Templates</a> <span class="b ok">✅</span> NSO 6.5 · verified 2026-11-20. The template reference: tags and inheritance, empty-result rule, debug template.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/yang.md" target="_blank" rel="noopener">YANG</a> <span class="b ok">✅</span> NSO 6.5 · verified 2026-11-20. when/must semantics, leafref paths, deref().</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/develop-a-simple-service.md" target="_blank" rel="noopener">Develop a Simple Service</a> <span class="b ok">✅</span> NSO 6.5 · verified 2026-11-20. End-to-end: skeleton, service YANG, xml-template capture, apply().</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/package-mgmt.md" target="_blank" rel="noopener">Package Management</a> <span class="b ok">✅</span> NSO 6.5 · verified 2026-11-20. packages reload, oper-status, "Unknown servicepoint".</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/resources/man/ncsc.1.md" target="_blank" rel="noopener">ncsc</a> <span class="b ok">✅</span> NSO 6.5 · verified 2026-11-20. Compiler flags and the YANG 1.1 exceptions list.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/dcn/aci/apic/all/apic-rest-api-configuration-guide/cisco-apic-rest-api-configuration-guide/m_using_the_rest_api.html" target="_blank" rel="noopener">Cisco APIC REST API Configuration Guide - Using the REST API</a> <span class="b ok">✅</span> all releases (updated 2021-09-29) · verified 2026-11-20. Verbs, query-target/rsp-subtree tables, aaaLogin family.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/4-x/rest-api-config/Cisco-APIC-REST-API-Configuration-Guide-401/Cisco-APIC-REST-API-Configuration-Guide-401_chapter_01010.html" target="_blank" rel="noopener">Cisco APIC REST API Configuration Guide, Release 4.0(x) - Configuring Tenant Policies</a> <span class="b ok">✅</span> APIC 4.0(x) · verified 2026-11-20. Tenant/VRF/BD/AP/EPG/contract payloads (XML).</li>
+<li><a href="https://aci-prog-lab.ciscolive.com/lab/pod1/requests/api_auth" target="_blank" rel="noopener">LTRDCN-3225 (Building the Authentication Request script)</a> <span class="b ok">✅</span> Cisco Live lab, undated · verified 2026-11-20. requests login pattern and token extraction.</li>
+<li><a href="https://developer.webex.com/admin/docs/receive-and-verify-webhooks" target="_blank" rel="noopener">Webex Admin | Webex for Developers (H1: Receive and verify events)</a> <span class="b ok">✅</span> undated · verified 2026-11-20. X-Spark-Signature HMAC-SHA1 and X-Webex-Signature formats.</li>
+</ul>
+<h3>Standards</h3>
+<ul class="refs">
+<li><a href="https://www.rfc-editor.org/info/rfc6750/" target="_blank" rel="noopener">RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage</a> <span class="b ok">✅</span> RFC · verified 2026-11-20. §3.1 error codes → status codes.</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8725.html" target="_blank" rel="noopener">RFC 8725: JSON Web Token Best Current Practices</a> <span class="b ok">✅</span> RFC · verified 2026-11-20. Algorithm verification and the attacks it prevents.</li>
+</ul>
+<h3>Third-party</h3>
+<ul class="refs">
+<li><a href="https://fastapi.tiangolo.com/how-to/authentication-error-status-code/" target="_blank" rel="noopener">Use Old 403 Authentication Error Status Codes - FastAPI</a> <span class="b ok">✅</span> FastAPI current · verified 2026-11-20. The 0.122.0 change and the override.</li>
+<li><a href="https://fastapi.tiangolo.com/reference/security/" target="_blank" rel="noopener">Security Tools - FastAPI</a> <span class="b ok">✅</span> FastAPI current · verified 2026-11-20. APIKeyHeader/HTTPBearer parameters and auto_error.</li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html" target="_blank" rel="noopener">REST Security - OWASP Cheat Sheet Series</a> <span class="b ok">✅</span> current · verified 2026-11-20. Checklist for API keys, JWT, headers, status codes.</li>
+<li><a href="https://docs.python-requests.org/en/latest/user/advanced/" target="_blank" rel="noopener">Advanced Usage — Requests 2.34.2 documentation</a> <span class="b ok">✅</span> 2.34.2 · verified 2026-11-20. Session cookies, verify, timeouts.</li>
+</ul>
+</section>
+
+<section id="foot" class="card">
+<p><b>Links: 15 ✅ · 0 🔎 · 0 removed</b> (reference links; the 4 links in the header to earlier review pages are this project's own artifacts).</p>
+<p><b>⚠ Unverified claims:</b></p>
+<ul class="small">
+<li>Domain weights.</li>
+<li>APIC: delete via <code>status="deleted"</code>, page numbering from 0, a new token on each <code>aaaRefresh</code>, the 600 s default timeout, and the status code on expiry (fetch summary only, not read verbatim this run).</li>
+<li>APIC: API Inspector use. Cookie name case (APIC-Cookie vs APIC-cookie) doesn't matter when a Session is used.</li>
+<li>Starlette <code>await request.body()</code>.</li>
+<li><code>python -m pydoc</code> on workstation packages.</li>
+<li>The PyJWT <code>algorithms=</code> parameter is not confirmed on the PyJWT page this run (RFC 8725 supports the principle).</li>
+<li>cisco-ios-cli NED element names, and <code>servicepoint=</code> in python-and-template packages.</li>
+<li>Drill solutions not executed. Sandbox tenant list.</li>
+</ul>
+<p><b>Next:</b> Monday 2026-11-23, unit 33: 1.1 Design a solution (deployment, reliability, performance, observability).</p>
+</section>
+</main>
+</body>
+</html>
+
+</body></html>

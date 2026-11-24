@@ -1,0 +1,393 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Securing a REST API</title>
+<style>
+:root{
+  --bg:#fbfbfa;--fg:#1d1f21;--muted:#5d6166;--card:#ffffff;--border:#dcdfe3;
+  --accent:#1f5fae;--accent2:#7a3fb0;--ok:#1f7a3a;--warn:#a35c00;--bad:#b3261e;
+  --code-bg:#f2f3f5;--svg-fill:#eef3fa;--svg-fill2:#f4eefa;--svg-fill3:#eef7f0;--svg-stroke:#4a5560;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#16181b;--fg:#e6e7e9;--muted:#a3a8ae;--card:#1e2125;--border:#33383e;
+    --accent:#77a9ec;--accent2:#c19ae8;--ok:#6fcf8a;--warn:#f0b35a;--bad:#f28b82;
+    --code-bg:#24282d;--svg-fill:#1f2a38;--svg-fill2:#2a2236;--svg-fill3:#1f2e25;--svg-stroke:#9aa4ae;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav.toc{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--border);padding:8px 16px;overflow-x:auto;white-space:nowrap;font-size:14px}
+nav.toc a{color:var(--accent);text-decoration:none;margin-right:14px}
+h1{font-size:1.6rem;margin:.6em 0 .2em}
+h2{font-size:1.3rem;margin-top:2em;border-bottom:1px solid var(--border);padding-bottom:4px;scroll-margin-top:48px}
+h3{font-size:1.08rem;margin-top:1.4em}
+a{color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:16px 0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px 16px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code-bg)}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code-bg);padding:1px 4px;border-radius:4px}
+.badge{display:inline-block;font-size:12px;padding:0 6px;border-radius:10px;border:1px solid var(--border);margin-left:4px;white-space:nowrap}
+.ok{color:var(--ok)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+.note{border-left:4px solid var(--warn);padding:6px 12px;background:var(--card);margin:12px 0}
+details{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+svg{width:100%;height:auto;display:block;margin:10px 0}
+svg text{fill:var(--fg);font-family:inherit}
+.s-box{fill:var(--svg-fill);stroke:var(--svg-stroke);stroke-width:1.2}
+.s-box2{fill:var(--svg-fill2);stroke:var(--svg-stroke);stroke-width:1.2}
+.s-box3{fill:var(--svg-fill3);stroke:var(--svg-stroke);stroke-width:1.2}
+.s-hl{fill:var(--svg-fill);stroke:var(--accent);stroke-width:2.5}
+.s-line{stroke:var(--svg-stroke);stroke-width:1.4;fill:none}
+.s-bad{stroke:var(--bad);stroke-width:1.6;fill:none}
+.s-ok{stroke:var(--ok);stroke-width:1.6;fill:none}
+.ref li{margin-bottom:8px}
+footer{margin-top:40px;font-size:14px;color:var(--muted);border-top:1px solid var(--border);padding-top:12px}
+</style>
+</head>
+<body>
+<nav class="toc">
+<a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anatomy">Anatomy</a><a href="#breakfix">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Deeper</a>
+</nav>
+<main>
+
+<h1>Securing a REST API: tokens, headers and secrets</h1>
+<div class="card meta">
+<div><b>Date</b><br>Monday 2026-11-16</div>
+<div><b>Blueprint</b><br>5.5 [Build] Use tokens, headers, and secrets to secure a REST API</div>
+<div><b>Domain</b><br>5.0 Security · weight ⚠ unverified</div>
+<div><b>Tier</b><br>T2 (proficiency check)</div>
+<div><b>Read time</b><br>~18 min</div>
+<div><b>Progress</b><br>Unit 29 of 49</div>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>5.5 is the <em>server side</em> of what 5.3 (OAuth token) and 5.4 (Vault) did from the client side: your API now has to reject bad callers, not just be a good caller.</li>
+<li>Three nouns in the blueprint verb map to three jobs: <b>secrets</b> are what the server keeps (signing key, key hashes), <b>tokens</b> are what callers present, and <b>headers</b> are how tokens travel and how the server answers (<code>WWW-Authenticate</code>, security headers).</li>
+<li>Status codes follow a strict split: 401 = "who are you?" (credentials missing or bad); 403 = "I know who you are, and no."</li>
+<li>Credentials go in headers, never in the URL, because URLs land in logs.</li>
+<li>Compare secrets in constant time (<code>secrets.compare_digest</code>), not with <code>==</code>.</li>
+<li>For a JWT, pin the algorithm list and validate <code>exp</code>, <code>aud</code>, <code>iss</code>. Never let the token header pick the algorithm.</li>
+<li>The signing key and API keys come from the environment or Vault at startup, never from source code.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 800 330" role="img" aria-label="5.5 among blueprint neighbors">
+<rect class="s-box" x="20" y="20" width="200" height="60" rx="8"/>
+<text x="120" y="45" text-anchor="middle" font-size="15" font-weight="600">2.1 Build REST API</text>
+<text x="120" y="66" text-anchor="middle" font-size="13">FastAPI/Flask app</text>
+<rect class="s-box" x="20" y="120" width="200" height="60" rx="8"/>
+<text x="120" y="145" text-anchor="middle" font-size="15" font-weight="600">2.2 CLI client</text>
+<text x="120" y="166" text-anchor="middle" font-size="13">sends headers</text>
+<rect class="s-hl" x="300" y="100" width="200" height="100" rx="10"/>
+<text x="400" y="132" text-anchor="middle" font-size="17" font-weight="700">5.5 Secure REST API</text>
+<text x="400" y="156" text-anchor="middle" font-size="13">API key · Bearer/JWT</text>
+<text x="400" y="176" text-anchor="middle" font-size="13">HMAC · sec headers</text>
+<rect class="s-box2" x="580" y="20" width="200" height="60" rx="8"/>
+<text x="680" y="45" text-anchor="middle" font-size="15" font-weight="600">5.3 OAuth2 token</text>
+<text x="680" y="66" text-anchor="middle" font-size="13">issuer side of tokens</text>
+<rect class="s-box2" x="580" y="120" width="200" height="60" rx="8"/>
+<text x="680" y="145" text-anchor="middle" font-size="15" font-weight="600">5.4 Vault</text>
+<text x="680" y="166" text-anchor="middle" font-size="13">where secrets live</text>
+<rect class="s-box2" x="580" y="220" width="200" height="60" rx="8"/>
+<text x="680" y="245" text-anchor="middle" font-size="15" font-weight="600">5.2 TLS cert</text>
+<text x="680" y="266" text-anchor="middle" font-size="13">transport under it all</text>
+<rect class="s-box3" x="20" y="220" width="200" height="60" rx="8"/>
+<text x="120" y="245" text-anchor="middle" font-size="15" font-weight="600">5.1 OWASP</text>
+<text x="120" y="266" text-anchor="middle" font-size="13">access control rules</text>
+<path class="s-line" d="M220 50 L300 130"/><path class="s-line" d="M220 150 L300 150"/>
+<path class="s-line" d="M220 250 L300 175"/><path class="s-line" d="M500 130 L580 50"/>
+<path class="s-line" d="M500 150 L580 150"/><path class="s-line" d="M500 175 L580 250"/>
+<text x="400" y="310" text-anchor="middle" font-size="13" fill="currentColor">Tool chain: uv · FastAPI · PyJWT · secrets/hmac · curl -i · Vault</text>
+</svg>
+
+<h2 id="l1">L1 — Concept: what "securing" means for an API</h2>
+<p>A REST API has no login page and no session cookie by default. Every request arrives cold, so it must carry its own proof of identity, and the server must check that proof on every request. The OWASP REST Security Cheat Sheet states the baseline: HTTPS only, access checks at every endpoint, and an API key on every request to a protected endpoint. <a href="https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html" target="_blank" rel="noopener">REST Security Cheat Sheet</a><span class="badge ok">✅</span></p>
+<p>Think of it in networking terms. TLS is your IPsec tunnel: it protects the bytes in transit, but anything inside the tunnel is trusted only as far as you authenticate it. The token in the <code>Authorization</code> header is like the AAA credential on the far end. The server still has to decide what that identity may do, and that decision is authorization, the equivalent of command authorization on a TACACS+ server.</p>
+
+<svg viewBox="0 0 800 300" role="img" aria-label="Layered model of REST API security">
+<rect class="s-box3" x="40" y="20" width="720" height="44" rx="6"/>
+<text x="60" y="48" font-size="15" font-weight="600">L4 Response hygiene</text>
+<text x="330" y="48" font-size="13">Cache-Control: no-store · nosniff · generic errors · 429</text>
+<rect class="s-box2" x="40" y="74" width="720" height="44" rx="6"/>
+<text x="60" y="102" font-size="15" font-weight="600">L3 Authorization</text>
+<text x="330" y="102" font-size="13">scope/role check per endpoint → 403</text>
+<rect class="s-hl" x="40" y="128" width="720" height="44" rx="6"/>
+<text x="60" y="156" font-size="15" font-weight="600">L2 Authentication</text>
+<text x="330" y="156" font-size="13">X-API-Key · Bearer JWT · HMAC signature → 401</text>
+<rect class="s-box" x="40" y="182" width="720" height="44" rx="6"/>
+<text x="60" y="210" font-size="15" font-weight="600">L1 Transport</text>
+<text x="330" y="210" font-size="13">TLS (5.2) · optional mTLS for privileged clients</text>
+<rect class="s-box" x="40" y="236" width="720" height="44" rx="6"/>
+<text x="60" y="264" font-size="15" font-weight="600">L0 Secret supply</text>
+<text x="330" y="264" font-size="13">env vars / .env / Vault (5.4) → loaded at startup</text>
+</svg>
+
+<p>The three nouns in the blueprint line map onto those layers:</p>
+<ul>
+<li><b>Secrets</b> live at L0: the JWT signing key, the API key list (or its hashes), and the webhook HMAC secret. FastAPI's settings guide loads them from environment variables through <code>pydantic-settings</code>. <a href="https://fastapi.tiangolo.com/advanced/settings/" target="_blank" rel="noopener">Settings and Environment Variables</a><span class="badge ok">✅</span></li>
+<li><b>Tokens</b> are what the caller presents at L2. They can be opaque (a random string you look up) or self-contained (a JWT you verify mathematically).</li>
+<li><b>Headers</b> carry tokens in (<code>Authorization</code>, <code>X-API-Key</code>, a signature header) and carry policy out (<code>WWW-Authenticate</code>, <code>Cache-Control</code>, <code>X-Content-Type-Options</code>).</li>
+</ul>
+
+<h2 id="l2">L2 — Mechanics: the four token patterns</h2>
+<div class="tw"><table>
+<tr><th>Pattern</th><th>Request header</th><th>Server holds</th><th>Server checks</th><th>Strength / weakness</th><th>Cisco example</th></tr>
+<tr><td>Static API key</td><td><code>X-API-Key: k</code> or <code>Authorization: Bearer k</code></td><td>Key list (ideally hashes)</td><td>Constant-time match</td><td>Simple; no expiry, so revocation is manual. OWASP says don't rely on it alone for high-value data.</td><td>Meraki v1: <code>Authorization: Bearer &lt;key&gt;</code>; keys never expire, max two per identity</td></tr>
+<tr><td>HTTP Basic</td><td><code>Authorization: Basic b64(user:pw)</code></td><td>Password hashes</td><td>Hash verify</td><td>Password on every call; use only to mint a token.</td><td>Catalyst Center: Basic on <code>POST /dna/system/api/v1/auth/token</code> only</td></tr>
+<tr><td>Opaque session token</td><td><code>X-Auth-Token: t</code> / <code>Bearer t</code></td><td>Token store with expiry</td><td>Lookup + expiry</td><td>Revocable instantly; needs shared state.</td><td>Catalyst Center: <code>X-Auth-Token</code> on later calls</td></tr>
+<tr><td>JWT (HS256/RS256)</td><td><code>Authorization: Bearer h.p.s</code></td><td>Signing key (HS) or public key (RS)</td><td>Signature, alg allowlist, <code>exp</code>/<code>aud</code>/<code>iss</code></td><td>Stateless; revocation needs short TTL or a <code>jti</code> denylist.</td><td>—</td></tr>
+<tr><td>HMAC body signature</td><td><code>X-Webex-Signature: sha256=…</code></td><td>Shared secret per sender</td><td>HMAC over <em>raw</em> body, constant-time</td><td>Proves integrity + origin; replay protection needs a timestamp.</td><td>Webex webhooks: <code>X-Spark-Signature</code> (HMAC-SHA1) or <code>X-Webex-Signature</code> (SHA-256/512)</td></tr>
+</table></div>
+<p>Sources for the Cisco column: <a href="https://developer.cisco.com/meraki/api-v1/authorization/" target="_blank" rel="noopener">Meraki Authorization</a><span class="badge ok">✅</span>, <a href="https://developer.cisco.com/docs/catalyst-center/api-quick-start/" target="_blank" rel="noopener">Catalyst Center API Quick Start</a><span class="badge ok">✅</span>, <a href="https://developer.webex.com/docs/receive-and-verify-webhooks" target="_blank" rel="noopener">Webex: Receive and verify events</a><span class="badge ok">✅</span>. These are worth knowing as reference designs. If a task asks you to "secure the API like vendor X does", these are the header shapes to copy.</p>
+
+<h3>Bearer syntax and the challenge header</h3>
+<p>RFC 6750 §2.1 defines <code>Authorization: Bearer &lt;b64token&gt;</code> and requires resource servers to support it. §2.3 allows an <code>access_token</code> query parameter, but says clients SHOULD NOT use it, because URLs get logged. §3 says a resource server MUST send <code>WWW-Authenticate</code> when the request lacks valid credentials. §3.1 defines the error codes: <code>invalid_request</code> → 400, <code>invalid_token</code> → 401, <code>insufficient_scope</code> → 403. <a href="https://www.rfc-editor.org/rfc/rfc6750" target="_blank" rel="noopener">RFC 6750</a><span class="badge ok">✅</span></p>
+
+<h3>The request path inside FastAPI</h3>
+<svg viewBox="0 0 800 380" role="img" aria-label="Request flow through a secured FastAPI endpoint">
+<rect class="s-box" x="20" y="20" width="130" height="44" rx="6"/><text x="85" y="47" text-anchor="middle" font-size="14">Client</text>
+<rect class="s-box" x="180" y="20" width="150" height="44" rx="6"/><text x="255" y="47" text-anchor="middle" font-size="14">TLS terminator</text>
+<rect class="s-box2" x="360" y="20" width="160" height="44" rx="6"/><text x="440" y="47" text-anchor="middle" font-size="14">Security dependency</text>
+<rect class="s-box2" x="550" y="20" width="110" height="44" rx="6"/><text x="605" y="47" text-anchor="middle" font-size="14">Authz check</text>
+<rect class="s-box3" x="690" y="20" width="95" height="44" rx="6"/><text x="737" y="47" text-anchor="middle" font-size="14">Handler</text>
+<path class="s-line" d="M85 64 V360"/><path class="s-line" d="M255 64 V360"/><path class="s-line" d="M440 64 V360"/><path class="s-line" d="M605 64 V360"/><path class="s-line" d="M737 64 V360"/>
+<path class="s-ok" d="M85 100 H250"/><text x="168" y="94" text-anchor="middle" font-size="12">GET /devices + header</text>
+<path class="s-ok" d="M255 130 H435"/><text x="345" y="124" text-anchor="middle" font-size="12">plaintext HTTP</text>
+<path class="s-bad" d="M440 165 H90"/><text x="265" y="159" text-anchor="middle" font-size="12">no/bad header → 401 + WWW-Authenticate</text>
+<path class="s-ok" d="M440 200 H600"/><text x="520" y="194" text-anchor="middle" font-size="12">identity + scopes</text>
+<path class="s-bad" d="M605 235 H90"/><text x="345" y="229" text-anchor="middle" font-size="12">valid, not allowed → 403</text>
+<path class="s-ok" d="M605 270 H732"/><text x="668" y="264" text-anchor="middle" font-size="12">allowed</text>
+<path class="s-ok" d="M737 315 H90"/><text x="410" y="309" text-anchor="middle" font-size="12">200 + Cache-Control: no-store, nosniff (middleware)</text>
+</svg>
+<p>FastAPI expresses each check as a dependency. The classes in <code>fastapi.security</code> (<code>APIKeyHeader</code>, <code>HTTPBearer</code>, <code>HTTPBasic</code>) only <em>extract</em> the credential. They raise 401 if it is missing, and they never validate it. Validation is your code. <a href="https://fastapi.tiangolo.com/reference/security/" target="_blank" rel="noopener">Security Tools</a><span class="badge ok">✅</span></p>
+
+<h2 id="l3">L3 — Exam detail: the traps</h2>
+<h3>1. 401 versus 403 changed in FastAPI 0.122.0</h3>
+<p>Before FastAPI 0.122.0, a missing credential made the built-in security classes return <b>403</b>. From 0.122.0 on, they return <b>401</b> with a <code>WWW-Authenticate</code> header (<code>APIKey</code>, <code>Bearer</code> or <code>Basic</code>). FastAPI documents how to restore the old behavior: subclass the class and override <code>make_not_authenticated_error</code>. <a href="https://fastapi.tiangolo.com/how-to/authentication-error-status-code/" target="_blank" rel="noopener">Use Old 403 Authentication Error Status Codes</a><span class="badge ok">✅</span>. If a task's grader expects a specific code, check <code>fastapi.__version__</code> before you argue with it. ⚠ The FastAPI version on the exam workstation is unverified.</p>
+<p><code>APIKeyHeader</code> sends <code>WWW-Authenticate: APIKey</code>. That challenge isn't standardized. FastAPI sends it because a 401 requires some challenge, per the Security Tools page.</p>
+
+<h3>2. Constant-time comparison</h3>
+<p><code>==</code> stops at the first differing byte, which leaks timing. <code>secrets.compare_digest</code> is the same function as <code>hmac.compare_digest</code>. It takes about the same time wherever the mismatch is, but it accepts only bytes or <em>ASCII-only</em> str. FastAPI's Basic-auth example encodes values to UTF-8 bytes first for that reason. <a href="https://fastapi.tiangolo.com/advanced/security/http-basic-auth/" target="_blank" rel="noopener">HTTP Basic Auth</a><span class="badge ok">✅</span> · <a href="https://docs.python.org/3/library/secrets.html" target="_blank" rel="noopener">secrets</a><span class="badge ok">✅ (3.15 doc; module unchanged since 3.6)</span>. Unequal lengths can still leak the length, but not the value (hmac docs).</p>
+
+<h3>3. JWT validation discipline</h3>
+<p>RFC 8725 is the checklist. The attacks it describes are <code>alg: none</code>, RS256→HS256 confusion (the RSA public key used as an HMAC secret), and brute-forcing a weak HS256 key. The defenses: §3.1 verify against an allowlist of algorithms, §3.5 use high-entropy keys (never a human password), §3.8 validate issuer and subject, and §3.9 validate audience. <a href="https://www.rfc-editor.org/rfc/rfc8725.html" target="_blank" rel="noopener">RFC 8725</a><span class="badge ok">✅</span>. In PyJWT, that becomes <code>algorithms=[...]</code>, <code>audience=</code>, <code>issuer=</code>, and <code>options={"require": [...]}</code>. <code>exp</code> is checked automatically and raises <code>ExpiredSignatureError</code>, and <code>leeway</code> absorbs clock skew. <a href="https://pyjwt.readthedocs.io/en/latest/usage.html" target="_blank" rel="noopener">Usage Examples — PyJWT</a><span class="badge ok">✅ (2.15.1)</span>. The claim names come from RFC 7519 §4.1.1–4.1.7: <code>iss sub aud exp nbf iat jti</code>. <a href="https://www.rfc-editor.org/rfc/rfc7519" target="_blank" rel="noopener">RFC 7519</a><span class="badge ok">✅</span></p>
+<p>The FastAPI tutorial generates the HS256 key with <code>openssl rand -hex 32</code>, sets a 30-minute token, puts the username in <code>sub</code>, and turns any <code>InvalidTokenError</code> into a 401 with <code>WWW-Authenticate: Bearer</code>. <a href="https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/" target="_blank" rel="noopener">OAuth2 with Password (and hashing), Bearer with JWT tokens</a><span class="badge ok">✅</span>. The tutorial does <em>not</em> set or check <code>aud</code>/<code>iss</code>. RFC 8725 says to check them when one issuer serves several APIs.</p>
+
+<h3>4. HMAC over raw bytes</h3>
+<p>Webex computes the signature over the raw request bytes, before any JSON parsing. If you parse and re-serialize first, whitespace and key order change and the digest won't match. <code>X-Webex-Signature</code> can carry several <code>alg=digest</code> pairs separated by commas, and you verify each pair on its own. In FastAPI, read the raw body with <code>await request.body()</code>. ⚠ That call isn't on any page fetched today, so test it in the lab. <code>hmac.new</code> requires <code>digestmod</code> (since 3.8). <a href="https://docs.python.org/3/library/hmac.html" target="_blank" rel="noopener">hmac</a><span class="badge ok">✅ (3.15 doc)</span></p>
+
+<h3>5. Response headers and hygiene</h3>
+<p>For API responses, OWASP lists <code>Cache-Control: no-store</code>, <code>Content-Security-Policy: frame-ancestors 'none'</code>, a correct <code>Content-Type</code>, HSTS, <code>X-Content-Type-Options: nosniff</code> and <code>X-Frame-Options: DENY</code>. It also says to return 405 for methods you don't allow, 415 for unsupported request types, and 429 for rate limits, and to keep error messages generic. In FastAPI, the clean place to add these headers is one <code>@app.middleware("http")</code> function. <a href="https://fastapi.tiangolo.com/tutorial/middleware/" target="_blank" rel="noopener">Middleware</a><span class="badge ok">✅</span></p>
+
+<h3>6. Secrets supply</h3>
+<p><code>BaseSettings</code> maps environment variables to fields case-insensitively, can read <code>.env</code> (needs <code>python-dotenv</code>), and is cached with <code>@lru_cache</code>, which tests can override through <code>app.dependency_overrides</code>. If the task says the key lives in Vault, read it once at startup: <code>GET /v1/&lt;mount&gt;/data/&lt;path&gt;</code> with <code>X-Vault-Token</code>, and the value is under <code>data.data</code>. <a href="https://developer.hashicorp.com/vault/api-docs/secret/kv/kv-v2" target="_blank" rel="noopener">KV secrets engine - version 2 (API)</a><span class="badge ok">✅ (latest; pin 1.20)</span>. ⚠ The <code>/v1/</code> prefix isn't in today's summary. It is standard Vault, but verify it with <code>vault kv get -output-curl-string</code>.</p>
+
+<h2 id="anatomy">Anatomy (annotated, not the drill solution)</h2>
+<h3>A. API key header with constant-time match</h3>
+<pre><code>from typing import Annotated
+import secrets
+from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import APIKeyHeader
+
+api_key_hdr = APIKeyHeader(name="X-API-Key")        # missing → 401, WWW-Authenticate: APIKey (≥0.122.0)
+
+def require_key(key: Annotated[str, Depends(api_key_hdr)]) -> str:
+    expected = get_settings().api_key.encode()      # from env/.env, never literal
+    if not secrets.compare_digest(key.encode(), expected):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid API key",
+                            headers={"WWW-Authenticate": "APIKey"})
+    return key
+</code></pre>
+<p>The pieces are documented separately (APIKeyHeader on Security Tools, compare_digest on HTTP Basic Auth). Combining them like this is ⚠ unverified, so test it in the lab.</p>
+
+<h3>B. JWT verify with audience, issuer, required claims (PyJWT)</h3>
+<pre><code>import jwt
+claims = jwt.decode(
+    token, SIGNING_KEY,
+    algorithms=["HS256"],                      # allowlist; header 'alg' is not trusted
+    audience="netops-api", issuer="lab-idp",   # InvalidAudienceError / InvalidIssuerError
+    options={"require": ["exp", "iss", "sub"]},# MissingRequiredClaimError
+    leeway=10,                                 # seconds of clock skew on exp/nbf
+)
+if "admin" not in claims.get("scope", "").split():
+    raise HTTPException(403, "insufficient_scope")   # authenticated, not authorized
+</code></pre>
+<p>The <code>scope</code> claim layout is your own convention (⚠). Space-separated scopes follow OAuth practice from 5.3.</p>
+
+<h3>C. Webhook HMAC verify (Webex <code>X-Webex-Signature</code> shape)</h3>
+<pre><code>raw = await request.body()                     # ⚠ unverified call; raw bytes, not request.json()
+hdr = request.headers.get("x-webex-signature", "")   # look up case-insensitively
+for pair in (p.strip() for p in hdr.split(",")):
+    alg, _, digest = pair.partition("=")
+    if alg == "sha256":
+        mine = hmac.new(SECRET, raw, digestmod="sha256").hexdigest()  # lowercase hex
+        if hmac.compare_digest(mine, digest):
+            break
+else:
+    raise HTTPException(401, "bad signature")
+</code></pre>
+<p>Pair format <code>alg=digest</code> and lowercase hex come from the Webex guide. The exact algorithm label strings are ⚠ unverified.</p>
+
+<h3>D. Security headers middleware</h3>
+<pre><code>@app.middleware("http")
+async def sec_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Content-Security-Policy"] = "frame-ancestors 'none'"
+    return response
+</code></pre>
+
+<h2 id="breakfix">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Grader expects 403 for missing token; API returns 401 (or the reverse)</td><td>FastAPI default changed in 0.122.0</td><td><code>python -c "import fastapi;print(fastapi.__version__)"</code> · <code>curl -i</code> with no header</td><td>Override <code>make_not_authenticated_error</code>, or raise explicitly in your own dependency</td></tr>
+<tr><td>Valid-looking JWT rejected with <code>InvalidAudienceError</code></td><td><code>aud</code> in token ≠ <code>audience=</code> on decode (or one side missing)</td><td>Decode the claims without verification and inspect them (⚠ <code>options={"verify_signature": False}</code> unverified today)</td><td>Align issuer config and <code>audience=</code>. Don't drop audience checking.</td></tr>
+<tr><td>Webhook signature never matches</td><td>HMAC computed over <code>json.dumps(await request.json())</code>, not raw bytes; or SHA-1 vs SHA-256 mix-up</td><td>Log length of raw body vs re-serialized body; check which header arrived</td><td>HMAC the raw body; choose algorithm from the header pair</td></tr>
+<tr><td><code>curl -L</code> gets 401 "Missing API key" though the key is right</td><td>Client strips <code>Authorization</code> when following a redirect (Meraki doc)</td><td><code>curl -v</code>: watch the 30x, then the second request without the header</td><td>Call the final URL, or <code>--location-trusted</code> if the redirect target is trusted</td></tr>
+<tr><td><code>TypeError</code> inside key check for some users only</td><td><code>compare_digest</code> given non-ASCII <code>str</code></td><td>Reproduce with a key containing <code>á</code></td><td><code>.encode("utf8")</code> both sides</td></tr>
+</table></div>
+<p>One more to recognize: a token passed as <code>?access_token=</code> shows up in uvicorn and proxy access logs. RFC 6750 §2.3 and OWASP both say to move it into a header.</p>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>python -m pydoc fastapi.security.APIKeyHeader</code> shows the constructor args (<code>name</code>, <code>scheme_name</code>, <code>description</code>, <code>auto_error</code>). Use <code>pydoc jwt.decode</code> for PyJWT options.</li>
+<li><code>python -c "import fastapi,jwt;print(fastapi.__version__,jwt.__version__)"</code> settles the 401/403 question in five seconds.</li>
+<li>Generate keys with <code>python -c "import secrets;print(secrets.token_urlsafe(32))"</code> or <code>openssl rand -hex 32</code>. The <code>secrets</code> docs call 32 bytes sufficient (2015 baseline).</li>
+<li>Swagger at <code>/docs</code> shows a padlock per protected route. That's a quick way to check every route got its dependency.</li>
+<li><code>curl -i</code> shows status and <code>WWW-Authenticate</code> together. Use <code>-H 'X-API-Key: …'</code> and <code>-H 'Authorization: Bearer …'</code>.</li>
+<li><code>vault kv get -output-curl-string secret/app</code> prints the exact HTTP call your app should make (from 5.4).</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Requirement.</b> Build a FastAPI app <code>netops_api</code> with three routes:</p>
+<ul>
+<li><code>GET /health</code> is open.</li>
+<li><code>GET /devices</code> needs header <code>X-API-Key</code> matching env var <code>NETOPS_API_KEY</code>. Return a static list such as <code>["cat8kv","iosv"]</code>.</li>
+<li><code>POST /admin/reload</code> needs <code>Authorization: Bearer &lt;JWT&gt;</code>, HS256, <code>aud="netops-api"</code>, and <code>scope</code> containing <code>admin</code>.</li>
+</ul>
+<p>Missing or invalid credentials → 401 with <code>WWW-Authenticate</code>. Valid JWT without admin scope → 403. Every response carries <code>Cache-Control: no-store</code>.</p>
+<p><b>Reference fields.</b> <code>fastapi.security.APIKeyHeader(name=...)</code>, <code>HTTPBearer()</code> → <code>.credentials</code>, <code>jwt.decode(..., algorithms=, audience=)</code>, <code>secrets.compare_digest</code>, env <code>NETOPS_API_KEY</code>, <code>NETOPS_JWT_KEY</code>.</p>
+<p><b>Verification.</b></p>
+<ol>
+<li><code>curl -i :8000/devices</code> → 401 plus <code>WWW-Authenticate</code>.</li>
+<li>Same request with the right key → 200 plus <code>cache-control: no-store</code>.</li>
+<li>Mint two tokens with <code>jwt.encode</code>, one with <code>scope:"read"</code> and one with <code>"admin"</code>. Expect 403, then 200.</li>
+<li>A token with <code>aud="other"</code> → 401.</li>
+</ol>
+<p><b>Target.</b> Candidate Workstation (local uvicorn). No network device needed.</p>
+</div>
+<details><summary>Hint</summary>
+<p>Write two dependency functions. <code>require_key</code> wraps <code>APIKeyHeader</code>. <code>require_admin</code> wraps <code>HTTPBearer</code>, decodes the token, and raises 401 for <code>jwt.InvalidTokenError</code> and 403 for a missing scope. Attach the headers in one middleware. Read both secrets through a cached settings object.</p>
+</details>
+<details><summary>Solution sketch</summary>
+<pre><code>from functools import lru_cache
+from typing import Annotated
+import secrets, jwt
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.security import APIKeyHeader, HTTPBearer, HTTPAuthorizationCredentials
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    netops_api_key: str
+    netops_jwt_key: str
+
+@lru_cache
+def get_settings(): return Settings()
+
+app = FastAPI()
+key_hdr, bearer = APIKeyHeader(name="X-API-Key"), HTTPBearer()
+
+@app.middleware("http")
+async def no_store(request: Request, call_next):
+    r = await call_next(request); r.headers["Cache-Control"] = "no-store"; return r
+
+def require_key(k: Annotated[str, Depends(key_hdr)]):
+    if not secrets.compare_digest(k.encode(), get_settings().netops_api_key.encode()):
+        raise HTTPException(401, "Invalid API key", headers={"WWW-Authenticate": "APIKey"})
+
+def require_admin(c: Annotated[HTTPAuthorizationCredentials, Depends(bearer)]):
+    try:
+        claims = jwt.decode(c.credentials, get_settings().netops_jwt_key,
+                            algorithms=["HS256"], audience="netops-api",
+                            options={"require": ["exp", "sub"]})
+    except jwt.InvalidTokenError:
+        raise HTTPException(401, "Invalid token", headers={"WWW-Authenticate": "Bearer"})
+    if "admin" not in claims.get("scope", "").split():
+        raise HTTPException(403, "insufficient_scope")
+    return claims
+
+@app.get("/health")
+def health(): return {"ok": True}
+
+@app.get("/devices", dependencies=[Depends(require_key)])
+def devices(): return ["cat8kv", "iosv"]
+
+@app.post("/admin/reload")
+def reload(claims: Annotated[dict, Depends(require_admin)]): return {"by": claims["sub"]}
+</code></pre>
+<p>⚠ Whole solution untested. Check that <code>InvalidAudienceError</code> is a subclass of <code>InvalidTokenError</code> in your PyJWT version, and that <code>fastapi[standard]</code>/<code>pydantic-settings</code> are installed.</p>
+</details>
+
+<h2 id="recall">Recall check</h2>
+<ol>
+<li>A request has a well-formed, unexpired JWT whose <code>scope</code> lacks the needed value. Which status code and which RFC 6750 error code apply?</li>
+<li>Why must a JWT verifier pass <code>algorithms=[...]</code> instead of trusting the token header, and which two attacks does that stop?</li>
+<li>Your Webex webhook receiver rejects every event although the secret is right. Give the most likely cause and the fix.</li>
+<li>On FastAPI ≥ 0.122.0, what does <code>APIKeyHeader</code> return when the header is missing, and how do you get the old behavior?</li>
+<li>(from 2026-11-09) A <code>genie diff</code> shows hundreds of changed counter lines. Where do the default exclusions come from, and which two flags change them?</li>
+<li>(from 2026-11-10) An app reads <code>secret/app</code> fine via CLI but its token gets 403 over HTTP. What path error is likely, and how do you find the right path quickly?</li>
+</ol>
+<details><summary>Answers</summary>
+<ol>
+<li>403 with <code>insufficient_scope</code> (RFC 6750 §3.1). The caller is authenticated but lacks privilege.</li>
+<li>The <code>alg</code> header is attacker-controlled. An allowlist blocks <code>alg: none</code> and the RS256→HS256 key-confusion attack (RFC 8725 §2.1, §3.1).</li>
+<li>The HMAC is computed over parsed or re-serialized JSON instead of the raw bytes, or with the wrong algorithm for the header. Compute it over the raw body and pick the algorithm from the header pair (SHA-1 for <code>X-Spark-Signature</code>).</li>
+<li>401, detail "Not authenticated", <code>WWW-Authenticate: APIKey</code>. To get 403 back, subclass the class and override <code>make_not_authenticated_error</code>.</li>
+<li><code>verification_datafile.yaml</code> for learn snapshots and <code>pts_datafile.yaml</code> for parse snapshots. <code>--exclude</code> adds exclusions, and <code>--no-default-exclusion</code> removes the defaults.</li>
+<li>For KV v2, the API and policy path is <code>secret/data/app</code>, and listing uses <code>metadata/</code>. Use <code>-output-curl-string</code> or <code>-output-policy</code> to see the real path.</li>
+</ol>
+</details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="ref">
+<li><a href="https://developer.cisco.com/meraki/api-v1/authorization/" target="_blank" rel="noopener">Authentication - Meraki Dashboard API v1 - Cisco Meraki Developer Hub</a><span class="badge ok">✅</span> · Meraki v1 · verified 2026-11-16 · Bearer API key, legacy header, header stripped on redirect, key storage.</li>
+<li><a href="https://developer.cisco.com/docs/catalyst-center/api-quick-start/" target="_blank" rel="noopener">API Quick Start - Cisco Catalyst Center API 3.1.6 - Cisco DevNet</a><span class="badge ok">✅</span> · 3.1.6 · verified 2026-11-16 · Basic auth used only to mint an <code>X-Auth-Token</code>.</li>
+<li><a href="https://developer.webex.com/docs/receive-and-verify-webhooks" target="_blank" rel="noopener">Receive and verify events (Webex for Developers)</a><span class="badge ok">✅</span> · undated · verified 2026-11-16 · HMAC header verification, raw body, constant-time compare.</li>
+</ul>
+<h3>Standards</h3>
+<ul class="ref">
+<li><a href="https://www.rfc-editor.org/rfc/rfc6750" target="_blank" rel="noopener">RFC 6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage</a><span class="badge ok">✅</span> · RFC · verified 2026-11-16 · header syntax, WWW-Authenticate, 400/401/403 error codes.</li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8725.html" target="_blank" rel="noopener">RFC 8725: JSON Web Token Best Current Practices</a><span class="badge ok">✅</span> · RFC · verified 2026-11-16 · JWT attack list and validation checklist.</li>
+</ul>
+<h3>Third-party</h3>
+<ul class="ref">
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html" target="_blank" rel="noopener">REST Security - OWASP Cheat Sheet Series</a><span class="badge ok">✅</span> · current · verified 2026-11-16 · security headers, status-code table, API key and JWT rules.</li>
+<li><a href="https://fastapi.tiangolo.com/reference/security/" target="_blank" rel="noopener">Security Tools - FastAPI</a><span class="badge ok">✅</span> · current (≥0.122.0 behavior) · verified 2026-11-16 · constructor args and 401 behavior of every security class.</li>
+<li><a href="https://pyjwt.readthedocs.io/en/latest/usage.html" target="_blank" rel="noopener">Usage Examples — PyJWT 2.15.1 documentation</a><span class="badge ok">✅</span> · 2.15.1 · verified 2026-11-16 · exp/aud/iss/require/leeway.</li>
+</ul>
+
+<footer>
+<p><b>Links: 17 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims:</b> Domain 5 weight. FastAPI, PyJWT and pydantic-settings versions on the exam workstation (the pins list none). Python docs fetched are 3.15 (pin 3.13). <code>await request.body()</code> for raw bytes. Webex algorithm label strings in the header. <code>options={"verify_signature": False}</code>. The <code>/v1/</code> Vault path prefix. Vault docs are latest (pin 1.20). The combined APIKeyHeader + compare_digest snippet. <code>scope</code> claim convention. The drill solution as a whole (untested), including the InvalidAudienceError subclass relationship. RFC 9110 401/403 sections (fetch truncated, not linked). Recall answers 5–6 are restated from earlier pages.</p>
+<p><b>Tomorrow:</b> Unit 30, 2.9.b NSO: basic YANG module (lists, leaf-lists, types, leafrefs, when/must).</p>
+</footer>
+</main>
+</body>
+</html>
+
+</body></html>

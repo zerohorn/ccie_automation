@@ -1,0 +1,392 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>pyATS AEtest Jobs</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single reading column, sticky TOC strip, lab-notebook cards for code and drills */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1b2330; --muted:#5a6676; --line:#d9dee6;
+  --accent:#0b6e8a; --accent-soft:#e2f1f5; --code-bg:#eef1f5;
+  --ok:#1f7a3d; --warn:#9a5b00; --bad:#b3261e; --block:#6b4fa0;
+  --font-body:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161d; --surface:#18202a; --fg:#e4e9f0; --muted:#9aa7b7; --line:#2b3644;
+  --accent:#4cc0de; --accent-soft:#16323c; --code-bg:#0d1218;
+  --ok:#5cc785; --warn:#e3a34a; --bad:#f07a72; --block:#b49ae6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161d; --surface:#18202a; --fg:#e4e9f0; --muted:#9aa7b7; --line:#2b3644;
+  --accent:#4cc0de; --accent-soft:#16323c; --code-bg:#0d1218;
+  --ok:#5cc785; --warn:#e3a34a; --bad:#f07a72; --block:#b49ae6; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+main{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{line-height:1.25;text-wrap:balance;margin:0}
+h1{font-size:1.75rem} h2{font-size:1.35rem;padding-top:8px;border-top:1px solid var(--line)} h3{font-size:1.08rem;margin-top:8px}
+p{margin:0} section{display:flex;flex-direction:column;gap:12px;min-width:0}
+a{color:var(--accent)} a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);
+  margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:8px max(16px,env(safe-area-inset-left,0px));overflow-x:auto;white-space:nowrap;font-size:.85rem}
+nav.toc a{margin-right:14px;text-decoration:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px 16px;font-size:.9rem;color:var(--muted)}
+.meta b{color:var(--fg);font-weight:600}
+.eyebrow{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+ul,ol{margin:0;padding-left:22px} li{margin:3px 0}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--code-bg);padding:1px 4px;border-radius:3px}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:12px;overflow-x:auto;font-size:.84rem;line-height:1.5}
+pre code{background:none;padding:0}
+.tw{overflow-x:auto} table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top} th{background:var(--accent-soft)}
+.svgw{overflow-x:auto} svg{width:100%;height:auto;display:block}
+svg text{font-family:var(--font-body);fill:var(--fg)}
+.s-box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.s-hi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.s-ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+.s-bad{stroke:var(--bad);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+.s-mut{fill:var(--muted)} .s-badt{fill:var(--bad)} .s-blk{fill:var(--block)} .s-ok{fill:var(--ok)}
+.badge{display:inline-block;font-size:.75rem;border:1px solid var(--line);border-radius:10px;padding:0 7px;margin-left:4px;white-space:nowrap}
+.warn{color:var(--warn);font-weight:600}
+details{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 12px}
+details>summary{cursor:pointer;font-weight:600}
+details[open]>summary{margin-bottom:8px}
+.refs li{margin:8px 0} .refs .why{color:var(--muted);font-size:.9rem;display:block}
+footer{font-size:.88rem;color:var(--muted);display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<nav class="toc" aria-label="Contents">
+<a href="#snap">Snapshot</a><a href="#fit">Where it fits</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anatomy">Anatomy</a><a href="#breakfix">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<main>
+<header class="card" style="margin-top:16px">
+  <span class="eyebrow">CCIE Automation v1.1 · Daily page</span>
+  <h1>3.3.c pyATS: develop and execute test jobs and scripts with AEtest</h1>
+  <div class="meta">
+    <span>Date <b>Thu 2026-11-12</b></span>
+    <span>Blueprint <b>3.3.c</b> (parent 3.3 Modify/troubleshoot an automated test using pyATS)</span>
+    <span>Domain <b>3</b> · weight <span class="warn">⚠ unverified</span></span>
+    <span>Tier <b>1 (gap)</b></span>
+    <span>Read time <b>~18 min</b></span>
+    <span>Unit <b>28 of 49</b></span>
+  </div>
+</header>
+
+<section id="snap">
+<h2>Mental snapshot</h2>
+<ul>
+<li>A <b>testscript</b> is a Python module with up to three kinds of container: one optional <code>CommonSetup</code>, any number of <code>Testcase</code> classes, one optional <code>CommonCleanup</code>. Decorated methods inside them are the sections.</li>
+<li>Order is definition order. Setup runs first, tests run in script order, cleanup runs last, at every level.</li>
+<li>Results come from exceptions: <code>AssertionError</code> gives Failed, any other uncaught exception gives Errored. <code>self.failed()</code> and friends end a section immediately.</li>
+<li>Results roll up. Ranking from strongest: Aborted, Errored, Failed, Blocked, Passx, Passed, Skipped.</li>
+<li><b>Steps</b> split one section into reported sub-checks. By default the first non-passing step ends the section; <code>continue_=True</code> keeps going.</li>
+<li>Parameters are injected by argument name and shadow outward-in: section, then testcase, then script. Job or CLI arguments overwrite script defaults.</li>
+<li>Two ways to run: standalone (<code>aetest.main()</code>, no archive) and Easypy (<code>pyats run job</code>, archive, reports, <code>testbed</code> injected).</li>
+</ul>
+</section>
+
+<section id="fit">
+<h2>Where this fits</h2>
+<p>3.3.a gave you the testbed. 3.3.b gave you structured data from <code>parse</code> and <code>learn</code>. 3.3.c is the harness that turns those into pass/fail verdicts a pipeline can act on. The blueprint verb on the parent is <i>modify/troubleshoot</i>, so expect task shapes like "this script reports Blocked; make it pass" or "add a check to an existing job" rather than writing a framework from nothing.</p>
+<div class="svgw">
+<svg viewBox="0 0 760 270" role="img" aria-label="pyATS tool chain: testbed file, Genie parsers and AEtest script feed an Easypy job, which writes an archive viewed with pyats logs and consumed by CI">
+  <rect x="10" y="20" width="160" height="58" rx="6" class="s-box"/>
+  <text x="90" y="44" text-anchor="middle" font-size="14" font-weight="600">3.3.a testbed.yaml</text>
+  <text x="90" y="64" text-anchor="middle" font-size="12" class="s-mut">devices, creds, connections</text>
+  <rect x="10" y="110" width="160" height="58" rx="6" class="s-box"/>
+  <text x="90" y="134" text-anchor="middle" font-size="14" font-weight="600">3.3.b Genie</text>
+  <text x="90" y="154" text-anchor="middle" font-size="12" class="s-mut">parse / learn → dicts</text>
+  <rect x="220" y="62" width="180" height="70" rx="6" class="s-hi"/>
+  <text x="310" y="88" text-anchor="middle" font-size="14" font-weight="700">3.3.c AEtest script</text>
+  <text x="310" y="108" text-anchor="middle" font-size="12">sections, steps, asserts</text>
+  <text x="310" y="124" text-anchor="middle" font-size="12">→ results</text>
+  <rect x="440" y="62" width="140" height="70" rx="6" class="s-hi"/>
+  <text x="510" y="90" text-anchor="middle" font-size="14" font-weight="700">Easypy job.py</text>
+  <text x="510" y="110" text-anchor="middle" font-size="12">run(testscript=…)</text>
+  <rect x="610" y="20" width="140" height="58" rx="6" class="s-box"/>
+  <text x="680" y="44" text-anchor="middle" font-size="14" font-weight="600">archive .zip</text>
+  <text x="680" y="64" text-anchor="middle" font-size="12" class="s-mut">pyats logs view</text>
+  <rect x="610" y="110" width="140" height="58" rx="6" class="s-box"/>
+  <text x="680" y="134" text-anchor="middle" font-size="14" font-weight="600">1.3/1.4 CI job</text>
+  <text x="680" y="154" text-anchor="middle" font-size="12" class="s-mut">exit code, xUnit</text>
+  <path d="M170 49 L220 82" class="s-ln"/><path d="M170 139 L220 112" class="s-ln"/>
+  <path d="M400 97 L440 97" class="s-ln"/><path d="M580 85 L610 55" class="s-ln"/><path d="M580 110 L610 139" class="s-ln"/>
+  <text x="380" y="210" text-anchor="middle" font-size="12" class="s-mut">Neighbours: 2.2 Python CLI (argparse, exit codes) · 1.4 pipeline troubleshooting · 3.2 IOS XE state to verify</text>
+  <text x="380" y="232" text-anchor="middle" font-size="12" class="s-mut">Lab target: Cat8000V (17.16) and N9Kv over SSH via the 3.3.a testbed</text>
+</svg>
+</div>
+</section>
+
+<section id="l1">
+<h2>L1: Concept</h2>
+<p>AEtest is a test harness in the same family as <code>unittest</code> or <code>pytest</code>, built for network test plans where order matters and where a failed prerequisite should stop dependent work. You do not write a <code>main loop</code> that calls checks. You declare classes and decorated methods; the engine imports the module, discovers sections, instantiates them and runs them in a fixed order. The <a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/index.html" target="_blank" rel="noopener">AEtest docs hub</a> <span class="badge">✅</span> describes this as import, inspect, run.</p>
+<p>For a network engineer the useful analogy is a change-window MOP. Common setup is "connect, confirm pre-checks". Each testcase is a numbered verification block with its own prep and rollback. Common cleanup is "disconnect, restore". The harness enforces that if prep fails, the verification is not attempted, and it reports why.</p>
+<p>The second idea is the <b>job</b>. A testscript says <i>what</i> to check. A job file (Easypy) says <i>which</i> scripts to run, against which testbed, with which arguments, and it packages logs and results into an archive. Standalone execution is for writing and debugging; the job is what you hand to CI.</p>
+</section>
+
+<section id="l2">
+<h2>L2: Mechanics</h2>
+<h3>Containers and sections</h3>
+<p>Per the <a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/structure.html" target="_blank" rel="noopener">Script Structure</a> <span class="badge">✅</span> page:</p>
+<div class="tw"><table>
+<tr><th>Container</th><th>How many</th><th>Section decorator inside</th><th>Reported as</th><th>Counts in summary?</th></tr>
+<tr><td><code>aetest.CommonSetup</code></td><td>0 or 1</td><td><code>@aetest.subsection</code> (must be split into subsections)</td><td><code>common_setup</code></td><td>Yes, as 1 (subsections roll up)</td></tr>
+<tr><td><code>aetest.Testcase</code></td><td>Any</td><td><code>@aetest.setup</code> (max 1), <code>@aetest.test</code> (at least 1), <code>@aetest.cleanup</code> (max 1)</td><td>class name, or the <code>uid</code> attribute</td><td>Yes, 1 each</td></tr>
+<tr><td><code>aetest.CommonCleanup</code></td><td>0 or 1</td><td><code>@aetest.subsection</code></td><td><code>common_cleanup</code></td><td>Yes, as 1</td></tr>
+</table></div>
+<p>Two rules from that page carry most troubleshooting tasks. First, a failing testcase <code>setup</code> blocks that testcase's test sections. Second, test sections and subsections run regardless of earlier siblings' results; deciding to stop is your job, through results with <code>goto</code>, <code>must_pass</code>, or steps.</p>
+
+<h3>How a section gets its result</h3>
+<p>From <a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/results.html" target="_blank" rel="noopener">Section Results</a> <span class="badge">✅</span>: every section starts as Passed. An <code>AssertionError</code> makes it Failed. Any other uncaught exception (a <code>KeyError</code> on a parsed dict is the classic) makes it Errored. You can also call <code>self.passed()</code>, <code>self.failed()</code>, <code>self.errored()</code>, <code>self.skipped()</code>, <code>self.blocked()</code>, <code>self.aborted()</code> or <code>self.passx()</code>. Each takes optional <code>reason</code>, <code>goto</code>, <code>from_exception</code> and <code>data</code>, ends the section on the spot like <code>return</code>, and can be called once.</p>
+<p>The page also says not to catch <code>BaseException</code>, since that swallows Ctrl-C and exit requests. Catch the specific exception you expect.</p>
+
+<h3>Parameters</h3>
+<p><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/parameters.html" target="_blank" rel="noopener">Test Parameters</a> <span class="badge">✅</span> work like Python scoping. The script has a <code>parameters</code> dict; a testcase can have its own; a section sees the merged view, nearest scope winning. Sections receive parameters as function arguments by name, so <code>def check(self, testbed, interfaces):</code> gets both if they exist. A default in the signature applies only when the parameter is undefined. Reserved names are <code>testscript</code>, <code>section</code>, <code>reporter</code> and <code>steps</code>, and they win over normal parameters with the same name. Job-file arguments (Easypy) or CLI arguments (standalone) overwrite matching script defaults. Writing to <code>self.parameters</code> inside a section stays local to that section.</p>
+
+<div class="svgw">
+<svg viewBox="0 0 760 330" role="img" aria-label="AEtest execution flow with failure paths: setup failure blocks tests; must_pass or goto jumps to common cleanup">
+  <rect x="20" y="20" width="160" height="50" rx="6" class="s-box"/>
+  <text x="100" y="42" text-anchor="middle" font-size="13" font-weight="600">common_setup</text>
+  <text x="100" y="60" text-anchor="middle" font-size="11" class="s-mut">subsections (connect)</text>
+  <rect x="230" y="12" width="300" height="200" rx="8" class="s-hi"/>
+  <text x="380" y="34" text-anchor="middle" font-size="13" font-weight="700">Testcase (repeat per class, definition order)</text>
+  <rect x="250" y="50" width="80" height="40" rx="5" class="s-box"/><text x="290" y="75" text-anchor="middle" font-size="12">setup</text>
+  <rect x="345" y="50" width="80" height="40" rx="5" class="s-box"/><text x="385" y="75" text-anchor="middle" font-size="12">test ×N</text>
+  <rect x="440" y="50" width="75" height="40" rx="5" class="s-box"/><text x="477" y="75" text-anchor="middle" font-size="12">cleanup</text>
+  <path d="M330 70 L345 70" class="s-ln"/><path d="M425 70 L440 70" class="s-ln"/>
+  <path d="M290 90 C 290 130, 385 130, 385 95" class="s-bad"/>
+  <text x="300" y="148" font-size="11" class="s-blk">setup fails → tests Blocked</text>
+  <text x="250" y="174" font-size="11" class="s-mut">steps inside a test: first non-pass step</text>
+  <text x="250" y="190" font-size="11" class="s-mut">ends the section unless continue_=True</text>
+  <rect x="580" y="20" width="160" height="50" rx="6" class="s-box"/>
+  <text x="660" y="42" text-anchor="middle" font-size="13" font-weight="600">common_cleanup</text>
+  <text x="660" y="60" text-anchor="middle" font-size="11" class="s-mut">subsections (disconnect)</text>
+  <path d="M180 45 L230 45" class="s-ln"/><path d="M530 45 L580 45" class="s-ln"/>
+  <path d="M380 212 C 380 270, 660 270, 660 72" class="s-bad"/>
+  <text x="400" y="258" font-size="11" class="s-badt">must_pass testcase fails, or max_failures hit,</text>
+  <text x="400" y="274" font-size="11" class="s-badt">or goto=['common_cleanup'] → jump; rest Blocked</text>
+  <text x="20" y="306" font-size="11" class="s-mut">goto targets: 'cleanup' · 'next_tc' · 'common_cleanup' · 'exit'. Bypassed sections: Skipped if the origin passed, Blocked otherwise.</text>
+</svg>
+</div>
+</section>
+
+<section id="l3">
+<h2>L3: Exam detail</h2>
+<h3>Rollup: which result wins</h3>
+<p>The <a href="https://pubhub.devnetcloud.com/media/pyats/docs/results/rollup.html" target="_blank" rel="noopener">Results Rollups</a> <span class="badge">✅</span> page gives a full pairwise table. It reduces to one ladder:</p>
+<div class="svgw">
+<svg viewBox="0 0 760 90" role="img" aria-label="Result precedence ladder from strongest Aborted to weakest Skipped">
+  <g font-size="13" font-weight="600" text-anchor="middle">
+  <rect x="5" y="20" width="100" height="40" rx="5" class="s-box"/><text x="55" y="45" class="s-badt">Aborted</text>
+  <rect x="113" y="20" width="100" height="40" rx="5" class="s-box"/><text x="163" y="45" class="s-badt">Errored</text>
+  <rect x="221" y="20" width="100" height="40" rx="5" class="s-box"/><text x="271" y="45" class="s-badt">Failed</text>
+  <rect x="329" y="20" width="100" height="40" rx="5" class="s-box"/><text x="379" y="45" class="s-blk">Blocked</text>
+  <rect x="437" y="20" width="100" height="40" rx="5" class="s-box"/><text x="487" y="45" class="s-ok">Passx</text>
+  <rect x="545" y="20" width="100" height="40" rx="5" class="s-box"/><text x="595" y="45" class="s-ok">Passed</text>
+  <rect x="653" y="20" width="100" height="40" rx="5" class="s-box"/><text x="703" y="45" class="s-mut">Skipped</text>
+  </g>
+  <text x="5" y="80" font-size="11" class="s-mut">strongest ← combining two results yields the one further left → weakest</text>
+</svg>
+</div>
+<p>Consequences worth memorising: Skipped never drags a Passed parent down (Passed + Skipped = Passed). Blocked loses to Failed, so a testcase with a failed setup and blocked tests reports Failed. Errored beats Failed, so one <code>KeyError</code> in a section of otherwise failed asserts reports Errored. Passx sits above Passed: one Passx child makes the parent Passx.</p>
+
+<h3>Steps in detail</h3>
+<p>Per <a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/steps.html" target="_blank" rel="noopener">Section Steps</a> <span class="badge">✅</span>: ask for <code>steps</code> as an argument, then open each step with <code>with steps.start('name') as step:</code>. An assert inside a step fails only that step; other exceptions make it Errored. If a step ends in anything other than Passed, Passx or Skipped, the engine skips the remaining steps and closes the section, unless that step was started with <code>continue_=True</code>. Steps nest with <code>step.start()</code> and are numbered <code>1</code>, <code>1.2</code>, <code>1.2.1</code>. Step results roll up into the section with the same ladder.</p>
+<p>This is the main design decision in a verification test. Use steps with <code>continue_=True</code> when you want "check all 12 interfaces and report each", and the default when step 2 is meaningless if step 1 failed (no connection, no parse).</p>
+
+<h3>Flow control</h3>
+<div class="tw"><table>
+<tr><th>Tool</th><th>Where you set it</th><th>Effect</th></tr>
+<tr><td><code>@aetest.skip / skipIf / skipUnless</code></td><td>Decorator on a section</td><td>Skips on a boolean known at import. <code>.affix()</code> applies it at runtime to another section.</td></tr>
+<tr><td><code>must_pass = True</code></td><td>Testcase class attribute</td><td>If it fails, jump to CommonCleanup; remaining testcases Blocked.</td></tr>
+<tr><td><code>goto=[...]</code></td><td>Any result call</td><td>Jump to <code>cleanup</code>, <code>next_tc</code>, <code>common_cleanup</code> or <code>exit</code>. Invalid target makes the section Errored.</td></tr>
+<tr><td><code>max_failures</code></td><td><code>aetest.main()</code> or <code>-max_failures</code></td><td>Abort to CommonCleanup after N failed testcases.</td></tr>
+<tr><td><code>uids</code> / <code>groups</code></td><td><code>run()</code>, <code>-uids</code>, <code>-groups</code></td><td>Filter what runs; logic objects <code>And/Or/Not</code> from <code>pyats.datastructures.logic</code>.</td></tr>
+</table></div>
+<p>All from <a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/control.html" target="_blank" rel="noopener">Flow Control</a> <span class="badge">✅</span>. One gap: the fetched pages do not state what happens to testcases when <code>CommonSetup</code> fails. <span class="warn">⚠ unverified — test in lab.</span> Do not rely on an implicit block; if connection failure must stop the run, say so with <code>self.failed(..., goto=['common_cleanup'])</code>.</p>
+
+<h3>Looping, datafiles, processors</h3>
+<p><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/loop.html" target="_blank" rel="noopener">Looping Sections</a> <span class="badge">✅</span>: only <code>subsection</code>, <code>Testcase</code> and <code>test</code> can loop. <code>@aetest.test.loop(intf=['Gi1','Gi2'])</code> creates one section per value; without <code>uids</code> the ids are built from name and parameters (<code>test[intf=Gi1]</code>). With <code>uids</code>, the uid count sets the iteration count. <code>aetest.loop.mark(target, ...)</code> marks a loop at runtime, for values you only know after connecting.</p>
+<p><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/datafile.html" target="_blank" rel="noopener">Datafile Inputs</a> <span class="badge">✅</span>: a YAML file applied after import. <code>parameters</code> merge with <code>dict.update()</code>; <code>testcases</code> are keyed by <b>class name, not uid</b>; datafiles cannot add or remove looping. Pass with <code>-datafile=</code>, <code>aetest.main(datafile=...)</code> or <code>run(..., datafile=...)</code>.</p>
+<p><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/processors.html" target="_blank" rel="noopener">Section Processors</a> <span class="badge">✅</span>: <code>pre</code>, <code>post</code> and <code>exception</code> hooks. A pre-processor that returns <code>False</code> marks the section Skipped and its post-processors do not run.</p>
+
+<h3>Standalone vs Easypy</h3>
+<div class="tw"><table>
+<tr><th></th><th>Standalone</th><th>Easypy job</th></tr>
+<tr><td>Entry</td><td><code>aetest.main()</code> under <code>__main__</code></td><td><code>def main(runtime): run(testscript=..., runtime=runtime)</code></td></tr>
+<tr><td>Launch</td><td><code>python script.py [-uids ...]</code></td><td><code>pyats run job job.py --testbed-file tb.yaml</code></td></tr>
+<tr><td>Testbed</td><td>You load it and pass <code>aetest.main(testbed=...)</code>; <code>--testbed</code> is not a built-in argument</td><td>Injected as <code>testbed</code> parameter; <code>None</code> if no <code>--testbed-file</code></td></tr>
+<tr><td>Custom args</td><td>Your own argparse with <code>parse_known_args</code></td><td>Extra keyword args to <code>run()</code></td></tr>
+<tr><td>Output</td><td>STDOUT summary only; no TaskLog, report or archive</td><td>TaskLog, result YAML/XML, archive zip</td></tr>
+<tr><td>Shell exit code</td><td><code>aetest.exit_cli_code(result)</code></td><td><span class="warn">⚠ unverified</span> on fetched pages</td></tr>
+</table></div>
+<p>Sources: <a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/run.html" target="_blank" rel="noopener">Running TestScripts</a> <span class="badge">✅</span> and <a href="https://pubhub.devnetcloud.com/media/pyats/docs/easypy/jobfile.html" target="_blank" rel="noopener">Jobfile &amp; Tasks</a> <span class="badge">✅</span>. <code>run()</code> calls are sequential. For parallel work you create <code>Task</code> objects, <code>start()</code> them all, then <code>wait()</code>; the page warns that parallel tasks share the testbed and devices, so plan for races.</p>
+</section>
+
+<section id="anatomy">
+<h2>Anatomy</h2>
+<p>Annotated snippets for pyATS as documented on pubhub (docs undated). Device calls follow the 3.3.a and 3.3.b pages.</p>
+<pre><code># verify_lab.py  — testscript (module)
+from pyats import aetest
+
+parameters = {'interfaces': ['Loopback0']}     # script defaults; job args overwrite
+
+class CommonSetup(aetest.CommonSetup):
+    @aetest.subsection                        # CommonSetup must use subsections
+    def connect(self, testbed):               # 'testbed' injected by Easypy
+        testbed.connect()                     # ⚠ connect-all form: see 3.3.a page
+        # store for later sections; ⚠ verify persistence on your pyATS version
+        self.parent.parameters['dev'] = testbed.devices['cat8kv']
+
+class InterfacesUp(aetest.Testcase):
+    must_pass = False                         # True = stop the run on failure
+
+    @aetest.setup
+    def collect(self, dev):
+        self.brief = dev.parse('show ip interface brief')   # 3.3.b
+
+    @aetest.test
+    def check(self, steps, interfaces):       # 'steps' is reserved
+        for intf in interfaces:
+            with steps.start(f'{intf} up', continue_=True):
+                assert intf in self.brief['interface'] # ⚠ parser keys
+</code></pre>
+<pre><code># job.py  — Easypy job file
+from pyats.easypy import run
+
+def main(runtime):
+    run(testscript='verify_lab.py', runtime=runtime,
+        interfaces=['GigabitEthernet1', 'Loopback0'])  # extra kwargs → script args
+</code></pre>
+<pre><code># launch, then inspect
+pyats run job job.py --testbed-file testbed.yaml
+pyats logs view --latest            # opens newest archive in a browser
+pyats run job job.py -t testbed.yaml --no-archive --html-logs ./out
+</code></pre>
+<pre><code># standalone tail for fast iteration (Running TestScripts page)
+if __name__ == '__main__':
+    from pyats.topology import loader
+    result = aetest.main(testbed=loader.load('testbed.yaml'))
+    aetest.exit_cli_code(result)         # makes $? reflect the result
+</code></pre>
+</section>
+
+<section id="breakfix">
+<h2>Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Every test in one testcase shows Blocked; testcase Failed</td><td>Its <code>@aetest.setup</code> failed (setup failure blocks tests)</td><td>Read the setup section's reason in the log or <code>pyats logs view --latest</code></td><td>Fix the setup (connection, parse, missing parameter)</td></tr>
+<tr><td>Section shows Errored, not Failed</td><td>Uncaught non-assert exception, often <code>KeyError</code> on a parsed dict</td><td>Traceback in the section log</td><td>Guard with <code>assert key in d</code> or <code>try/except KeyError: self.failed(...)</code></td></tr>
+<tr><td>Only the first interface is reported; later steps missing</td><td>Default step behaviour stops after a non-pass step</td><td>Step list in the report ends at the failed step</td><td><code>steps.start(..., continue_=True)</code></td></tr>
+<tr><td><code>AttributeError: 'NoneType' ... devices</code> in common_setup</td><td>Job launched without a testbed, so <code>testbed</code> is <code>None</code></td><td>Check the command line for <code>--testbed-file</code>/<code>-t</code></td><td><code>pyats run job job.py -t testbed.yaml</code>; standalone: pass <code>testbed=loader.load(...)</code></td></tr>
+<tr><td>CI job green although the standalone script failed</td><td>Script returns 0 regardless of results</td><td><code>python verify_lab.py; echo $?</code></td><td><code>aetest.exit_cli_code(aetest.main(...))</code></td></tr>
+</table></div>
+</section>
+
+<section id="speed">
+<h2>Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>pyats run job --help</code> lists job, testbed, archive and logging flags (arguments vary with installed plugins).</li>
+<li><code>pyats logs list</code> and <code>pyats logs view --latest</code>; add <code>--no-browser --host 0.0.0.0</code> if the browser is on another box. Archives live under <code>~/.pyats/archive</code> or the venv's <code>users/&lt;you&gt;/archive</code>.</li>
+<li><code>python verify_lab.py -uids "Or('common_setup','InterfacesUp','common_cleanup')"</code> to run one testcase while iterating.</li>
+<li><code>python -c "from pyats import aetest; help(aetest.Testcase)"</code> and <code>pydoc pyats.aetest.steps</code> for signatures <span class="warn">⚠ unverified output</span>.</li>
+<li><code>pyats create project</code> scaffolds a job and script pair (3.3.a notes: only <code>create project</code> exists).</li>
+<li>For parser keys, run <code>genie parse "show ip interface brief" --testbed-file testbed.yaml --devices cat8kv</code> once and read the JSON before writing asserts.</li>
+</ul>
+</section>
+
+<section id="drill">
+<h2>Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Requirement.</b> On Cat8000V, write <code>verify_lab.py</code> and <code>job.py</code>. The job passes a list of interfaces. One testcase checks each interface's status is <code>up</code>, reporting one step per interface and continuing past failures. If the device cannot be reached, the run must jump straight to common cleanup. Common cleanup disconnects. Include one deliberately bogus interface name to prove the step continues and the testcase reports Failed.</p>
+<p><b>Reference fields.</b> Script argument <code>interfaces</code> (list). Device name from your 3.3.a testbed (example: <code>cat8kv</code>). Parser: <code>show ip interface brief</code> → <code>['interface'][name]['status']</code> <span class="warn">⚠ unverified key path; confirm with genie parse</span>.</p>
+<p><b>Verification.</b> (1) <code>pyats run job job.py -t testbed.yaml</code> ends with common_setup Passed, testcase Failed, common_cleanup Passed. (2) <code>pyats logs view --latest</code> shows one step per interface, the bogus one Failed and the next one still executed. (3) Shut the mgmt path or point the testbed at a wrong IP: testcase shows Blocked or Skipped (not Errored) and cleanup still runs.</p>
+<p><b>Target.</b> Cat8000V 17.16 over SSH; repeat against N9Kv with <code>os: nxos</code> if time allows.</p>
+</div>
+<details><summary>Hint</summary>
+<p>Put the connection in a <code>try/except</code> in a CommonSetup subsection and call <code>self.failed(reason, goto=['common_cleanup'])</code>. Pass the interface list as an extra keyword argument to <code>run()</code>; it arrives as a parameter named <code>interfaces</code>. Use <code>continue_=True</code> on each step.</p>
+</details>
+<details><summary>Solution</summary>
+<pre><code>from pyats import aetest
+
+class CommonSetup(aetest.CommonSetup):
+    @aetest.subsection
+    def connect(self, testbed):
+        dev = testbed.devices['cat8kv']
+        try:
+            dev.connect(log_stdout=False)              # ⚠ kwarg: see 3.3.a page
+        except Exception as e:                         # connection errors vary by plugin
+            self.failed(f'connect failed: {e}', goto=['common_cleanup'])
+        self.parent.parameters['dev'] = dev            # ⚠ verify in lab
+
+class InterfacesUp(aetest.Testcase):
+    @aetest.setup
+    def collect(self, dev):
+        self.brief = dev.parse('show ip interface brief')
+
+    @aetest.test
+    def status_up(self, steps, interfaces):
+        for intf in interfaces:
+            with steps.start(f'{intf} status', continue_=True):
+                entry = self.brief['interface'].get(intf)
+                assert entry is not None, f'{intf} not present'
+                assert entry['status'] == 'up', f"{intf} is {entry['status']}"
+
+class CommonCleanup(aetest.CommonCleanup):
+    @aetest.subsection
+    def disconnect(self, testbed):
+        testbed.devices['cat8kv'].disconnect()       # ⚠ guard if never connected
+
+# job.py
+from pyats.easypy import run
+def main(runtime):
+    run(testscript='verify_lab.py', runtime=runtime,
+        interfaces=['GigabitEthernet1', 'Loopback0', 'Loopback999'])
+</code></pre>
+<p>Why <code>.get()</code> plus assert: a direct index on a missing key would raise <code>KeyError</code> and report Errored instead of Failed.</p>
+</details>
+</section>
+
+<section id="recall">
+<h2>Recall check</h2>
+<details><summary>1. A testcase's <code>@aetest.setup</code> raises AssertionError. What happens to its tests, and what does the testcase report?</summary>
+<p>Its test sections are Blocked. Rollup: Failed (setup) + Blocked = Failed. Cleanup still has its own slot at the end.</p></details>
+<details><summary>2. Rank the seven results. What do Errored + Failed and Passed + Skipped roll up to?</summary>
+<p>Aborted, Errored, Failed, Blocked, Passx, Passed, Skipped. Errored + Failed = Errored. Passed + Skipped = Passed.</p></details>
+<details><summary>3. A test has three steps; step 2 fails; none use <code>continue_</code>. What runs, and what is the change?</summary>
+<p>Step 3 is skipped and the section ends Failed. Start step 2 with <code>continue_=True</code> (the flag on the failing step decides).</p></details>
+<details><summary>4. How does the testbed reach a script in standalone mode versus an Easypy job, and which mode writes an archive?</summary>
+<p>Standalone: you load it and pass <code>aetest.main(testbed=...)</code> (custom argparse if you want a flag). Easypy: <code>--testbed-file</code>/<code>-t</code> injects the <code>testbed</code> parameter, <code>None</code> without it. Only Easypy produces TaskLog, reports and an archive.</p></details>
+<details><summary>5. (from 2026-11-04, 5.3) Expired token versus a token lacking scope: HTTP status and challenge error for each?</summary>
+<p>401 with <code>invalid_token</code> versus 403 with <code>insufficient_scope</code> (RFC 6750 s3.1).</p></details>
+<details><summary>6. (from 2026-11-05, 2.2) A request hangs against a powered-off router. What is the Requests default, and what do you pass?</summary>
+<p>No timeout by default. Pass <code>timeout=(connect, read)</code>.</p></details>
+</section>
+
+<section id="deeper">
+<h2>Go deeper</h2>
+<h3>Cisco (pyATS documentation on DevNet pubhub)</h3>
+<ul class="refs">
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/structure.html" target="_blank" rel="noopener">Script Structure — pyATS Documentation</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">Container and section rules, ordering, setup-blocks-tests, testcase uid.</span></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/steps.html" target="_blank" rel="noopener">Section Steps</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">continue_ semantics, nesting, numbering.</span></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/results/rollup.html" target="_blank" rel="noopener">Results Rollups — pyATS Documentation</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">The full pairwise rollup table.</span></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/results.html" target="_blank" rel="noopener">Section Results</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">Result APIs, exception-to-result mapping.</span></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/control.html" target="_blank" rel="noopener">Flow Control — pyATS Documentation</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">skip decorators, must_pass, goto targets, max_failures, uids/groups.</span></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/run.html" target="_blank" rel="noopener">Running TestScripts — pyATS Documentation</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">Standalone arguments, exit_cli_code, report differences.</span></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/easypy/jobfile.html" target="_blank" rel="noopener">Jobfile &amp; Tasks</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">main(runtime), run() arguments, Task for parallel runs.</span></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/cli/pyats_logs.html" target="_blank" rel="noopener">pyats logs</a> <span class="badge">✅</span> <span class="badge">pyATS docs, undated</span> <span class="badge">verified 2026-11-12</span><span class="why">list/view, --latest, archive search paths.</span></li>
+</ul>
+<h3>Standards / Third-party</h3>
+<p>None applicable: AEtest is Cisco-specific. The CiscoTestAutomation examples repository on GitHub was rate-limited this run and is not linked (Search: CiscoTestAutomation examples GitHub).</p>
+</section>
+
+<footer>
+<p><b>Links: 13 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims:</b> Domain 3 weight; testcase behaviour when CommonSetup fails; Easypy shell exit code; <code>testbed.connect()</code> connect-all form and <code>log_stdout</code> kwarg (from 3.3.a page, not re-fetched); persisting objects via <code>self.parent.parameters[...]</code> (page says writes to <code>self.parameters</code> are local, parent update not documented); <code>show ip interface brief</code> parser key path; drill outcome when the device is unreachable (Blocked vs Skipped labels); <code>help()</code>/<code>pydoc</code> output; pyATS installed on the Candidate Workstation (tracker lists no pyATS); the flag on the failing step deciding continuation (Q3).</p>
+<p><b>Tomorrow:</b> Friday weekly review 7 (units 25–28: 3.3.b, 5.4, 2.8.d–f, 3.3.c). Next daily unit Monday: 5.5 Use tokens, headers and secrets to secure a REST API.</p>
+</footer>
+</main>
+
+</body></html>

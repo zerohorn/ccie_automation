@@ -1,0 +1,394 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terraform Data, Provision, State</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1f23;--muted:#5d6470;--card:#ffffff;--line:#d9dce1;--accent:#0b6bcb;--accent2:#b5520a;--ok:#1d7a3a;--warn:#a15c00;--bad:#b42318;--code:#f2f3f5;--box1:#e5f0fb;--box2:#fdf0e3;--box3:#e7f5ea;--box4:#f2ecfa}
+@media (prefers-color-scheme:dark){:root{--bg:#15171b;--fg:#e7e9ec;--muted:#9aa3ae;--card:#1d2026;--line:#353a43;--accent:#5aa9f0;--accent2:#f0a35a;--ok:#5cc47a;--warn:#e7b04f;--bad:#f07a6e;--code:#23272e;--box1:#1b2c3f;--box2:#3a2a1b;--box3:#1c3324;--box4:#2c2340}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav.toc{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;overflow-x:auto;white-space:nowrap;font-size:14px}
+nav.toc a{color:var(--accent);text-decoration:none;margin-right:14px}
+h1{font-size:1.6rem;margin:.4em 0 .2em}h2{font-size:1.3rem;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px}h3{font-size:1.08rem;margin-top:1.4em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:16px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:14px}
+.meta b{color:var(--fg)}
+a{color:var(--accent)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-size:13.5px;line-height:1.45}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+.warn{color:var(--warn);font-weight:600}
+.badge{display:inline-block;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:0 7px;margin-left:4px;white-space:nowrap}
+.b-ok{color:var(--ok);border-color:var(--ok)}
+svg{width:100%;height:auto;display:block;margin:12px 0}
+svg text{fill:var(--fg);font-family:system-ui,sans-serif}
+svg .mut{fill:var(--muted)}
+svg .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+svg .acc{stroke:var(--accent);stroke-width:2;fill:none}
+svg .acc2{stroke:var(--accent2);stroke-width:2;fill:none}
+svg .b1{fill:var(--box1);stroke:var(--accent)}svg .b2{fill:var(--box2);stroke:var(--accent2)}svg .b3{fill:var(--box3);stroke:var(--ok)}svg .b4{fill:var(--box4);stroke:var(--muted)}
+details{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+ul.refs li{margin-bottom:10px}
+.small{font-size:14px;color:var(--muted)}
+footer{margin-top:32px;border-top:1px solid var(--line);padding-top:12px;font-size:14px}
+</style>
+</head>
+<body>
+<nav class="toc"><a href="#snap">Snapshot</a><a href="#fits">Where it fits</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main>
+
+<div class="card">
+<h1>Terraform: resource retrieval, provisioning, and state management</h1>
+<div class="meta">
+<span><b>Date:</b> Wed 2026-11-11</span>
+<span><b>Blueprint:</b> 2.8.d Resource retrieval · 2.8.e Resource provision · 2.8.f State management of provisioned resources</span>
+<span><b>Parent:</b> 2.8 [Build] Use Terraform to statefully manage infrastructure</span>
+<span><b>Domain:</b> 2 (weight <span class="warn">⚠ unverified</span>)</span>
+<span><b>Tier:</b> 3 (proficiency check)</span>
+<span><b>Read time:</b> ~18 min</span>
+<span><b>Unit:</b> 27 of 49</span>
+</div>
+<p class="small">Version pins: Terraform 1.13 (workstation lists 1.13.3); provider <code>ciscodevnet/aci</code> v2.17.0 is the only provider on the Candidate Workstation. Target: DevNet Sandbox APIC. Some HashiCorp pages fetched today are the v1.17.x "latest" docs; anything not confirmed on a 1.13 page is labelled.</p>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li><b>Three verbs, one file.</b> Retrieval = <code>data</code> blocks (read-only). Provision = <code>resource</code> blocks driven by plan/apply. State management = editing the mapping between addresses and real objects without touching the objects.</li>
+<li><b>State is the join table</b> between a config address like <code>aci_tenant.prod</code> and a real APIC DN like <code>uni/tn-prod</code>. Lose the row and Terraform thinks the object doesn't exist.</li>
+<li><b>Data sources are read at plan time</b> unless an argument is unknown or <code>depends_on</code> is set; then the read waits for apply.</li>
+<li><b>Prefer config blocks to CLI surgery.</b> <code>import</code>, <code>moved</code> and <code>removed</code> blocks go through plan review; <code>terraform import</code>, <code>state mv</code>, <code>state rm</code> change state immediately.</li>
+<li><b>For ACI the import ID is the DN</b>, e.g. <code>uni/tn-X/ctx-Y</code>.</li>
+<li><b>Drift handling:</b> normal plan reverts drift; <code>-refresh-only</code> accepts it into state.</li>
+<li><b><code>state rm</code> forgets, it does not delete.</b> The next plan tries to create the object again.</li>
+</ul>
+
+<h2 id="fits">Where this fits</h2>
+<svg viewBox="0 0 720 300" role="img" aria-label="Blueprint neighbours of 2.8.d-f and the Terraform tool chain">
+<rect class="b4" x="10" y="14" width="200" height="120" rx="8"/>
+<text x="110" y="36" text-anchor="middle" font-size="14" font-weight="700">2.8 Terraform</text>
+<text x="22" y="58" font-size="12" class="mut">a-c loops · graph · vars (11-02)</text>
+<text x="22" y="80" font-size="12" font-weight="700">d retrieval  → data</text>
+<text x="22" y="100" font-size="12" font-weight="700">e provision  → resource</text>
+<text x="22" y="120" font-size="12" font-weight="700">f state mgmt → import/moved/rm</text>
+<rect class="b4" x="10" y="160" width="200" height="56" rx="8"/>
+<text x="110" y="182" text-anchor="middle" font-size="13">2.7 Ansible (cisco.aci)</text>
+<text x="110" y="202" text-anchor="middle" font-size="11" class="mut">same APIC, no state file</text>
+<rect class="b4" x="10" y="230" width="200" height="56" rx="8"/>
+<text x="110" y="252" text-anchor="middle" font-size="13">1.3/1.4 CI/CD</text>
+<text x="110" y="272" text-anchor="middle" font-size="11" class="mut">plan in MR · apply on merge</text>
+<rect class="b1" x="270" y="40" width="150" height="70" rx="8"/>
+<text x="345" y="68" text-anchor="middle" font-size="13" font-weight="700">*.tf config</text>
+<text x="345" y="88" text-anchor="middle" font-size="11" class="mut">desired</text>
+<rect class="b2" x="270" y="180" width="150" height="70" rx="8"/>
+<text x="345" y="208" text-anchor="middle" font-size="13" font-weight="700">terraform.tfstate</text>
+<text x="345" y="228" text-anchor="middle" font-size="11" class="mut">address ↔ DN map</text>
+<rect class="b3" x="490" y="110" width="110" height="70" rx="8"/>
+<text x="545" y="138" text-anchor="middle" font-size="13" font-weight="700">ciscodevnet/aci</text>
+<text x="545" y="158" text-anchor="middle" font-size="11" class="mut">v2.17.0</text>
+<rect class="b4" x="630" y="110" width="80" height="70" rx="8"/>
+<text x="670" y="140" text-anchor="middle" font-size="13" font-weight="700">APIC</text>
+<text x="670" y="160" text-anchor="middle" font-size="11" class="mut">REST</text>
+<path class="acc" d="M420 75 L490 130"/><path class="acc2" d="M420 215 L490 160"/><path class="ln" d="M600 145 L630 145"/>
+<path class="ln" d="M210 74 L270 74"/>
+<text x="452" y="96" font-size="11" class="mut">plan</text>
+<text x="440" y="205" font-size="11" class="mut">refresh</text>
+</svg>
+
+<h2 id="l1">L1 — Concept</h2>
+<h3>Two kinds of block, one engine</h3>
+<p>Terraform only knows two object kinds. A <b>managed resource</b> (<code>resource</code>) is something Terraform owns: it creates, updates, and destroys it. A <b>data resource</b> (<code>data</code>) is something Terraform only reads. The data sources page says data sources fetch provider data "but do not create or modify resources", and that only read operations happen on them. That is all of 2.8.d. 2.8.e is the normal create/update/delete lifecycle of managed resources through <code>plan</code> and <code>apply</code>.</p>
+<h3>Why state exists at all</h3>
+<p>APIC objects have DNs; your config has addresses. Something must record "address <code>aci_tenant.prod</code> is the object at <code>uni/tn-prod</code>". The state purpose page lists four jobs for state: mapping config to real objects, keeping metadata such as the last dependency set (so deletes happen in the right order after a block is removed from config), caching attributes for performance, and giving a team one shared view. Tags weren't enough for this because not every resource supports tags. In network terms state is closer to an adjacency table than a config backup. It's derived, but the control plane can't run without it.</p>
+<h3>State management = editing the mapping</h3>
+<p>2.8.f is about changing those rows without touching the real objects. There are four operations:</p>
+<ul>
+<li><b>Adopt</b> an object created outside Terraform (import).</li>
+<li><b>Re-address</b> an object you renamed or moved in code (moved / state mv).</li>
+<li><b>Forget</b> an object without deleting it (removed with <code>destroy = false</code> / state rm).</li>
+<li><b>Accept drift</b> into state (refresh-only).</li>
+</ul>
+<p>Every one has a CLI form and, except refresh-only, a config-block form. HashiCorp now points people toward the block forms.</p>
+
+<div class="tw"><table>
+<tr><th></th><th><code>data</code> block</th><th><code>resource</code> block</th></tr>
+<tr><td>Purpose</td><td>Read an existing object or value</td><td>Own the object's lifecycle</td></tr>
+<tr><td>Reference</td><td><code>data.TYPE.NAME.ATTR</code></td><td><code>TYPE.NAME.ATTR</code></td></tr>
+<tr><td>In plan output</td><td>Read (or "read during apply" if deferred)</td><td>create / update / replace / destroy</td></tr>
+<tr><td>Destroyed by <code>terraform destroy</code>?</td><td>No: nothing to destroy</td><td>Yes</td></tr>
+<tr><td>Meta-arguments</td><td><code>count</code>, <code>for_each</code>, <code>provider</code>, <code>depends_on</code>, <code>lifecycle</code> pre/postconditions</td><td>Same, plus full <code>lifecycle</code></td></tr>
+<tr><td>ACI example</td><td>Look up tenant <code>common</code> to reference its DN <span class="warn">⚠</span></td><td>Create tenant <code>prod</code> and its VRFs</td></tr>
+</table></div>
+
+<h2 id="l2">L2 — Mechanics</h2>
+<h3>When a data source is read</h3>
+<p>Per the v1.12.x data sources page:</p>
+<ul>
+<li>If every argument is a known value, the read happens in the refresh phase before planning.</li>
+<li>If an argument depends on a managed-resource attribute that changes in this plan, the read is deferred to apply.</li>
+<li>A <code>depends_on</code> on the data block always defers it until the dependency finishes.</li>
+</ul>
+<p>The practical consequence: a data source that depends on something "in flight" returns <i>known after apply</i>. Everything downstream of it then shows as unknown in the plan, which can make plans noisy or force replacements. This is the data-source version of the <code>depends_on</code> cost you saw on 11-02.</p>
+
+<h3>Provision flow and what plan actually compares</h3>
+<p>By default every plan and apply first syncs all resources in state against the real objects (the state purpose page). Plan then diffs config against that refreshed state. The <code>terraform plan</code> reference (v1.13.x) gives three mutually exclusive modes:</p>
+<ul>
+<li><b>Normal:</b> make reality match config.</li>
+<li><b>Destroy</b> (<code>-destroy</code>): plan to remove everything.</li>
+<li><b>Refresh-only</b> (<code>-refresh-only</code>): only update state and root outputs to match out-of-band changes.</li>
+</ul>
+<p>Useful options:</p>
+<ul>
+<li><code>-refresh=false</code> skips the sync. It's faster but blind to drift, and you can't combine it with refresh-only.</li>
+<li><code>-replace=ADDRESS</code> forces a destroy/create of one instance. It replaces the old taint workflow.</li>
+<li><code>-target</code> is documented as "exceptional circumstances only".</li>
+<li><code>-out</code> saves a plan, which may contain secrets in cleartext.</li>
+<li><code>-detailed-exitcode</code> returns 0 for no changes, 1 for an error, and 2 for changes present. That's the hook for a CI drift check.</li>
+</ul>
+
+<svg viewBox="0 0 720 330" role="img" aria-label="Sequence: refresh, data read, diff, apply, state write">
+<text x="70" y="22" text-anchor="middle" font-size="13" font-weight="700">CLI</text>
+<text x="250" y="22" text-anchor="middle" font-size="13" font-weight="700">State</text>
+<text x="450" y="22" text-anchor="middle" font-size="13" font-weight="700">Provider (aci)</text>
+<text x="640" y="22" text-anchor="middle" font-size="13" font-weight="700">APIC</text>
+<path class="ln" d="M70 30 V320"/><path class="ln" d="M250 30 V320"/><path class="ln" d="M450 30 V320"/><path class="ln" d="M640 30 V320"/>
+<path class="acc2" d="M70 55 H250"/><text x="160" y="50" text-anchor="middle" font-size="11">1 lock + load</text>
+<path class="acc" d="M250 85 H640"/><text x="445" y="80" text-anchor="middle" font-size="11">2 refresh: read each DN in state</text>
+<path class="acc" d="M70 115 H640"/><text x="355" y="110" text-anchor="middle" font-size="11">3 read data sources with known args</text>
+<rect class="b1" x="20" y="130" width="100" height="36" rx="6"/><text x="70" y="153" text-anchor="middle" font-size="11">4 diff → plan</text>
+<text x="360" y="160" text-anchor="middle" font-size="11" class="mut">-refresh-only stops here and writes refreshed state</text>
+<path class="acc" d="M70 195 H640"/><text x="355" y="190" text-anchor="middle" font-size="11">5 apply: create/update/delete (≤10 in parallel)</text>
+<path class="acc" d="M70 225 H640"/><text x="355" y="220" text-anchor="middle" font-size="11">6 deferred data reads ("known after apply")</text>
+<path class="acc2" d="M70 260 H250"/><text x="160" y="255" text-anchor="middle" font-size="11">7 write new state</text>
+<path class="acc2" d="M70 295 H250"/><text x="160" y="290" text-anchor="middle" font-size="11">8 unlock</text>
+</svg>
+<p class="small">Steps 1 and 8: the backends page says the default local backend keeps state in a local JSON file and locks with system APIs. Step 5's parallelism of 10 is from the graph page verified on 11-02 and the import CLI page today.</p>
+
+<h3>The four state operations, block versus CLI</h3>
+<div class="tw"><table>
+<tr><th>Intent</th><th>Config block (reviewed in plan)</th><th>CLI (immediate)</th><th>Real object</th></tr>
+<tr><td>Adopt existing</td><td><code>import { to = … id = … }</code></td><td><code>terraform import ADDR ID</code></td><td>Untouched; config must match or the next plan updates it</td></tr>
+<tr><td>Re-address</td><td><code>moved { from = … to = … }</code></td><td><code>terraform state mv SRC DST</code></td><td>Untouched (avoids the default delete+create)</td></tr>
+<tr><td>Forget</td><td><code>removed { from = … lifecycle { destroy = false } }</code></td><td><code>terraform state rm ADDR</code></td><td>Kept, now unmanaged</td></tr>
+<tr><td>Accept drift</td><td>(none)</td><td><code>terraform plan/apply -refresh-only</code></td><td>Untouched; state updated</td></tr>
+<tr><td>Inspect</td><td>(none)</td><td><code>state list</code>, <code>state show</code>, <code>state pull</code></td><td>Read-only, no backup written</td></tr>
+</table></div>
+<p>The refactor page calls <code>state mv</code> a legacy command. It recommends the blocks for new migrations because they go through normal plan review and leave a record in the code. <code>removed</code> and <code>import</code> blocks need Terraform 1.7 or newer, which the 1.13 pin covers. The <code>state rm</code> page (v1.13.x) suggests <code>removed</code> blocks for the same reason. Every state-modifying subcommand writes a backup that you can't disable. Read-only ones like <code>list</code> don't.</p>
+
+<h2 id="l3">L3 — Exam detail</h2>
+<h3>ACI specifics with provider v2.17.0</h3>
+<ul>
+<li><b>Import ID is the DN.</b> BRKDCN-2607 shows an import block with <code>id = "uni/tn-…/ctx-…"</code> targeting <code>aci_vrf</code>. Its CLI form takes the "full path to Dn". The same deck notes that CLI import doesn't generate configuration and runs once per object.</li>
+<li><b>Generating config.</b> Write only the <code>import</code> block and run <code>terraform plan -generate-config-out=FILE.tf</code>. Then review the file, because generated HCL often carries every attribute, including defaults.</li>
+<li><b><code>aci_rest_managed</code> is the escape hatch</b> when no dedicated resource exists. It takes <code>dn</code>, <code>class_name</code> and a <code>content</code> map. The deck says it can reconcile state. The releases page shows import fixes in 2.14.0 and 2.15.0 (DNs with semicolons and brackets) and child-object import in 2.13.0 and 2.18.0. The 2.18.0 JSON-string child import is newer than the lab's 2.17.0, so don't rely on it.</li>
+<li><b>2.17.0 moved <code>aci_vrf</code></b> (plus <code>aci_any</code> and <code>aci_taboo_contract</code>) to the Plugin Framework. Attribute names on those resources may differ from older examples, so read the schema rather than memorising blog HCL.</li>
+<li><b><code>import</code> block <code>identity</code>:</b> the v1.17 import block page offers <code>identity</code> as an alternative to <code>id</code>. Whether 1.13 plus aci 2.17.0 support it is <span class="warn">⚠ unverified</span>, so use <code>id</code> with the DN.</li>
+</ul>
+<h3>Task shapes consistent with "statefully manage"</h3>
+<ul>
+<li>"Bring the existing tenant under Terraform without disruption." Import, match the config until the plan shows no changes, then apply.</li>
+<li>"Rename resource labels / convert to <code>for_each</code> without destroying anything." Use <code>moved</code> blocks per instance key.</li>
+<li>"Stop managing object X but leave it in the fabric." Use <code>removed</code> with <code>destroy = false</code>.</li>
+<li>"Someone changed a description in the GUI; keep the GUI value." Either refresh-only and update the config, or just update the config so plan shows no changes.</li>
+<li>"Use the DN of an object you don't own." Use a <code>data</code> block, or just a literal DN.</li>
+</ul>
+<h3>Traps</h3>
+<ul>
+<li><b>Import doesn't make config correct.</b> The import block page requires <code>to</code> to match an existing resource block. If your block's arguments differ from the APIC object, the same apply that imports will also update it, because import plus diff happen together. Read the plan line by line.</li>
+<li><b>The import ID must be known at plan.</b> The block page says so explicitly, so don't feed it from a resource attribute that's created in the same run.</li>
+<li><b><code>state rm</code> followed by plan wants to create the object again.</b> On APIC a POST to an existing DN often just merges, so you may see "success" and silently re-own the object (<span class="warn">⚠ APIC behaviour unverified — test in lab</span>).</li>
+<li><b>Moved without the block:</b> the <code>state mv</code> page reminds you that a renamed address defaults to delete plus create. On ACI, deleting a tenant cascades to every child object.</li>
+<li><b>Quoting instance keys.</b> On Linux, wrap <code>'aci_tenant.t["prod"]'</code> in single quotes (state mv/rm pages).</li>
+<li><b>State contains secrets</b>, as does a <code>-out</code> plan file. Don't commit <code>terraform.tfstate</code> to the Git repo your CI uses.</li>
+</ul>
+
+<svg viewBox="0 0 720 250" role="img" aria-label="State decision flow for an object">
+<rect class="b4" x="250" y="8" width="220" height="40" rx="8"/><text x="360" y="33" text-anchor="middle" font-size="13" font-weight="700">Object exists on APIC</text>
+<path class="ln" d="M360 48 V70"/>
+<rect class="b1" x="230" y="70" width="260" height="40" rx="8"/><text x="360" y="95" text-anchor="middle" font-size="12">In state at the right address?</text>
+<path class="ln" d="M230 90 H120 V140"/><text x="170" y="84" font-size="11" class="mut">not in state</text>
+<path class="ln" d="M490 90 H600 V140"/><text x="520" y="84" font-size="11" class="mut">wrong address</text>
+<path class="ln" d="M360 110 V140"/><text x="368" y="130" font-size="11" class="mut">yes</text>
+<rect class="b3" x="20" y="140" width="200" height="56" rx="8"/><text x="120" y="163" text-anchor="middle" font-size="12" font-weight="700">import { id = DN }</text><text x="120" y="183" text-anchor="middle" font-size="11" class="mut">+ matching resource block</text>
+<rect class="b2" x="260" y="140" width="200" height="56" rx="8"/><text x="360" y="163" text-anchor="middle" font-size="12" font-weight="700">Still want to manage?</text><text x="360" y="183" text-anchor="middle" font-size="11" class="mut">no → removed{destroy=false}</text>
+<rect class="b3" x="500" y="140" width="200" height="56" rx="8"/><text x="600" y="163" text-anchor="middle" font-size="12" font-weight="700">moved { from, to }</text><text x="600" y="183" text-anchor="middle" font-size="11" class="mut">no destroy/create</text>
+<path class="ln" d="M360 196 V214"/>
+<rect class="b1" x="200" y="214" width="320" height="32" rx="8"/><text x="360" y="235" text-anchor="middle" font-size="12">Drifted? keep it → config edit or -refresh-only</text>
+</svg>
+
+<h2 id="anat">Anatomy</h2>
+<p class="small">Terraform 1.13 syntax per the block references; ACI argument names other than <code>aci_rest_managed</code>'s are <span class="warn">⚠ unverified — check with the schema command in Speed notes</span>.</p>
+<pre><code># --- 2.8.d retrieval: read, don't own ---
+data "aci_tenant" "common" {        # ⚠ argument name "name" unverified for v2.17.0
+  name = "common"
+}
+# reference: data.aci_tenant.common.id   (id = DN on this provider ⚠)
+
+# --- 2.8.e provision: own it ---
+resource "aci_rest_managed" "tn" {  # dn / class_name / content per BRKDCN-2607
+  dn         = "uni/tn-REST"
+  class_name = "fvTenant"
+  content = {
+    name  = "REST"
+    descr = "managed by terraform"
+  }
+}
+
+# --- 2.8.f state: adopt, re-address, forget ---
+import {
+  to = aci_rest_managed.legacy       # must match an existing resource block
+  id = "uni/tn-LEGACY"               # DN; must be known at plan time
+}
+
+moved {
+  from = aci_rest_managed.tn         # old label
+  to   = aci_rest_managed.rest       # new label: no destroy/create
+}
+
+removed {
+  from = aci_rest_managed.old
+  lifecycle {
+    destroy = false                  # forget, leave object on APIC
+  }
+}</code></pre>
+<pre><code># CLI equivalents (immediate, no plan review)
+terraform import aci_rest_managed.legacy uni/tn-LEGACY
+terraform state mv aci_rest_managed.tn aci_rest_managed.rest
+terraform state rm -dry-run 'aci_rest_managed.t["old"]'   # list matches first
+terraform plan -refresh-only                              # accept drift
+terraform plan -detailed-exitcode                         # 0 none · 1 error · 2 changes</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Plan wants to <b>create</b> a tenant that already exists on APIC</td><td>Object not in state (created in GUI, or state rm'd earlier)</td><td><code>terraform state list</code> lacks the address</td><td>Add an <code>import</code> block with the DN, then plan and apply</td></tr>
+<tr><td>Rename of a resource label plans <b>destroy + create</b></td><td>Address changed; Terraform defaults to delete/create</td><td>Plan shows <code>-</code> and <code>+</code> for the same DN</td><td>Add a <code>moved</code> block (or <code>state mv</code>); re-plan shows a move, no destroy</td></tr>
+<tr><td>Downstream resources show "known after apply" on every plan</td><td>Data source deferred by <code>depends_on</code> or by an argument tied to a changing resource</td><td>Plan shows the data read "during apply"</td><td>Drop <code>depends_on</code>; feed it known values</td></tr>
+<tr><td>Imported tenant's first apply also <b>updates</b> it</td><td>Resource block arguments differ from live object</td><td><code>terraform state show ADDR</code> vs your HCL</td><td>Align HCL (or start from <code>-generate-config-out</code>) until plan shows no changes</td></tr>
+<tr><td>Command fails acquiring the state lock</td><td>Another run in progress, or a stale lock from a killed run</td><td>Error names the lock; check no other run is active</td><td>Wait or use <code>-lock-timeout</code>; for stale locks <code>terraform force-unlock</code> <span class="warn">⚠ unverified this run</span>. Never use <code>-lock=false</code> on shared state</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>terraform providers schema -json | jq '.provider_schemas[].data_source_schemas["aci_tenant"]'</code> gives the data source arguments without the registry <span class="warn">⚠ jq on workstation and exact key path unverified</span>.</li>
+<li><code>terraform state list</code> then <code>terraform state show ADDR</code> shows the live attributes to copy into HCL after an import.</li>
+<li><code>terraform plan -generate-config-out=gen.tf</code> drafts the resource block for you. Delete defaults you don't care about.</li>
+<li><code>terraform state -h</code>, <code>terraform plan -h</code>, and <code>terraform import -h</code> each print every flag offline.</li>
+<li><code>terraform console</code> lets you test <code>data.aci_tenant.common.id</code> after an init and refresh <span class="warn">⚠</span>.</li>
+<li>APIC Visore or the GUI "show debug info" gives you the DN to use as the import ID <span class="warn">⚠ not verified today</span>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Target:</b> DevNet Sandbox APIC · Terraform 1.13 · <code>ciscodevnet/aci</code> v2.17.0 · local backend.</p>
+<p><b>Requirement:</b></p>
+<ol>
+<li>In the APIC GUI, create tenant <code>TF-ADOPT</code> with description <code>gui</code>. Terraform must not create it.</li>
+<li>Bring it under Terraform as <code>aci_rest_managed.adopt</code> using a config block, not the CLI. The final plan must show <b>no changes</b>, with the description still <code>gui</code>.</li>
+<li>Rename the address to <code>aci_rest_managed.tenant</code> with no destroy.</li>
+<li>Stop managing it while leaving it on the APIC.</li>
+</ol>
+<p><b>Reference fields:</b> <code>dn</code>, <code>class_name</code> (<code>fvTenant</code>), <code>content.name</code>, <code>content.descr</code>; DN form <code>uni/tn-NAME</code>.</p>
+<p><b>Verify:</b></p>
+<ul>
+<li><code>terraform state list</code> after each step.</li>
+<li><code>terraform plan -detailed-exitcode</code> returns 0 after step 2 and step 3.</li>
+<li>After step 4, the tenant still appears in the GUI and <code>state list</code> is empty.</li>
+</ul>
+</div>
+<details><summary>Hint</summary><p>Write the import block first and let <code>-generate-config-out</code> produce the resource. Then trim it down to the four fields. For steps 3 and 4, delete the old block in the same edit you add <code>moved</code> or <code>removed</code>.</p></details>
+<details><summary>Solution</summary>
+<pre><code># step 2 (main.tf)
+import {
+  to = aci_rest_managed.adopt
+  id = "uni/tn-TF-ADOPT"
+}
+resource "aci_rest_managed" "adopt" {
+  dn         = "uni/tn-TF-ADOPT"
+  class_name = "fvTenant"
+  content = { name = "TF-ADOPT", descr = "gui" }
+}
+# terraform plan   -> 1 to import, 0 to change ; terraform apply
+
+# step 3: rename label in the resource block to "tenant", add:
+moved {
+  from = aci_rest_managed.adopt
+  to   = aci_rest_managed.tenant
+}
+# terraform plan -> move, no destroy ; apply ; plan -detailed-exitcode = 0
+
+# step 4: delete the resource block (and moved/import blocks), add:
+removed {
+  from = aci_rest_managed.tenant
+  lifecycle { destroy = false }
+}
+# terraform plan -> forget, no destroy ; apply</code></pre>
+<p class="small"><span class="warn">⚠ unverified — test in lab:</span> whether <code>aci_rest_managed</code> in v2.17.0 accepts this import ID form unchanged; whether generated config adds annotation or other attributes; whether <code>removed</code> requires the resource block to be deleted (the reference page is silent); plan wording.</p>
+</details>
+
+<h2 id="recall">Recall check</h2>
+<ol>
+<li>When is a data source read at plan time, and what two things push it to apply?
+<details><summary>Answer</summary><p>At plan (refresh phase) when all arguments are known. It's deferred when an argument depends on a managed-resource value that changes in this plan, or when the data block has <code>depends_on</code>.</p></details></li>
+<li>You run <code>terraform state rm aci_tenant.prod</code>. What happens to the tenant, and what does the next plan propose?
+<details><summary>Answer</summary><p>The tenant stays on APIC, unmanaged. The next plan proposes creating it again, which may fail or conflict. The block alternative is <code>removed { … destroy = false }</code>, which is reviewed in plan.</p></details></li>
+<li>Give the import block's two required pieces for an ACI VRF, the ID format, and the constraint on the ID.
+<details><summary>Answer</summary><p><code>to</code> (an address matching an existing resource block) and <code>id</code> as the full DN, e.g. <code>uni/tn-T/ctx-V</code>. The ID must be known during plan. The alternative is <code>identity</code> on newer docs (⚠ for 1.13 / aci 2.17).</p></details></li>
+<li>What are the three plan modes, what are the <code>-detailed-exitcode</code> values, and which mode accepts GUI drift?
+<details><summary>Answer</summary><p>Normal, destroy, refresh-only. Exit codes: 0 no changes, 1 error, 2 changes. Refresh-only updates state and outputs to match out-of-band changes.</p></details></li>
+<li>(from 2026-11-03) What alias does <code>device.connect()</code> give with no arguments in pyATS, and how do you open a second session on the vty path as vty_1?
+<details><summary>Answer</summary><p><code>default</code>; <code>device.connect(alias='vty_1', via='vty')</code>.</p></details></li>
+<li>(from 2026-11-05) A RESTCONF PATCH succeeds but your Python CLI raises JSONDecodeError. Why, and what order do you check?
+<details><summary>Answer</summary><p>RESTCONF returns 204 with no body. Check the status code first, then whether a body is present, then decode.</p></details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><a href="https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2025/pdf/BRKDCN-2607.pdf" target="_blank" rel="noopener">Introduction to Infrastructure as Code for ACI using Terraform (BRKDCN-2607)</a> <span class="badge b-ok">✅</span> <span class="small">Cisco Live EMEA 2025 · examples use aci 2.11.1–2.13.0, TF 1.9.3 · verified 2026-11-11</span><br>Best for ACI import blocks with DN IDs, <code>aci_rest_managed</code>, and backend/state slides.</li>
+<li><a href="https://github.com/CiscoDevNet/terraform-provider-aci/releases" target="_blank" rel="noopener">Releases · CiscoDevNet/terraform-provider-aci · GitHub</a> <span class="badge b-ok">✅</span> <span class="small">latest v2.20.0; lab 2.17.0 · verified 2026-11-11</span><br>Best for what changed in 2.17.0 (Plugin Framework migration) and which import fixes your version has.</li>
+</ul>
+<h3>Standards</h3>
+<p class="small">None apply (Terraform is not standards-based).</p>
+<h3>Third-party (HashiCorp)</h3>
+<ul class="refs">
+<li><a href="https://developer.hashicorp.com/terraform/language/state/refactor" target="_blank" rel="noopener">Refactor Terraform state</a> <span class="badge b-ok">✅</span> <span class="small">v1.17.x · verified 2026-11-11</span><br>Best for when to prefer import/removed blocks over legacy <code>state mv</code>, plus the 1.7 requirement.</li>
+<li><a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/state" target="_blank" rel="noopener">terraform state commands reference</a> <span class="badge b-ok">✅</span> <span class="small">v1.13.x · verified 2026-11-11</span><br>Best for the subcommand list and the forced-backup rule.</li>
+<li><a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/plan" target="_blank" rel="noopener">terraform plan command reference</a> <span class="badge b-ok">✅</span> <span class="small">v1.13.x · verified 2026-11-11</span><br>Best for planning modes, <code>-replace</code>, <code>-target</code> caveat, <code>-detailed-exitcode</code>.</li>
+<li><a href="https://developer.hashicorp.com/terraform/language/v1.12.x/data-sources" target="_blank" rel="noopener">Query data from external sources</a> <span class="badge b-ok">✅</span> <span class="small">v1.12.x (pin 1.13) · verified 2026-11-11</span><br>Best for data-source read timing and deferral rules.</li>
+<li><a href="https://developer.hashicorp.com/terraform/language/block/import" target="_blank" rel="noopener">import block reference</a> <span class="badge b-ok">✅</span> <span class="small">v1.17.x (newer than pin) · verified 2026-11-11</span><br>Best for <code>to</code>/<code>id</code>/<code>for_each</code> arguments and the known-at-plan rule.</li>
+<li><a href="https://developer.hashicorp.com/terraform/language/v1.14.x/state/purpose" target="_blank" rel="noopener">Purpose of Terraform State</a> <span class="badge b-ok">✅</span> <span class="small">v1.14.x · verified 2026-11-11</span><br>Best for why state exists, in four bullets.</li>
+</ul>
+<p class="small">Also verified today and cited inline: <a href="https://developer.hashicorp.com/terraform/language/block/moved" target="_blank" rel="noopener">moved block reference</a> <span class="badge b-ok">✅</span> · <a href="https://developer.hashicorp.com/terraform/language/block/removed" target="_blank" rel="noopener">removed block reference</a> <span class="badge b-ok">✅</span> · <a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/state/rm" target="_blank" rel="noopener">terraform state rm command reference</a> <span class="badge b-ok">✅</span> · <a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/state/mv" target="_blank" rel="noopener">terraform state mv command reference</a> <span class="badge b-ok">✅</span> · <a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/import" target="_blank" rel="noopener">terraform import command reference</a> <span class="badge b-ok">✅</span> · <a href="https://developer.hashicorp.com/terraform/language/import" target="_blank" rel="noopener">Import resources overview</a> <span class="badge b-ok">✅</span> · <a href="https://developer.hashicorp.com/terraform/language/state/backends" target="_blank" rel="noopener">Backends: State Storage and Locking</a> <span class="badge b-ok">✅</span></p>
+
+<footer>
+<p><b>Links: 15 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims:</b></p>
+<ul>
+<li>Domain 2 exam weight.</li>
+<li><code>data "aci_tenant"</code> argument names and that <code>id</code> is the DN in v2.17.0.</li>
+<li>Import <code>identity</code> support on TF 1.13 / aci 2.17.0, and when import-block <code>for_each</code> was added.</li>
+<li>APIC POST-merge behaviour after <code>state rm</code>.</li>
+<li><code>terraform force-unlock</code> (not fetched today).</li>
+<li>The <code>providers schema</code> jq path and jq on the workstation.</li>
+<li><code>terraform console</code> use.</li>
+<li>Visore / debug-info DN lookup.</li>
+<li>Drill import ID form, generated attributes, and whether <code>removed</code> requires deleting the resource block.</li>
+<li>Whether <code>apply -refresh-only</code> mirrors plan (only the plan page was fetched).</li>
+<li>v1.17 docs used where no 1.13 page was fetched (refactor, import, moved/removed blocks, backends).</li>
+</ul>
+<p><b>Tomorrow (Thu 2026-11-12):</b> unit 28, 3.3.c pyATS: develop and run test jobs and scripts with AEtest. Friday is weekly review 7 (units 25–28).</p>
+</footer>
+</main>
+</body>
+</html>
+
+</body></html>

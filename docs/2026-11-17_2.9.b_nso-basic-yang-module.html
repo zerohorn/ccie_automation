@@ -1,0 +1,378 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NSO Service YANG</title>
+<style>
+:root{
+  --bg:#fbfaf7; --fg:#1d1f23; --muted:#5d6470; --card:#ffffff; --line:#d9dce1;
+  --accent:#0b6bcb; --accent-soft:#e3effb; --ok:#1d7a46; --ok-soft:#e2f4ea;
+  --warn:#9a5b00; --warn-soft:#fdf1dc; --bad:#b3261e; --bad-soft:#fbe5e3;
+  --code-bg:#f2f3f5; --svg-fill:#ffffff; --svg-hi:#e3effb; --svg-dim:#f2f3f5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171b; --fg:#e6e8eb; --muted:#9aa3ae; --card:#1d2026; --line:#323741;
+    --accent:#6fb1f5; --accent-soft:#1b2c40; --ok:#6fcf97; --ok-soft:#173326;
+    --warn:#f2b257; --warn-soft:#3a2c14; --bad:#f28b82; --bad-soft:#3d1c1a;
+    --code-bg:#22262d; --svg-fill:#1d2026; --svg-hi:#1b2c40; --svg-dim:#262a31;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171b; --fg:#e6e8eb; --muted:#9aa3ae; --card:#1d2026; --line:#323741;
+  --accent:#6fb1f5; --accent-soft:#1b2c40; --ok:#6fcf97; --ok-soft:#173326;
+  --warn:#f2b257; --warn-soft:#3a2c14; --bad:#f28b82; --bad-soft:#3d1c1a;
+  --code-bg:#22262d; --svg-fill:#1d2026; --svg-hi:#1b2c40; --svg-dim:#262a31;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav.toc{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;overflow-x:auto;white-space:nowrap;font-size:14px}
+nav.toc a{color:var(--accent);text-decoration:none;margin-right:14px}
+h1{font-size:1.6rem;margin:.3em 0}
+h2{font-size:1.3rem;margin-top:2em;border-bottom:1px solid var(--line);padding-bottom:4px;scroll-margin-top:48px}
+h3{font-size:1.08rem;margin-top:1.4em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:18px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:14px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.t-ok{background:var(--ok-soft);color:var(--ok)}
+.t-warn{background:var(--warn-soft);color:var(--warn)}
+.t-bad{background:var(--bad-soft);color:var(--bad)}
+.t-acc{background:var(--accent-soft);color:var(--accent)}
+.warn{color:var(--warn);font-weight:600}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code-bg)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code-bg);padding:0 3px;border-radius:4px}
+svg{width:100%;height:auto;display:block;margin:10px 0}
+svg text{fill:var(--fg);font-family:system-ui,sans-serif}
+svg .box{fill:var(--svg-fill);stroke:var(--line);stroke-width:1.5}
+svg .hi{fill:var(--svg-hi);stroke:var(--accent);stroke-width:2}
+svg .dim{fill:var(--svg-dim);stroke:var(--line);stroke-width:1}
+svg .ln{stroke:var(--muted);stroke-width:1.6;fill:none}
+svg .lnacc{stroke:var(--accent);stroke-width:2;fill:none}
+svg .bad{fill:var(--bad-soft);stroke:var(--bad);stroke-width:1.5}
+svg .ok{fill:var(--ok-soft);stroke:var(--ok);stroke-width:1.5}
+svg .sm{font-size:12px} svg .xs{font-size:11px;fill:var(--muted)} svg .b{font-weight:700}
+details{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+a{color:var(--accent)}
+.refs li{margin-bottom:10px}
+footer{margin-top:36px;font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<nav class="toc">
+<a href="#snap">Snapshot</a><a href="#fits">Where it fits</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anatomy">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+<main>
+
+<div class="card">
+<h1>NSO 2.9.b — Basic YANG module for a service</h1>
+<div class="meta">
+<span>Tue 2026-11-17</span>
+<span>Blueprint 2.9.b: Basic YANG module (lists, leaf-lists, data types, leafrefs, single-arg when/must)</span>
+<span>Domain 2 · Infrastructure as Code / programmability (weight <span class="warn">⚠ unverified</span>)</span>
+<span><span class="pill t-bad">Tier 1 gap</span></span>
+<span>~18 min read</span>
+<span>Unit 30 of 49</span>
+<span>Pins: NSO 6.5 · YANG 1.1</span>
+</div>
+<p style="margin:.6em 0 0;font-size:14px">Lab status: the tracker still lists NSO as "fully unbuilt". This page is reading plus pen-and-paper modelling until an NSO 6.5 instance exists. 2.9.a (service template) comes next and builds on this module.</p>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>In NSO, the service YANG is the service's API. It defines the inputs the operator types and the rules that reject bad input before any device is touched.</li>
+<li>Two statements turn an ordinary list into a service: <code>uses ncs:service-data;</code> and <code>ncs:servicepoint "&lt;name&gt;";</code>. The servicepoint name is the glue to the template or Python code.</li>
+<li>You cannot load raw <code>.yang</code> into NSO. <code>make</code> runs <code>ncsc -c</code> to compile it to <code>.fxs</code>, and then <code>packages reload</code> loads it.</li>
+<li>Leafref = foreign key. The skeleton's device leaf-list points at <code>/ncs:devices/ncs:device/ncs:name</code>, so only devices NSO already knows are accepted.</li>
+<li><code>when</code> makes a node exist only while a condition holds. If the condition goes false, the node is removed. <code>must</code> rejects the commit and shows your <code>error-message</code>.</li>
+<li>NSO 6.5 supports YANG 1.1 with a few exceptions. For example, a leafref inside a union is not validated, and <code>deref()</code> is a Tail-f extension that <code>--strict-yang</code> flags.</li>
+</ul>
+
+<h2 id="fits">Where this fits</h2>
+<svg viewBox="0 0 760 330" role="img" aria-label="Blueprint and tool-chain position of 2.9.b">
+  <text x="10" y="20" class="sm b">Blueprint neighbours</text>
+  <rect x="10" y="32" width="160" height="56" rx="8" class="dim"/><text x="20" y="54" class="sm">2.4 / 2.6</text><text x="20" y="72" class="xs">read vendor YANG (consumer)</text>
+  <rect x="200" y="32" width="160" height="56" rx="8" class="hi"/><text x="210" y="54" class="sm b">2.9.b TODAY</text><text x="210" y="72" class="xs">author service YANG</text>
+  <rect x="390" y="32" width="160" height="56" rx="8" class="box"/><text x="400" y="54" class="sm">2.9.a (unit 31)</text><text x="400" y="72" class="xs">XML template from device config</text>
+  <rect x="580" y="32" width="170" height="56" rx="8" class="box"/><text x="590" y="54" class="sm">2.9.c-d (unit 34)</text><text x="590" y="72" class="xs">actions + Python VM log</text>
+  <path d="M170 60 H200 M360 60 H390 M550 60 H580" class="ln"/>
+  <text x="10" y="128" class="sm b">Tool chain inside one package (NSO 6.5)</text>
+  <rect x="10" y="140" width="130" height="62" rx="8" class="box"/><text x="20" y="162" class="sm">ncs-make-package</text><text x="20" y="180" class="xs">--service-skeleton</text><text x="20" y="194" class="xs">python-and-template</text>
+  <rect x="160" y="140" width="120" height="62" rx="8" class="hi"/><text x="170" y="162" class="sm b">src/yang/</text><text x="170" y="180" class="xs">your .yang</text>
+  <rect x="300" y="140" width="130" height="62" rx="8" class="box"/><text x="310" y="162" class="sm">make → ncsc -c</text><text x="310" y="180" class="xs">.fxs → load-dir</text>
+  <rect x="450" y="140" width="130" height="62" rx="8" class="box"/><text x="460" y="162" class="sm">packages reload</text><text x="460" y="180" class="xs">CDB schema loaded</text>
+  <rect x="600" y="140" width="150" height="62" rx="8" class="box"/><text x="610" y="162" class="sm">CLI / RESTCONF</text><text x="610" y="180" class="xs">service instance</text><text x="610" y="194" class="xs">commit dry-run</text>
+  <path d="M140 171 H160 M280 171 H300 M430 171 H450 M580 171 H600" class="lnacc"/>
+  <rect x="160" y="236" width="270" height="62" rx="8" class="dim"/><text x="170" y="258" class="sm">templates/*.xml (2.9.a)</text><text x="170" y="276" class="xs">servicepoint must match YANG</text>
+  <rect x="450" y="236" width="300" height="62" rx="8" class="dim"/><text x="460" y="258" class="sm">FASTMAP → cisco-ios-cli NED → Cat8000V</text><text x="460" y="276" class="xs">device config generated from service inputs</text>
+  <path d="M220 202 V236 M675 202 V236" class="ln" stroke-dasharray="4 3"/>
+</svg>
+
+<h2 id="l1">L1 — Concept: you are now the model author</h2>
+<p>Every YANG page so far (2.4, 2.5, 2.6, 3.5) had you reading someone else's model: you found a path in <code>Cisco-IOS-XE-native</code> and built a payload for it. In 2.9 the roles flip. You write the model, and NSO builds the CLI, NETCONF, RESTCONF and Python access to it for you. The NSO "Implementing Services" guide says the service YANG specifies the inputs the service takes and the validation rules that make sure client values fit what the service expects.</p>
+<p>That gives the module two jobs. The first is <strong>shape</strong>: which inputs exist, how they nest, and which ones identify an instance. The second is <strong>guardrails</strong>: types, ranges, references and conditions that reject nonsense at commit. If a bad value is blocked in YANG, the template and Python never have to handle it. On the exam, that is the cheapest place to stop errors.</p>
+<p>Where the data lives: NSO's CDB is a tree whose schema comes from compiled YANG. A service instance is just another list entry in that tree, next to <code>/devices/device</code>. That is why a leafref from your service to <code>/ncs:devices/ncs:device/ncs:name</code> works. Both nodes are in the same database.</p>
+
+<h2 id="l2">L2 — Mechanics: the statement set 2.9.b names</h2>
+<h3>Node types</h3>
+<div class="tw"><table>
+<tr><th>Statement</th><th>Holds</th><th>Identity</th><th>Service-model use</th><th>CLI feel</th></tr>
+<tr><td><code>container</code></td><td>other nodes</td><td>one instance</td><td>group optional settings (e.g. <code>dns { … }</code>)</td><td>enters a sub-mode</td></tr>
+<tr><td><code>list</code> + <code>key</code></td><td>entries (records)</td><td>key leaf values; at least one key</td><td>the service itself: one entry per instance</td><td><code>svc NAME</code> → <code>(config-svc-NAME)#</code></td></tr>
+<tr><td><code>leaf</code></td><td>one typed value</td><td>—</td><td>scalar input: VLAN ID, IP, description</td><td><code>vlan-id 100</code></td></tr>
+<tr><td><code>leaf-list</code></td><td>sequence of values, one type</td><td>value itself <span class="warn">⚠</span></td><td>target devices, DNS servers</td><td><code>device [ r1 r2 ]</code> <span class="warn">⚠</span></td></tr>
+<tr><td><code>typedef</code></td><td>named derived type</td><td>—</td><td>reuse a constrained type (e.g. <code>percent</code> = uint16 0..100)</td><td>—</td></tr>
+<tr><td><code>grouping</code>/<code>uses</code></td><td>reusable node set</td><td>—</td><td><code>uses ncs:service-data;</code> is a grouping</td><td>—</td></tr>
+</table></div>
+
+<h3>Types you will actually reach for</h3>
+<p>The NSO YANG chapter uses <code>string</code>, <code>int32</code>, <code>uint16</code>, <code>boolean</code>, <code>empty</code>, <code>enumeration</code>, <code>union</code> and the <code>ietf-inet-types</code> family (<code>inet:ipv4-address</code>, <code>inet:port-number</code>). Restrict them inline with <code>range</code> (numbers) or <code>pattern</code> (strings). The "Implementing Services" example puts a <code>pattern</code> on a target-device leaf. Two NSO-specific notes from the chapter:</p>
+<ul>
+<li><strong>Union order matters.</strong> Put the widest type (usually <code>string</code>) last. Otherwise a value that should match <code>int32</code> or an enum can match the string branch first.</li>
+<li><strong>Imports cost a load path.</strong> If you use <code>inet:</code> types, the compiled module depends on the inet-types namespace, so its <code>.fxs</code> must be loaded. The chapter suggests <code>--addloadpath ${NCS_DIR}/etc/ncs</code>. With <code>ncs-make-package</code> the generated Makefile normally handles this <span class="warn">⚠ unverified — test in lab</span>.</li>
+</ul>
+
+<h3>leafref: three path forms</h3>
+<div class="tw"><table>
+<tr><th>Form</th><th>Example (from NSO 6.5 YANG chapter / services guides)</th><th>Use when</th><th>Portability</th></tr>
+<tr><td>Absolute</td><td><code>path "/ncs:devices/ncs:device/ncs:name";</code></td><td>pick a device NSO manages</td><td>standard YANG</td></tr>
+<tr><td>Relative</td><td><code>path "../host/name";</code></td><td>sibling list inside your own model</td><td>standard YANG</td></tr>
+<tr><td>Predicate with <code>current()</code></td><td><code>path "/host[name=current()/../server-host]/server/ip";</code></td><td>second key of a multi-key target, scoped by the first leaf you chose</td><td>standard YANG</td></tr>
+<tr><td><code>deref()</code> shorthand</td><td><code>path "deref(../server-host)/../server/ip";</code></td><td>same as above, shorter</td><td>Tail-f extension; flagged by <code>ncsc --strict-yang</code></td></tr>
+</table></div>
+<p>The <code>current()</code> predicate form is worth learning by heart. It is how you write "an interface that exists <em>on the device I picked</em>". In 2.9.a you will point a leafref into <code>/ncs:devices/ncs:device[ncs:name=current()/../device]/ncs:config/…</code>. The exact NED path depends on the cisco-ios-cli NED's model <span class="warn">⚠ unverified — check with the CLI <code>?</code> on a live NSO</span>.</p>
+
+<h3>when vs must</h3>
+<div class="tw"><table>
+<tr><th></th><th><code>when</code></th><th><code>must</code></th></tr>
+<tr><td>Question it answers</td><td>Should this node exist at all?</td><td>Is this data valid?</td></tr>
+<tr><td>Evaluates to false →</td><td>node is not valid / is removed (NSO chapter: "the node is removed")</td><td>commit rejected; your <code>error-message</code> is shown</td></tr>
+<tr><td>Typical service use</td><td>show <code>vrf-name</code> only when <code>use-vrf</code> is true</td><td>MTU must be 1500 when type is ethernet</td></tr>
+<tr><td>Result on true</td><td>node available</td><td>XPath true or a non-empty node-set passes</td></tr>
+<tr><td>Custom message</td><td>no</td><td><code>error-message "…";</code></td></tr>
+<tr><td>Allowed on list keys</td><td>no (YANG 1.1 changelog)</td><td>—</td></tr>
+<tr><td>NSO perf note</td><td colspan="2"><code>tailf:dependency</code> if the compiler cannot infer what the expression depends on</td></tr>
+</table></div>
+
+<svg viewBox="0 0 760 300" role="img" aria-label="Commit-time validation flow for when, must and leafref">
+  <text x="10" y="20" class="sm b">What happens on commit (service instance edit)</text>
+  <rect x="10" y="36" width="150" height="48" rx="8" class="box"/><text x="20" y="58" class="sm">commit / dry-run</text><text x="20" y="74" class="xs">candidate change set</text>
+  <path d="M160 60 H200" class="lnacc"/>
+  <rect x="200" y="36" width="160" height="48" rx="8" class="hi"/><text x="210" y="58" class="sm b">type / range / pattern</text><text x="210" y="74" class="xs">bad literal → error</text>
+  <path d="M360 60 H400" class="lnacc"/>
+  <rect x="400" y="36" width="160" height="48" rx="8" class="hi"/><text x="410" y="58" class="sm b">when</text><text x="410" y="74" class="xs">false → node removed</text>
+  <path d="M560 60 H600" class="lnacc"/>
+  <rect x="600" y="36" width="150" height="48" rx="8" class="hi"/><text x="610" y="58" class="sm b">must</text><text x="610" y="74" class="xs">false → reject + message</text>
+  <path d="M675 84 V120" class="lnacc"/>
+  <rect x="560" y="120" width="190" height="48" rx="8" class="hi"/><text x="570" y="142" class="sm b">leafref / mandatory</text><text x="570" y="158" class="xs">dangling ref → reject</text>
+  <path d="M560 144 H520" class="lnacc"/>
+  <rect x="330" y="120" width="190" height="48" rx="8" class="ok"/><text x="340" y="142" class="sm b">valid → servicepoint</text><text x="340" y="158" class="xs">template / Python runs</text>
+  <path d="M330 144 H290" class="lnacc"/>
+  <rect x="100" y="120" width="190" height="48" rx="8" class="box"/><text x="110" y="142" class="sm">device diff (FASTMAP)</text><text x="110" y="158" class="xs">dry-run shows it, no push</text>
+  <rect x="10" y="200" width="740" height="84" rx="8" class="dim"/>
+  <text x="22" y="222" class="sm b">Reading the diagram</text>
+  <text x="22" y="242" class="xs">Order of checks is a teaching simplification, not documented NSO internals ⚠. The documented outcomes are the box texts:</text>
+  <text x="22" y="260" class="xs">when false → node removed · must false → error-message · leafref prevents dangling pointers · dry-run previews without pushing.</text>
+  <text x="22" y="278" class="xs">Everything left of "valid" is free: no template, no NED, no device involved.</text>
+</svg>
+
+<h2 id="l3">L3 — Exam detail and NSO-specific traps</h2>
+<h3>"Single-arg when/must"</h3>
+<p>The blueprint limits 2.9.b to <em>single-arg</em> <code>when</code>/<code>must</code>. A reasonable reading is one condition that tests one other node, for example <code>when "../use-vrf = 'true'";</code> or <code>must "../mtu &lt;= 9000";</code>. It probably does not mean chained <code>and</code>/<code>or</code> logic across several lists. That reading is an interpretation and not stated anywhere <span class="warn">⚠</span>. Task shapes consistent with the verb "create" include: add a leaf that only appears under a condition, add a constraint with a custom message, and turn a free-text device field into a leafref.</p>
+
+<h3>XPath context: where does <code>..</code> start?</h3>
+<p>In the NSO chapter's <code>when</code> example, leaf <code>b</code> carries <code>when "../a = 'true'"</code>, and <code>a</code> is its sibling. So the path starts at the node that owns the <code>when</code>, and <code>..</code> steps up to the parent. In the <code>must</code> example, the constraint sits on container <code>interface</code> and names <code>ifType</code> and <code>ifMTU</code> directly, which are its children. Rule of thumb: the context node is the node that carries the statement. RFC 7950 s6.4.1 says the context node depends on where the statement is defined. The per-statement rules (s7.5.3, s7.21.5) could not be read in this run's fetch <span class="warn">⚠ re-read before relying on edge cases, e.g. <code>when</code> on <code>augment</code>/<code>uses</code></span>.</p>
+<p>The most common mistake: putting <code>must "mtu &lt; 9000"</code> on the <em>leaf</em> <code>mtu</code>. From the leaf, <code>mtu</code> looks for a child named mtu, finds nothing, and the empty node-set compares false. Write <code>must ". &lt; 9000"</code> on the leaf, or <code>must "mtu &lt; 9000"</code> on the parent <span class="warn">⚠ behaviour inferred from XPath rules — test in lab</span>.</p>
+
+<h3>NSO's YANG 1.1 exceptions (ncsc man page, 6.5)</h3>
+<ul>
+<li>The <code>empty</code> type is not supported in leaf-lists.</li>
+<li><code>anydata</code> is not supported.</li>
+<li>A leafref inside a <code>union</code> is <strong>not validated</strong> and is treated as a string. Bad references get through silently, so don't use this pattern when you need a guardrail.</li>
+<li>Submodule scoping follows the older rules: a submodule must include other submodules to see their definitions.</li>
+</ul>
+
+<h3>Defaults, mandatory, config false</h3>
+<ul>
+<li>A leaf with a <code>default</code> can be left out, so it is effectively not mandatory. Don't put both <code>mandatory true</code> and a default on one leaf. NSO also has <code>tailf:default-ref</code> for a dynamic default copied from another leaf.</li>
+<li><code>config false</code> marks state data. It is returned by <code>get</code>, not <code>get-config</code>, and cannot be written. Service inputs are always config. Operational leaves become relevant with actions in 2.9.c.</li>
+</ul>
+
+<h3>Reload behaviour after you change the model</h3>
+<p>Changing a <code>.fxs</code> triggers a CDB data-model upgrade on <code>packages reload</code>. The 6.5 Package Management guide offers a <code>dry-run</code> option to test the upgrade, and <code>packages reload force</code> to proceed past warnings you have reviewed. In an exam, a typical cause of a failed reload is a model change that conflicts with existing data, such as making a leaf mandatory when instances already exist without it <span class="warn">⚠ example scenario, not from the doc</span>.</p>
+
+<h2 id="anatomy">Anatomy (pinned to NSO 6.5)</h2>
+<pre><code>// src/yang/l3-edge.yang  — illustrative, not the drill answer
+module l3-edge {
+  yang-version 1.1;                         // ⚠ skeleton default not verified
+  namespace "http://example.com/l3-edge";   // never change across revisions
+  prefix l3e;
+
+  import ietf-inet-types { prefix inet; }   // needs inet-types .fxs on load path
+  import tailf-ncs       { prefix ncs; }    // ⚠ import lines as in skeleton: unverified
+  import tailf-common    { prefix tailf; }
+
+  typedef vlan-id { type uint16 { range "1..4094"; } }   // reusable guardrail
+
+  list l3-edge {
+    key name;                     // instance identity → "l3-edge NAME" in CLI
+    uses ncs:service-data;        // makes it a service (with servicepoint)
+    ncs:servicepoint l3-edge-servicepoint;   // template must use same name
+
+    leaf name { type string; }
+
+    leaf-list device {            // skeleton pattern
+      type leafref { path "/ncs:devices/ncs:device/ncs:name"; }
+    }
+
+    leaf vlan { type vlan-id; mandatory true; }
+    leaf ipv4 { type inet:ipv4-address; }
+
+    leaf use-vrf  { type boolean; default false; }
+    leaf vrf-name {
+      when "../use-vrf = 'true'";  // single-arg when, context = vrf-name
+      type string;
+    }
+
+    leaf mtu {
+      type uint16;
+      default 1500;
+      must ". &gt;= 576" {             // context = the leaf itself
+        error-message "mtu must be at least 576";
+      }
+    }
+  }
+}</code></pre>
+<p>The package lifecycle commands appear in the 6.5 guides as shown. Paths are relative to the runtime <code>packages/</code> directory:</p>
+<pre><code>$ ncs-make-package --service-skeleton python-and-template l3-edge   # man page lists this value
+$ make -C l3-edge/src                       # runs ncsc -c ... -o ../load-dir/l3-edge.fxs
+admin@ncs# packages reload                  # expect: result true per package
+admin@ncs# show packages package l3-edge oper-status
+admin@ncs# config
+admin@ncs(config)# l3-edge e1 device r1 vlan 100        # ⚠ exact CLI rendering unverified
+admin@ncs(config-l3-edge-e1)# commit dry-run</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td><code>make</code> fails: cannot find imported module</td><td>imported module not on the YANG path</td><td>read the <code>ncsc</code> line in <code>make</code> output</td><td>add <code>--yangpath &lt;dir&gt;</code> for imported/included modules (ncsc man page)</td></tr>
+<tr><td>Package not up after <code>packages reload</code>; oper-status <code>file-load-error</code> with <code>error-info "… Unknown servicepoint …"</code></td><td>template/Python servicepoint name ≠ YANG <code>ncs:servicepoint</code></td><td><code>show packages package NAME oper-status</code></td><td>make the names identical, rebuild, reload</td></tr>
+<tr><td>Commit rejected with your own text</td><td><code>must</code> evaluated false</td><td><code>commit dry-run</code> shows the error before any device diff</td><td>fix input, or fix the expression's context (<code>.</code> vs child name)</td></tr>
+<tr><td>A leaf you set is gone after editing another leaf</td><td><code>when</code> condition became false → node removed</td><td><code>show running-config l3-edge NAME</code> <span class="warn">⚠</span></td><td>intended? keep it. Want a hard error instead? use <code>must</code></td></tr>
+<tr><td>Non-existent device name accepted</td><td>leafref inside a <code>union</code> (NSO treats as string), or plain <code>string</code> type</td><td><code>ncsc --get-info</code> / read the YANG</td><td>plain <code>type leafref</code> to <code>/ncs:devices/ncs:device/ncs:name</code></td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>ncs-make-package --help</code> <span class="warn">⚠</span>: the skeleton values per the 6.5 man page are java, java-and-template, python, python-and-template and template. Add <code>--no-test</code> to skip the test dir, <code>--dest</code> to pick a directory, and <code>--build</code> to build right after creating.</li>
+<li><code>ncsc --list-errors</code> lists all warning/error codes. <code>ncsc --get-info x.fxs</code> shows what a compiled file contains. <code>--strict-yang</code> catches <code>deref()</code>.</li>
+<li><code>show ncs-state loaded-data-models data-model &lt;name&gt;</code> confirms that NSO loaded your model (CDB and YANG guide).</li>
+<li>NSO CLI <code>?</code> and TAB on your own service path prove the model rendered the way you meant: keys, leaf-lists and when-hidden leaves.</li>
+<li>The skeleton YANG generated by <code>ncs-make-package</code> is the fastest reference for the <code>ncs</code> import and the servicepoint syntax. Copy it instead of writing from memory.</li>
+<li><code>pyang -f tree</code> (RFC 8340 notation) still works for a structural sanity check if pyang is installed and <code>tailf-ncs</code> is on its path <span class="warn">⚠ unverified on workstation</span>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min, paper or NSO when built)</h2>
+<div class="card">
+<p><strong>Requirement.</strong> Write <code>loopback-svc.yang</code> for a service list <code>loopback-svc</code> keyed by <code>name</code>, with these leaves:</p>
+<ul>
+<li><code>device</code>: a single leaf (not a leaf-list) that must reference a managed device.</li>
+<li><code>loopback-id</code>: 0–2147483647, mandatory.</li>
+<li><code>ipv4</code>: an IPv4 address.</li>
+<li><code>dns-server</code>: a leaf-list of IPv4 addresses.</li>
+<li><code>advertise</code>: boolean, default false.</li>
+<li><code>ospf-area</code>: uint32. It must only exist when <code>advertise</code> is true.</li>
+<li>A must check, with error message "loopback 0 is reserved", that rejects <code>loopback-id</code> 0.</li>
+</ul>
+<p><strong>Reference names/paths.</strong> <code>uses ncs:service-data;</code> · <code>ncs:servicepoint loopback-svc-servicepoint;</code> · <code>/ncs:devices/ncs:device/ncs:name</code> · <code>inet:ipv4-address</code></p>
+<p><strong>Verify.</strong> (1) <code>make -C loopback-svc/src</code> compiles cleanly. (2) <code>packages reload</code> returns true. (3) <code>loopback-svc t1 device nope</code> is rejected. (4) <code>ospf-area</code> is not offered by <code>?</code> until <code>advertise true</code>. (5) <code>loopback-id 0</code> plus <code>commit dry-run</code> shows your message.</p>
+<p><strong>Target.</strong> NSO 6.5 (not yet built; netsim or cisco-ios-cli NED to Cat8000V in 2.9.a). Until then, write it on paper and run <code>pyang</code> if available.</p>
+</div>
+<details><summary>Hint</summary>
+<p><code>advertise</code> and <code>loopback-id</code> are siblings of the nodes that check them. Put the <code>must</code> on the leaf itself and use <code>.</code> to refer to it. Use <code>../advertise</code> in the <code>when</code> on <code>ospf-area</code>. A <code>default</code> plus <code>mandatory</code> on one leaf is a contradiction, so don't give <code>loopback-id</code> a default.</p>
+</details>
+<details><summary>Solution (⚠ not compiled — no NSO in lab yet)</summary>
+<pre><code>module loopback-svc {
+  yang-version 1.1;
+  namespace "http://example.com/loopback-svc";
+  prefix lbs;
+  import ietf-inet-types { prefix inet; }
+  import tailf-ncs { prefix ncs; }
+
+  list loopback-svc {
+    key name;
+    uses ncs:service-data;
+    ncs:servicepoint loopback-svc-servicepoint;
+
+    leaf name { type string; }
+    leaf device {
+      type leafref { path "/ncs:devices/ncs:device/ncs:name"; }
+      mandatory true;
+    }
+    leaf loopback-id {
+      type uint32 { range "0..2147483647"; }
+      mandatory true;
+      must ". != 0" { error-message "loopback 0 is reserved"; }
+    }
+    leaf ipv4 { type inet:ipv4-address; }
+    leaf-list dns-server { type inet:ipv4-address; }
+    leaf advertise { type boolean; default false; }
+    leaf ospf-area {
+      when "../advertise = 'true'";
+      type uint32;
+    }
+  }
+}</code></pre>
+<p>Alternative for the loopback check: <code>range "1..2147483647"</code> blocks 0 with a generic error. The requirement asks for a custom message, which only <code>must</code> + <code>error-message</code> gives you.</p>
+</details>
+
+<h2 id="recall">Recall check</h2>
+<ol>
+<li>Which two statements turn an ordinary YANG list into an NSO service, and what breaks if the template uses a different name for one of them?
+<details><summary>Answer</summary><code>uses ncs:service-data;</code> and <code>ncs:servicepoint "NAME";</code>. If the names don't match, the package fails to load: <code>show packages package NAME oper-status</code> shows <code>file-load-error</code> with <code>error-info "… Unknown servicepoint …"</code>.</details></li>
+<li>A leaf with <code>when</code> and a leaf with <code>must</code> both evaluate false. What does the operator see in each case?
+<details><summary>Answer</summary><code>when</code>: the node is removed or not available (no error). <code>must</code>: the commit is rejected with the <code>error-message</code> text.</details></li>
+<li>Write the leafref path that picks an IP from the server list of the host chosen in sibling leaf <code>server-host</code>, without <code>deref()</code>. Why avoid <code>deref()</code>?
+<details><summary>Answer</summary><code>/host[name=current()/../server-host]/server/ip</code>. <code>deref()</code> is a Tail-f extension that third-party tools may not understand, and <code>ncsc --strict-yang</code> flags it.</details></li>
+<li>Name two YANG 1.1 features NSO 6.5 does not support, and one that is accepted but not enforced.
+<details><summary>Answer</summary><code>empty</code> type in leaf-lists, and <code>anydata</code>. A leafref inside a <code>union</code> is accepted but not validated (treated as a string).</details></li>
+<li>(from 2026-11-11) You run <code>terraform state rm aci_tenant.prod</code>. What happens to the tenant, and what does the next plan propose?
+<details><summary>Answer</summary>The tenant stays on the APIC, unmanaged. The next plan proposes creating it again (unless the resource block is removed, or you use the <code>removed { destroy = false }</code> block). Restated from the 11-11 page.</details></li>
+<li>(from 2026-11-12) A testcase's <code>@aetest.setup</code> raises AssertionError. What happens to its tests, and what does the testcase report?
+<details><summary>Answer</summary>Its tests are Blocked. Failed + Blocked rolls up to Failed. Restated from the 11-12 page.</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco (NSO 6.5 guides)</h3>
+<ul class="refs">
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/yang.md" target="_blank" rel="noopener">YANG</a> <span class="pill t-ok">✅</span> NSO 6.5 · verified 2026-11-17<br>Best for: leafref forms (current(), deref()), when/must examples, union ordering, inet-types load path, ncsc compile.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/develop-a-simple-service.md" target="_blank" rel="noopener">Develop a Simple Service</a> <span class="pill t-ok">✅</span> NSO 6.5 · verified 2026-11-17<br>Best for: package layout, service YANG skeleton with device leafref, make, packages reload, commit dry-run.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/implementing-services.md" target="_blank" rel="noopener">Implementing Services</a> <span class="pill t-ok">✅</span> NSO 6.5 · verified 2026-11-17<br>Best for: "service model captures inputs", servicepoint + service-data, shared-data leafrefs. Bridges to 2.9.a templates.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/resources/man/ncsc.1.md" target="_blank" rel="noopener">ncsc</a> <span class="pill t-ok">✅</span> NSO 6.5 man page · verified 2026-11-17<br>Best for: <code>-c</code>/<code>-o</code>, <code>--yangpath</code>, <code>--strict-yang</code>, <code>-W</code>/<code>-E</code>, the YANG 1.1 exceptions list.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/resources/man/ncs-make-package.1.md" target="_blank" rel="noopener">ncs-make-package</a> <span class="pill t-ok">✅</span> NSO 6.5 man page · verified 2026-11-17<br>Best for: <code>--service-skeleton</code> values, <code>--no-test</code>, <code>--dest</code>, <code>--build</code>.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/package-mgmt.md" target="_blank" rel="noopener">Package Management</a> <span class="pill t-ok">✅</span> NSO 6.5 · verified 2026-11-17<br>Best for: <code>packages reload</code> output, oper-status error-info, CDB upgrade dry-run and <code>force</code>.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/cdb-and-yang.md" target="_blank" rel="noopener">CDB and YANG</a> <span class="pill t-ok">✅</span> NSO 6.5 · verified 2026-11-17<br>Best for: first model-build-reload loop, <code>show ncs-state loaded-data-models</code>, CDB init files.</li>
+</ul>
+<h3>Standards</h3>
+<ul class="refs">
+<li><a href="https://www.rfc-editor.org/rfc/rfc7950" target="_blank" rel="noopener">RFC 7950: The YANG 1.1 Data Modeling Language</a> <span class="pill t-ok">✅</span> RFC · verified 2026-11-17<br>Best for: normative grammar. This run's fetch only reached about s7.1 (s6.4.1 XPath context read). The must/when/leafref sections (7.5.3, 7.21.5, 9.9) were not re-read.</li>
+</ul>
+
+<footer>
+<p><strong>Links: 8 ✅ · 0 🔎 · 0 removed</strong></p>
+<p><strong>⚠ Unverified claims on this page:</strong> Domain 2 weight; "single-arg" interpretation; leaf-list identity/uniqueness and CLI bracket rendering; skeleton <code>yang-version</code> and import lines; Makefile handling of the inet-types load path; per-statement XPath context rules (RFC 7950 s7.5.3/s7.21.5 not readable this run) and the <code>must "mtu…"</code> on-leaf pitfall; cisco-ios-cli NED leafref path into device config; check-order in the validation diagram; reload-failure example scenario; <code>show running-config l3-edge NAME</code> and service CLI rendering; <code>ncs-make-package --help</code>; pyang/tailf-ncs on the workstation; drill solution not compiled (no NSO instance); recall answers 5–6 restated from earlier pages.</p>
+<p><strong>Tomorrow (Wed 2026-11-18):</strong> unit 31 — 2.9.a NSO: service template from a provided device config.</p>
+</footer>
+</main>
+</body>
+</html>
+
+</body></html>

@@ -1,0 +1,446 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Weekly Review 7</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single reading column, sticky mini-TOC band, console-like code panels */
+:root{
+  --bg:#f6f8f8; --panel:#ffffff; --fg:#17242a; --muted:#56666d; --line:#d3dde0;
+  --accent:#0b7a75; --accent-soft:#e1f1ef; --amber:#a86400; --amber-soft:#fbf0dc;
+  --ok:#1d7a3a; --bad:#b3261e; --code-bg:#eef3f4;
+  --sans: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono: ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1719; --panel:#162226; --fg:#dde8ea; --muted:#94a7ad; --line:#2a3a3f;
+  --accent:#4fc7bf; --accent-soft:#163533; --amber:#f0b45a; --amber-soft:#3a2c14;
+  --ok:#6fd38c; --bad:#ff8a80; --code-bg:#111c1f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1719; --panel:#162226; --fg:#dde8ea; --muted:#94a7ad; --line:#2a3a3f;
+  --accent:#4fc7bf; --accent-soft:#163533; --amber:#f0b45a; --amber-soft:#3a2c14;
+  --ok:#6fd38c; --bad:#ff8a80; --code-bg:#111c1f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.6}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 48px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+nav.toc .in{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:8px;display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none}
+nav.toc a:hover,nav.toc a:focus-visible{text-decoration:underline}
+h1,h2,h3{text-wrap:balance;line-height:1.25}
+h1{font-size:1.9rem;margin:.2em 0 .3em}
+h2{font-size:1.35rem;margin:2.2em 0 .6em;padding-top:.4em;border-top:1px solid var(--line)}
+h3{font-size:1.08rem;margin:1.4em 0 .4em}
+p,li{max-width:68ch}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px 18px;font-size:14px}
+.meta div{min-width:0}
+.meta b{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:7px 9px;vertical-align:top;text-align:left}
+th{background:var(--accent-soft);font-weight:600}
+td code,li code,p code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:1px 4px;border-radius:4px}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;font-size:13px;line-height:1.5}
+pre code{font-family:var(--mono)}
+.fig{overflow-x:auto;margin:14px 0}
+.fig svg{width:100%;height:auto;min-width:340px;display:block}
+.fig figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+details{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+.q{margin:14px 0}
+.q .tag{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700}
+.warn{color:var(--amber);font-weight:600}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);white-space:nowrap}
+ul.refs{list-style:none;padding:0}
+ul.refs li{padding:8px 0;border-bottom:1px dashed var(--line)}
+ul.refs small{color:var(--muted)}
+.check li{list-style:none;margin:6px 0}
+.check{padding-left:0}
+.check label{display:flex;gap:8px;align-items:flex-start}
+.check input{margin-top:5px}
+footer{margin-top:40px;font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<nav class="toc" aria-label="Contents"><div class="in">
+<a href="#snapshot">Snapshot</a><a href="#fits">Where it fits</a><a href="#layers">Week in layers</a><a href="#anatomy">Anatomy</a><a href="#breakfix">Break/fix</a><a href="#speed">Speed notes</a><a href="#recall">Recall (12)</a><a href="#drill">Integration drill</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a>
+</div></nav>
+
+<div class="wrap">
+
+<header class="card" style="margin-top:14px">
+<div class="eyebrow">Friday weekly review · week 7</div>
+<h1>Weekly Review 7</h1>
+<div class="meta">
+<div><b>Date</b>Fri 2026-11-13</div>
+<div><b>Covers</b>3.3.b · 5.4 · 2.8.d-f · 3.3.c</div>
+<div><b>Domains</b>2 Dev &amp; Deploy · 3 Assurance · 5 Security <span class="warn">(weights ⚠)</span></div>
+<div><b>Tiers</b>T1 ×2 (3.3.b, 3.3.c) · T2 (5.4) · T3 (2.8.d-f)</div>
+<div><b>Read time</b>~18 min + 30–40 min drill</div>
+<div><b>Progress</b>Review of units 25–28 of 49</div>
+</div>
+</header>
+
+<h2 id="snapshot">Mental snapshot</h2>
+<ul>
+<li><b>Genie parse</b> is one command → one dict. <b>Genie learn</b> is one feature → many commands → an Ops object whose data lives in <code>.info</code>. Pick parse when the task names a command; pick learn when it names a feature.</li>
+<li><b>Genie diff</b> is noisy by design unless the default exclusions (counters, timers) stay on. <code>--exclude</code> adds keys; <code>--no-default-exclusion</code> removes the defaults.</li>
+<li><b>Vault KV v2</b> puts a hidden <code>data/</code> segment in every read/write path and <code>metadata/</code> in list/metadata paths. Most 403s on a "correct" policy come from this.</li>
+<li><b>AppRole</b> is a username/password pair for machines: <code>role_id</code> is not secret, <code>secret_id</code> is. Deliver the second one wrapped and single-use.</li>
+<li><b>Terraform state</b> is the binding between config addresses and real objects. <code>state rm</code> forgets, it never destroys; the import block re-binds; <code>-refresh-only</code> accepts drift.</li>
+<li><b>AEtest</b> verdicts come from exceptions: <code>AssertionError</code> = Failed, any other exception = Errored, a failed setup blocks every test in its testcase. Rollup takes the worst result.</li>
+<li>The common thread this week: <b>observe state, compare to intent, produce a verdict</b>. Genie observes, Terraform compares, AEtest judges, Vault keeps the credentials out of all three.</li>
+</ul>
+
+<h2 id="fits">Where this week fits</h2>
+<p>Read the figure left to right as one change window. Secrets come out of Vault, a provisioning tool pushes intent, Genie snapshots the device before and after, and AEtest turns the comparison into a pass/fail record that CI can gate on.</p>
+<figure class="fig">
+<svg viewBox="0 0 760 300" role="img" aria-label="Week 7 topics placed along a change-window pipeline">
+<style>
+.bx{fill:var(--panel);stroke:var(--line);stroke-width:1.5}
+.hl{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.am{fill:var(--amber-soft);stroke:var(--amber);stroke-width:2}
+.t{fill:var(--fg);font:600 14px system-ui,sans-serif}
+.s{fill:var(--muted);font:12px system-ui,sans-serif}
+.ar{stroke:var(--muted);stroke-width:1.8;fill:none}
+.ah{fill:var(--muted)}
+</style>
+<rect class="am" x="10" y="20" width="160" height="70" rx="8"/>
+<text class="t" x="22" y="46">5.4 Vault</text>
+<text class="s" x="22" y="66">KV v2 · AppRole</text>
+<text class="s" x="22" y="82">wrapped secret_id</text>
+
+<rect class="hl" x="210" y="20" width="160" height="70" rx="8"/>
+<text class="t" x="222" y="46">2.8.d-f Terraform</text>
+<text class="s" x="222" y="66">data · import · state</text>
+<text class="s" x="222" y="82">plan -refresh-only</text>
+
+<rect class="hl" x="410" y="20" width="160" height="70" rx="8"/>
+<text class="t" x="422" y="46">3.3.b Genie</text>
+<text class="s" x="422" y="66">parse · learn · diff</text>
+<text class="s" x="422" y="82">pre/post snapshots</text>
+
+<rect class="hl" x="600" y="20" width="150" height="70" rx="8"/>
+<text class="t" x="612" y="46">3.3.c AEtest</text>
+<text class="s" x="612" y="66">sections · steps</text>
+<text class="s" x="612" y="82">Easypy job, archive</text>
+
+<path class="ar" d="M170 55 H204"/><path class="ah" d="M210 55 l-8 -5 v10z"/>
+<path class="ar" d="M370 55 H404"/><path class="ah" d="M410 55 l-8 -5 v10z"/>
+<path class="ar" d="M570 55 H594"/><path class="ah" d="M600 55 l-8 -5 v10z"/>
+
+<rect class="bx" x="10" y="150" width="200" height="56" rx="8"/>
+<text class="t" x="22" y="174">Done earlier</text>
+<text class="s" x="22" y="194">3.3.a testbed · 5.3 OAuth2 · 2.8.a-c</text>
+<rect class="bx" x="280" y="150" width="200" height="56" rx="8"/>
+<text class="t" x="292" y="174">Next (Mon)</text>
+<text class="s" x="292" y="194">5.5 tokens, headers, secrets</text>
+<rect class="bx" x="550" y="150" width="200" height="56" rx="8"/>
+<text class="t" x="562" y="174">Consumer</text>
+<text class="s" x="562" y="194">1.3/1.4 GitLab CI gate</text>
+
+<path class="ar" d="M110 150 V96"/><path class="ah" d="M110 90 l-5 8 h10z"/>
+<path class="ar" d="M380 150 V120 H90 V96"/>
+<path class="ar" d="M675 96 V144"/><path class="ah" d="M675 150 l-5 -8 h10z"/>
+<text class="s" x="20" y="250">Lab targets: Cat8000V 17.16 (Genie/AEtest) · DevNet sandbox APIC (Terraform aci 2.17.0) · Vault 1.20 on HORNLAB01</text>
+<text class="s" x="20" y="272">Gaps on workstation: pyATS not installed (tracker) · no cisco.ios collection</text>
+</svg>
+<figcaption>Week 7 units along one change window. Amber = security domain; teal = automation/assurance.</figcaption>
+</figure>
+
+<h2 id="layers">The week in three layers</h2>
+
+<h3>L1 · Concept: four tools, one question</h3>
+<p>Each of this week's tools answers "what is the real state, and does it match what I wanted?" from a different side. Genie reads device state into Python structures. Terraform keeps its own record of real objects (state) and compares that record and the live API to the config. AEtest wraps checks in a result model so a script produces a verdict instead of a log. Vault sits underneath all of them so none of the three needs a password in a file.</p>
+
+<div class="tbl"><table>
+<tr><th>Unit</th><th>What it observes</th><th>Where state lives</th><th>How it compares</th><th>Output you act on</th></tr>
+<tr><td>3.3.b Genie</td><td>Device CLI via parsers / Ops models</td><td>Python dict (parse) or Ops <code>.info</code> (learn); files with <code>--output</code></td><td><code>genie diff dir1 dir2</code> or <code>after.diff(before)</code></td><td>Unified-style diff of keys</td></tr>
+<tr><td>2.8.d-f Terraform</td><td>Provider API reads (data sources, refresh)</td><td>State file (local backend by default)</td><td><code>terraform plan</code></td><td>Plan + exit code 0/1/2 with <code>-detailed-exitcode</code></td></tr>
+<tr><td>3.3.c AEtest</td><td>Whatever your test code checks</td><td>Section results, rolled up</td><td>Assertions / result APIs</td><td>Passed/Failed/Errored/Blocked… and an archive (Easypy)</td></tr>
+<tr><td>5.4 Vault</td><td>Who is asking (token + policy)</td><td>Secrets engine (KV v2 keeps 10 versions by default)</td><td>Policy path match, deny wins</td><td>Secret, 403, or a wrapping token</td></tr>
+</table></div>
+
+<h3>L2 · Mechanics that trip people up</h3>
+<p><b>Genie.</b> <code>genie parse</code> without <code>--output</code> prints JSON to the screen and leaves you nothing to diff. With <code>--output DIR</code> it writes <code>&lt;device&gt;_&lt;command&gt;_parsed.txt</code> plus a <code>_console.txt</code> with the raw output. <code>genie learn</code> writes <code>&lt;feature&gt;_&lt;os&gt;_&lt;device&gt;_ops.txt</code>, a <code>_console.txt</code>, and an <code>_exception.txt</code> only when the feature failed; "Feature not yet developed for this os" means no Ops model exists for that OS, so fall back to parsing commands. <code>genie diff</code> pulls default exclusions from <code>verification_datafile.yaml</code> for parse output and <code>pts_datafile.yaml</code> for learn output. The diff page shows two different paths for the pts file, so check which exists in your venv. File pairing between the two directories is by identical filename in the examples (inferred, not stated).</p>
+
+<p><b>Vault.</b> The CLI hides the KV v2 <code>data/</code> segment: <code>vault kv get -mount=secret app</code> calls <code>secret/data/app</code>. A policy written for <code>secret/app</code> therefore never matches. List and metadata go to <code>secret/metadata/…</code>. In policies, <code>*</code> is a prefix glob allowed only as the last character, <code>+</code> matches one path segment, and <code>deny</code> beats everything including <code>sudo</code>. For AppRole, <code>secret_id_num_uses</code> defaults to 0 (unlimited); the best-practices page recommends 1. Response wrapping parks the real response in the cubbyhole of a single-use token whose TTL you set with <code>X-Vault-Wrap-TTL</code> or <code>-wrap-ttl</code>.</p>
+
+<p><b>Terraform.</b> Data sources are read during plan unless an argument depends on something only known at apply, or the data block depends on a managed resource that changes in this plan; then the read is deferred and the plan says so. <code>depends_on</code> on a data block makes Terraform wait until that dependency's operations finish, which in practice defers the read whenever the dependency has pending changes. <code>state rm</code> removes the binding and keeps the object; the next plan proposes creating it again. The import block needs <code>to</code> (an address with a matching resource block) and either <code>id</code> or <code>identity</code>, and the ID must be known at plan time. For ACI the ID is the full DN.</p>
+
+<p><b>AEtest.</b> A script is CommonSetup → Testcases → CommonCleanup. Each testcase may have one setup and one cleanup. If setup fails, every test in that testcase is Blocked. Inside a test, steps stop at the first non-Passed/Passx/Skipped step unless that step was started with <code>continue_=True</code>. Standalone runs (<code>aetest.main()</code>) print a summary and write no archive. Easypy (<code>pyats run job</code>) injects <code>testbed</code> from <code>--testbed-file</code> (or <code>None</code> without it) and writes TaskLog, reports and an archive.</p>
+
+<figure class="fig">
+<svg viewBox="0 0 760 210" role="img" aria-label="AEtest result rollup ladder">
+<style>
+.r{stroke:var(--line);stroke-width:1.5}
+.lt{fill:var(--fg);font:600 13px system-ui,sans-serif}
+.ls{fill:var(--muted);font:12px system-ui,sans-serif}
+.bad{fill:var(--amber-soft)} .mid{fill:var(--accent-soft)} .good{fill:var(--panel)}
+</style>
+<rect class="r bad" x="10" y="20" width="96" height="44" rx="6"/><text class="lt" x="22" y="47">Aborted</text>
+<rect class="r bad" x="116" y="20" width="96" height="44" rx="6"/><text class="lt" x="128" y="47">Errored</text>
+<rect class="r bad" x="222" y="20" width="96" height="44" rx="6"/><text class="lt" x="236" y="47">Failed</text>
+<rect class="r mid" x="328" y="20" width="96" height="44" rx="6"/><text class="lt" x="340" y="47">Blocked</text>
+<rect class="r mid" x="434" y="20" width="96" height="44" rx="6"/><text class="lt" x="452" y="47">Passx</text>
+<rect class="r good" x="540" y="20" width="96" height="44" rx="6"/><text class="lt" x="552" y="47">Passed</text>
+<rect class="r good" x="646" y="20" width="100" height="44" rx="6"/><text class="lt" x="660" y="47">Skipped</text>
+<text class="ls" x="10" y="90">← wins the rollup                                                                 loses the rollup →</text>
+<text class="ls" x="10" y="122">Errored + Failed = Errored   ·   Failed + Blocked = Failed   ·   Passed + Skipped = Passed</text>
+<text class="ls" x="10" y="150">AssertionError (and subclasses) → Failed   ·   any other Exception → Errored</text>
+<text class="ls" x="10" y="178">setup section fails → every test in that Testcase is Blocked → Testcase rolls up to Failed (if setup Failed)</text>
+</svg>
+<figcaption>Rollup ladder from the pyATS "Results Rollups" table: the higher-ranked result wins each pairing.</figcaption>
+</figure>
+
+<h3>L3 · Exam-depth detail</h3>
+<p>Task shapes consistent with this week's blueprint verbs: "gather" (3.3.b) asks for structured data from a named command or feature, often saved for comparison; "develop and execute" (3.3.c) asks for a runnable script or job with a defined verdict; "use a secret management system" (5.4) asks that a credential reach an application without living in code; "state management" (2.8.f) asks you to reconcile what Terraform thinks with what APIC has. These overlap at the edges: a gather task becomes a test when you add an assertion, and a Terraform reconcile becomes a test when you gate on the exit code.</p>
+<div class="tbl"><table>
+<tr><th>Situation</th><th>Wrong reflex</th><th>Right move</th></tr>
+<tr><td>APIC object exists, not in state</td><td>Delete and recreate</td><td><code>import { to = aci_vrf.x  id = "uni/tn-T/ctx-V" }</code>, plan, apply</td></tr>
+<tr><td>Someone changed APIC in the GUI; intent is to keep it</td><td>Edit the state file</td><td><code>terraform plan -refresh-only</code>, then update config to match</td></tr>
+<tr><td>Stop managing a tenant but keep it</td><td><code>terraform destroy -target</code></td><td><code>state rm</code>, or a <code>removed</code> block with <code>destroy = false</code></td></tr>
+<tr><td>Need every step result even after a failure</td><td><code>try/except</code> around each step</td><td><code>steps.start(..., continue_=True)</code></td></tr>
+<tr><td>Diff flags interface counters</td><td>Post-process the text</td><td>Keep default exclusions; add <code>--exclude</code> keys</td></tr>
+<tr><td>App needs a device password</td><td>Env var in the repo's CI file</td><td>AppRole login, KV v2 read, wrapped secret_id delivered separately</td></tr>
+</table></div>
+
+<h2 id="anatomy">Anatomy</h2>
+<p>Short pinned snippets. These are the shapes, not the drill solution.</p>
+<h3>Vault policy for KV v2 (Vault 1.20 lab; docs "latest")</h3>
+<pre><code># note the data/ and metadata/ segments the CLI hides
+path "secret/data/lab/*"     { capabilities = ["read"] }
+path "secret/metadata/lab/*" { capabilities = ["list"] }</code></pre>
+<h3>Terraform import + drift gate (TF 1.13; import block page is v1.17.x)</h3>
+<pre><code>import {
+  to = aci_vrf.prod            # matching resource block must exist
+  id = "uni/tn-prod/ctx-prod"  # full DN, known at plan time
+}
+
+terraform plan -refresh-only -detailed-exitcode   # 0 none · 1 error · 2 changes</code></pre>
+<h3>AEtest skeleton with steps (pyATS docs undated)</h3>
+<pre><code>from pyats import aetest
+
+class Interfaces(aetest.Testcase):
+    @aetest.setup
+    def setup(self, testbed):           # testbed injected by name
+        self.dev = testbed.devices['cat8kv']   # ⚠ device name is lab convention
+        self.dev.connect()
+
+    @aetest.test
+    def up(self, steps):
+        for intf in ['GigabitEthernet1', 'GigabitEthernet2']:
+            with steps.start(f'{intf} up', continue_=True) as step:
+                ...                     # assert -> Failed; other exception -> Errored</code></pre>
+<h3>Easypy job file</h3>
+<pre><code>from pyats.easypy import run
+
+def main(runtime):
+    run(testscript='gate.py', runtime=runtime, taskid='gate',
+        phase='post')                   # extra kwargs become script parameters</code></pre>
+<h3>Genie snapshots and diff</h3>
+<pre><code>genie learn interface --testbed-file tb.yaml --devices cat8kv --output pre
+# ... change ...
+genie learn interface --testbed-file tb.yaml --devices cat8kv --output post
+genie diff pre post --exclude 'last_change'   # ⚠ key name: check the ops file</code></pre>
+
+<h2 id="breakfix">Break/fix</h2>
+<div class="tbl"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>App token gets 403 on a secret the admin reads fine</td><td>Policy written for <code>secret/app</code>, KV v2 needs <code>secret/data/app</code></td><td><code>vault kv get -output-curl-string -mount=secret app</code> shows the real path <span class="warn">⚠</span></td><td>Rewrite policy with <code>data/</code>; add <code>metadata/</code> for list</td></tr>
+<tr><td>Every test in a testcase reports Blocked</td><td>The testcase's <code>@aetest.setup</code> failed (often connect)</td><td>Read the setup section in the TaskLog / stdout summary</td><td>Fix connectivity or creds; move fragile work out of setup if tests can run without it</td></tr>
+<tr><td>Script under Easypy crashes on <code>testbed.devices</code> with NoneType</td><td>Job launched without <code>--testbed-file</code>, so <code>testbed=None</code></td><td><code>pyats run job job.py --help</code> <span class="warn">⚠</span></td><td><code>pyats run job job.py --testbed-file tb.yaml</code></td></tr>
+<tr><td>Plan wants to create a tenant that already exists on APIC</td><td>Earlier <code>state rm</code>, or never imported</td><td><code>terraform state list</code></td><td>Import block with the DN; plan should then show no create</td></tr>
+<tr><td><code>genie diff</code> shows hundreds of counter changes</td><td>Run with <code>--no-default-exclusion</code>, or comparing files from different commands</td><td>Re-run without the flag; check filenames match in both dirs</td><td>Keep defaults, add targeted <code>--exclude</code> keys</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline, on the workstation)</h2>
+<ul>
+<li><b>Genie:</b> <code>genie parse --help</code>, <code>genie learn --help</code>, <code>genie diff --help</code> list every flag above. In Python, <code>dir(ops_obj)</code> and <code>ops_obj.info.keys()</code> show what a model actually learned. <span class="warn">⚠ pyATS is not installed on the workstation per the tracker.</span></li>
+<li><b>AEtest:</b> <code>python -c "from pyats import aetest; help(aetest.Testcase)"</code>; <code>pyats run job --help</code>; <code>pyats logs view --latest</code> opens the last archive.</li>
+<li><b>Vault:</b> <code>vault path-help secret/</code> <span class="warn">⚠</span>; <code>vault kv get -h</code>; <code>-output-curl-string</code> to see the real HTTP path; <code>-output-policy</code> to draft a policy from a command.</li>
+<li><b>Terraform:</b> <code>terraform plan -help</code>, <code>terraform state rm -help</code>; <code>terraform providers schema -json</code> for ACI argument names; <code>terraform state show &lt;addr&gt;</code> to read the DN Terraform stored.</li>
+</ul>
+
+<h2 id="recall">Recall check (12)</h2>
+<p>Answer out loud before opening. Three per unit.</p>
+
+<h3>3.3.b Genie parse / learn / diff</h3>
+<div class="q"><span class="tag">Q1</span> What do <code>parse</code> and <code>learn</code> each return, and how many commands does each run?
+<details><summary>Answer</summary>Parse runs one command and returns one structured dict. Learn takes a feature name, runs several commands, and returns an Ops object; the data is in <code>.info</code>.</details></div>
+<div class="q"><span class="tag">Q2</span> <code>genie parse "show version"</code> printed JSON, and now you need files to diff later. What do you add, and what files appear?
+<details><summary>Answer</summary><code>--output DIR</code>. You get <code>&lt;device&gt;_&lt;command&gt;_parsed.txt</code> (structure), <code>&lt;device&gt;_&lt;command&gt;_console.txt</code> (raw output) and a <code>connection_&lt;device&gt;.txt</code> log. <code>--raw</code> stores output without parsing.</details></div>
+<div class="q"><span class="tag">Q3</span> Where do <code>genie diff</code>'s default exclusions come from for parse vs learn output, and which two flags change them?
+<details><summary>Answer</summary>Parse: <code>genie_yamls/&lt;os&gt;/verification_datafile.yaml</code>. Learn: <code>pts_datafile.yaml</code> (two paths shown on the page; check your venv). <code>--exclude</code> adds keys; <code>--no-default-exclusion</code> drops the defaults.</details></div>
+
+<h3>5.4 Vault secret management</h3>
+<div class="q"><span class="tag">Q4</span> An app token gets 403 reading <code>secret/app</code> on KV v2. What path does the policy need, and where does list go?
+<details><summary>Answer</summary><code>secret/data/app</code> for read/write; <code>secret/metadata/app</code> for list and metadata. KV v2 keeps 10 versions by default.</details></div>
+<div class="q"><span class="tag">Q5</span> Which AppRole value is secret, what is the default for <code>secret_id_num_uses</code>, and what does the best-practices page recommend?
+<details><summary>Answer</summary><code>secret_id</code> is secret; <code>role_id</code> is not. Default is 0 (unlimited); recommended is 1, delivered wrapped by a trusted broker over a separate channel from the role_id.</details></div>
+<div class="q"><span class="tag">Q6</span> An unwrap of a wrapped secret_id is refused. Two possible reasons and what you do.
+<details><summary>Answer</summary>Already unwrapped (someone else read it, possible interception) or the wrap TTL expired. Alert and investigate with the audit log, revoke, and issue a new secret_id.</details></div>
+
+<h3>2.8.d-f Terraform retrieval, provision, state</h3>
+<div class="q"><span class="tag">Q7</span> After <code>terraform state rm aci_tenant.prod</code>, what happens on APIC and what does the next plan propose? What is the config-driven alternative?
+<details><summary>Answer</summary>The tenant stays on APIC, unmanaged. The next plan proposes creating it. Alternative: a <code>removed</code> block with <code>lifecycle { destroy = false }</code>, which shows in the normal plan/apply.</details></div>
+<div class="q"><span class="tag">Q8</span> Write the two arguments of an import block for an ACI VRF and state the ID constraint.
+<details><summary>Answer</summary><code>to = aci_vrf.x</code> (a matching resource block must exist) and <code>id = "uni/tn-T/ctx-V"</code> (full DN). The ID must be known at plan time. <code>terraform plan -generate-config-out=file.tf</code> can draft the resource block.</details></div>
+<div class="q"><span class="tag">Q9</span> When is a data source read at apply instead of plan?
+<details><summary>Answer</summary>When an argument is only known at apply, or the data block depends (directly or via conditions) on a managed resource that changes in this plan. <code>depends_on</code> makes it wait for that dependency's operations.</details></div>
+
+<h3>3.3.c AEtest jobs and scripts</h3>
+<div class="q"><span class="tag">Q10</span> A testcase's setup raises <code>AssertionError</code>. What are its tests, and what does the testcase report?
+<details><summary>Answer</summary>Tests are Blocked. Setup is Failed. Failed + Blocked rolls up to Failed.</details></div>
+<div class="q"><span class="tag">Q11</span> Step 2 of 3 fails and no step uses <code>continue_</code>. What runs? What changes if step 2 had <code>continue_=True</code>?
+<details><summary>Answer</summary>Step 3 is skipped and the section ends Failed. With <code>continue_=True</code> on step 2, step 3 runs; the section still rolls up to Failed.</details></div>
+<div class="q"><span class="tag">Q12</span> Standalone vs Easypy: how does the testbed reach the script, and which writes an archive?
+<details><summary>Answer</summary>Standalone: you load it yourself and pass it to <code>aetest.main(testbed=...)</code>; summary to stdout, no archive. Easypy: <code>pyats run job ... --testbed-file</code> injects <code>testbed</code> (None if omitted) and writes TaskLog, reports and an archive.</details></div>
+
+<h2 id="drill">Integration drill · pre/post change gate (~40 min)</h2>
+<p><b>Combines:</b> 5.4 + 3.3.b + 3.3.c (core), 2.8.f (stretch).</p>
+<p><b>Target:</b> Cat8000V (lab 17.16) for pyATS/Genie; Vault 1.20 on HORNLAB01; DevNet sandbox APIC for the stretch. <span class="warn">⚠ Install pyATS on the workstation first (<code>pyats[library]</code>); the tracker lists it as absent.</span></p>
+
+<h3>Requirement</h3>
+<ol>
+<li>Store the Cat8000V login under KV v2 at <code>secret/lab/cat8kv</code> (keys <code>username</code>, <code>password</code>). Create policy <code>pyats-ro</code> that can read only that secret, and an AppRole <code>pyats</code> with <code>secret_id_num_uses=1</code>.</li>
+<li>Log in with the AppRole using a wrapped secret_id, read the password, and export it for the run. The password must not appear in any file in the repo.</li>
+<li>Write <code>gate.py</code> (AEtest) with: CommonSetup that connects to <code>cat8kv</code>; testcase <code>Snapshot</code> that learns the <code>interface</code> feature and saves it under a directory named by a <code>phase</code> parameter (<code>pre</code>/<code>post</code>); testcase <code>Compare</code> (post phase only) that diffs pre vs post and fails if any interface's <code>oper_status</code> changed, with one step per interface and <code>continue_=True</code>.</li>
+<li>Run it through Easypy with a job file and a testbed file, once before and once after you shut a loopback.</li>
+<li><b>Stretch (2.8.f):</b> in a separate CI-style job, run <code>terraform plan -refresh-only -detailed-exitcode</code> against the sandbox tenant and treat exit code 2 as "drift found".</li>
+</ol>
+
+<h3>Reference fields and paths</h3>
+<ul>
+<li>Vault API paths: <code>secret/data/lab/cat8kv</code>, <code>secret/metadata/lab/cat8kv</code>; AppRole params <code>token_policies</code>, <code>secret_id_num_uses</code>; wrap with <code>-wrap-ttl</code>.</li>
+<li>Testbed password from environment: <code>%ENV{CAT8KV_PASS}</code> <span class="warn">⚠ unverified markup — test in lab</span>.</li>
+<li>Genie: Ops <code>.info</code>, <code>after.diff(before)</code>; or CLI <code>genie diff pre post</code>.</li>
+<li>Easypy: <code>run(testscript=..., runtime=runtime, taskid=..., phase='pre')</code>.</li>
+</ul>
+
+<figure class="fig">
+<svg viewBox="0 0 760 260" role="img" aria-label="Sequence of the integration drill">
+<style>
+.ln{stroke:var(--line);stroke-width:1.5;stroke-dasharray:4 4}
+.hd{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.ht{fill:var(--fg);font:600 13px system-ui,sans-serif}
+.mt{fill:var(--fg);font:12px system-ui,sans-serif}
+.mv{stroke:var(--fg);stroke-width:1.4;fill:none}
+.mh{fill:var(--fg)}
+</style>
+<rect class="hd" x="20" y="10" width="120" height="30" rx="6"/><text class="ht" x="48" y="30">Operator</text>
+<rect class="hd" x="220" y="10" width="120" height="30" rx="6"/><text class="ht" x="256" y="30">Vault</text>
+<rect class="hd" x="420" y="10" width="140" height="30" rx="6"/><text class="ht" x="438" y="30">Easypy / AEtest</text>
+<rect class="hd" x="620" y="10" width="120" height="30" rx="6"/><text class="ht" x="648" y="30">Cat8000V</text>
+<line class="ln" x1="80" y1="40" x2="80" y2="250"/>
+<line class="ln" x1="280" y1="40" x2="280" y2="250"/>
+<line class="ln" x1="490" y1="40" x2="490" y2="250"/>
+<line class="ln" x1="680" y1="40" x2="680" y2="250"/>
+<path class="mv" d="M80 70 H272"/><path class="mh" d="M280 70 l-8 -4 v8z"/><text class="mt" x="92" y="64">unwrap secret_id, AppRole login</text>
+<path class="mv" d="M280 100 H88"/><path class="mh" d="M80 100 l8 -4 v8z"/><text class="mt" x="110" y="94">token → read secret/data/lab/cat8kv</text>
+<path class="mv" d="M80 130 H482"/><path class="mh" d="M490 130 l-8 -4 v8z"/><text class="mt" x="240" y="124">pyats run job (phase=pre/post) + testbed</text>
+<path class="mv" d="M490 160 H672"/><path class="mh" d="M680 160 l-8 -4 v8z"/><text class="mt" x="500" y="154">connect · learn interface</text>
+<path class="mv" d="M680 190 H498"/><path class="mh" d="M490 190 l8 -4 v8z"/><text class="mt" x="520" y="184">Ops .info → saved per phase</text>
+<path class="mv" d="M490 225 H88"/><path class="mh" d="M80 225 l8 -4 v8z"/><text class="mt" x="200" y="219">post: diff → steps → rollup verdict + archive</text>
+</svg>
+<figcaption>Drill flow. Secrets reach the run through the environment, never the repo.</figcaption>
+</figure>
+
+<h3>Verification</h3>
+<ul>
+<li><code>vault token capabilities &lt;token&gt; secret/data/lab/cat8kv</code> returns <code>read</code> only <span class="warn">⚠</span>; a second unwrap of the same wrapping token is refused.</li>
+<li>Pre run: all Passed (Compare skipped or not run in pre). Post run after <code>shutdown</code> on a loopback: Compare is Failed, with one failed step for that loopback and the other steps Passed.</li>
+<li><code>pyats logs view --latest</code> shows both runs in the archive.</li>
+<li><code>grep -r CAT8KV</code> in the repo finds only the env-var reference.</li>
+</ul>
+
+<details><summary>Hint</summary>
+<p>Decide the phase directory in the job file, not the script. Put the connect in CommonSetup so a dead device blocks the run early with a clear section result. In <code>Compare</code>, load the two snapshots, walk <code>info</code> per interface, and open one step per interface with <code>continue_=True</code> so a single change does not hide the others. For Vault, create the wrapped secret_id in one shell (the "broker") and unwrap in another (the "app").</p>
+</details>
+<details><summary>Solution outline</summary>
+<pre><code># broker side (admin token)
+vault secrets enable -path=secret kv-v2            # skip if already enabled
+vault kv put -mount=secret lab/cat8kv username=admin password='...'
+vault policy write pyats-ro - &lt;&lt;'EOF'
+path "secret/data/lab/cat8kv" { capabilities = ["read"] }
+EOF
+vault auth enable approle
+vault write auth/approle/role/pyats token_policies=pyats-ro secret_id_num_uses=1
+vault read -field=role_id auth/approle/role/pyats/role-id
+vault write -wrap-ttl=120s -f auth/approle/role/pyats/secret-id   # hand wrapping_token over
+
+# app side
+SID=$(VAULT_TOKEN=&lt;wrapping_token&gt; vault unwrap -field=secret_id)            # ⚠
+export VAULT_TOKEN=$(vault write -field=token auth/approle/login role_id=... secret_id=$SID)
+export CAT8KV_PASS=$(vault kv get -mount=secret -field=password lab/cat8kv)
+
+# gate.py (core of Compare)
+@aetest.test
+def oper_status(self, steps, pre, post):           # ⚠ pass loaded Ops/info as parameters
+    for name, data in post['info'].items():        # ⚠ structure of saved ops file
+        with steps.start(name, continue_=True):
+            before = pre['info'].get(name, {}).get('oper_status')
+            assert data.get('oper_status') == before, f'{before} -> {data.get("oper_status")}'
+
+# job.py
+def main(runtime):
+    run(testscript='gate.py', runtime=runtime, taskid='gate', phase='post')
+
+pyats run job job.py --testbed-file tb.yaml
+
+# stretch
+terraform plan -refresh-only -detailed-exitcode; rc=$?; [ $rc -eq 2 ] &amp;&amp; echo DRIFT</code></pre>
+<p class="warn">Everything in this outline beyond the shapes verified on today's pages is ⚠ unverified — test in lab (Vault CLI flags for unwrap/login fields, ops file JSON layout, parameter passing of loaded snapshots).</p>
+</details>
+
+<h2 id="self">Self-assessment (flag weak units)</h2>
+<p>Tick what you could do cold, without the docs. Anything unticked: add <code>weak:</code> to that unit's line in <code>daily-notes/topic-queue.md</code>. This page does not save ticks.</p>
+<ul class="check">
+<li><label><input type="checkbox" id="c1"> 3.3.b: Choose parse vs learn for a task and save output to a directory in under a minute.</label></li>
+<li><label><input type="checkbox" id="c2"> 3.3.b: Run a pre/post <code>genie diff</code> and suppress counters without losing real changes.</label></li>
+<li><label><input type="checkbox" id="c3"> 5.4: Write a KV v2 policy that works first time (data/ and metadata/).</label></li>
+<li><label><input type="checkbox" id="c4"> 5.4: Set up AppRole with single-use, wrapped secret_id and explain why the unwrap can fail.</label></li>
+<li><label><input type="checkbox" id="c5"> 2.8.d-f: Import an existing ACI object by DN with an import block and get a clean plan.</label></li>
+<li><label><input type="checkbox" id="c6"> 2.8.d-f: Explain state rm vs removed block vs refresh-only, and read <code>-detailed-exitcode</code>.</label></li>
+<li><label><input type="checkbox" id="c7"> 3.3.c: Predict section and testcase results from a script, including Blocked and rollups.</label></li>
+<li><label><input type="checkbox" id="c8"> 3.3.c: Write a job file and run it under Easypy with a testbed, then find the archive.</label></li>
+</ul>
+<p>Practical blocker to resolve: pyATS still is not in the lab build. Two of this week's four units (both Tier 1) are untested on real hardware until it is.</p>
+
+<h2 id="deeper">Go deeper · week 7's best links</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_diff.html" target="_blank" rel="noopener">Genie Diff — Genie Documentation</a> <span class="badge">✅</span><br><small>unversioned · verified 2026-11-13 · default exclusion files and the two flags.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_parse.html" target="_blank" rel="noopener">Genie Parse — Genie Documentation</a> <span class="badge">✅</span><br><small>unversioned · verified 2026-11-13 · --output, --raw, --fuzzy and output file names.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_learn.html" target="_blank" rel="noopener">Genie Learn — Genie Documentation</a> <span class="badge">✅</span><br><small>unversioned · verified 2026-11-13 · ops/console/exception files and the "not yet developed" error.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cookbooks/ops.html" target="_blank" rel="noopener">1. Summary — Genie Documentation (Ops recipes)</a> <span class="badge">✅</span><br><small>unversioned · verified 2026-11-13 · Ops .info, diff of snapshots, get_ops_exclude, pickling.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/structure.html" target="_blank" rel="noopener">Script Structure — pyATS Documentation</a> <span class="badge">✅</span><br><small>undated · verified 2026-11-13 · containers, one setup/cleanup, setup failure blocks tests.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/results.html" target="_blank" rel="noopener">Section Results — pyATS Documentation</a> <span class="badge">✅</span><br><small>undated · verified 2026-11-13 · exception-to-result mapping and result APIs.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/steps.html" target="_blank" rel="noopener">Section Steps — pyATS Documentation</a> <span class="badge">✅</span><br><small>undated · verified 2026-11-13 · steps.start, continue_, numbering.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/results/rollup.html" target="_blank" rel="noopener">Results Rollups — pyATS Documentation</a> <span class="badge">✅</span><br><small>undated · verified 2026-11-13 · the full pairwise rollup table.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/aetest/run.html" target="_blank" rel="noopener">Running TestScripts — pyATS Documentation</a> <span class="badge">✅</span><br><small>undated · verified 2026-11-13 · standalone vs Easypy, testbed injection, reports and archive.</small></li>
+<li><a href="https://pubhub.devnetcloud.com/media/pyats/docs/easypy/jobfile.html" target="_blank" rel="noopener">Jobfile &amp; Tasks — pyATS Documentation</a> <span class="badge">✅</span><br><small>undated · verified 2026-11-13 · main(runtime), run() kwargs as script parameters, Task for parallel.</small></li>
+<li><a href="https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2025/pdf/BRKDCN-2607.pdf" target="_blank" rel="noopener">Introduction to Infrastructure as Code for ACI using Terraform (BRKDCN-2607)</a> <span class="badge">✅</span><br><small>Cisco Live EMEA 2025 (aci 2.11–2.13, TF 1.9.3; lab aci 2.17.0) · verified 2026-11-13 · DN import, import block for aci_vrf, generate-config-out.</small></li>
+</ul>
+<h3>Third-party</h3>
+<ul class="refs">
+<li><a href="https://developer.hashicorp.com/vault/docs/secrets/kv" target="_blank" rel="noopener">KV - Secrets Engines | Vault | HashiCorp Developer</a> <span class="badge">✅</span><br><small>latest (lab 1.20) · verified 2026-11-13 · v2 path table and default 10 versions.</small></li>
+<li><a href="https://developer.hashicorp.com/vault/docs/concepts/policies" target="_blank" rel="noopener">Policies | Vault | HashiCorp Developer</a> <span class="badge">✅</span><br><small>latest · verified 2026-11-13 · capabilities, * and + globs, deny precedence.</small></li>
+<li><a href="https://developer.hashicorp.com/vault/docs/auth/approle/approle-pattern?in=vault%2Fauth-methods" target="_blank" rel="noopener">Best practices for AppRole authentication | Vault | HashiCorp Developer</a> <span class="badge">✅</span><br><small>latest · verified 2026-11-13 · broker pattern, num_uses, unwrap failure meaning.</small></li>
+<li><a href="https://developer.hashicorp.com/vault/docs/concepts/response-wrapping" target="_blank" rel="noopener">Response Wrapping | Vault | HashiCorp Developer</a> <span class="badge">✅</span><br><small>latest · verified 2026-11-13 · cubbyhole, wrap TTL header and flag.</small></li>
+<li><a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/state/rm" target="_blank" rel="noopener">terraform state rm command reference | Terraform | HashiCorp Developer</a> <span class="badge">✅</span><br><small>v1.13.x (pin) · verified 2026-11-13 · forget-not-destroy, -dry-run, removed block.</small></li>
+<li><a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/plan" target="_blank" rel="noopener">terraform plan command reference | Terraform | HashiCorp Developer</a> <span class="badge">✅</span><br><small>v1.13.x (pin) · verified 2026-11-13 · plan modes and -detailed-exitcode.</small></li>
+<li><a href="https://developer.hashicorp.com/terraform/language/block/import" target="_blank" rel="noopener">import block reference | Terraform | HashiCorp Developer</a> <span class="badge">✅</span><br><small>v1.17.x (newer than pin 1.13) · verified 2026-11-13 · to/id/identity, for_each.</small></li>
+<li><a href="https://developer.hashicorp.com/terraform/language/v1.12.x/data-sources" target="_blank" rel="noopener">Query data from external sources | Terraform | HashiCorp Developer</a> <span class="badge">✅</span><br><small>v1.12.x · verified 2026-11-13 · when reads defer to apply.</small></li>
+</ul>
+
+<footer>
+<p><b>Links: 19 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims:</b> domain weights; pyATS install on workstation and Py 3.13 support; <code>%ENV{}</code> testbed markup; device name <code>cat8kv</code>; <code>-output-curl-string</code> output on kv get and <code>vault path-help</code>; <code>vault token capabilities</code>; <code>vault unwrap -field</code> and AppRole CLI flags in the solution; <code>dev.learn</code>/ops file JSON layout and diff key names (<code>last_change</code>, <code>oper_status</code>); passing loaded snapshots as AEtest parameters; <code>pyats logs view --latest</code> (verified 11-12, not today); genie diff file pairing by name (inferred from examples); Cat8000V 17.16 behaviour.</p>
+<p><b>Next:</b> Monday 2026-11-16 · unit 29 of 49 · 5.5 Use tokens, headers, and secrets to secure a REST API.</p>
+</footer>
+</div>
+
+</body></html>

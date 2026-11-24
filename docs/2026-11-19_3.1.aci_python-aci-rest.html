@@ -1,0 +1,387 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python Against APIC</title>
+<style>
+:root{
+  --bg:#fbfaf7;--fg:#1d1f23;--muted:#5c6370;--card:#ffffff;--line:#d9d6cf;
+  --accent:#0b6e8a;--accent2:#a3501b;--ok:#1d7a3a;--warn:#9a6a00;--bad:#b3261e;
+  --code:#f2f0ea;--svgfill:#eef5f7;--svgfill2:#f8efe6;--svgfill3:#eef6ef;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171a;--fg:#e6e3dc;--muted:#a0a6b0;--card:#1d2024;--line:#353a41;
+    --accent:#5cc3df;--accent2:#e8a072;--ok:#6fcf8a;--warn:#e6bd5c;--bad:#f08a80;
+    --code:#22262b;--svgfill:#1f2c31;--svgfill2:#2f261f;--svgfill3:#1f2c22;
+  }
+}
+:root[data-theme="dark"]{
+    --bg:#15171a;--fg:#e6e3dc;--muted:#a0a6b0;--card:#1d2024;--line:#353a41;
+    --accent:#5cc3df;--accent2:#e8a072;--ok:#6fcf8a;--warn:#e6bd5c;--bad:#f08a80;
+    --code:#22262b;--svgfill:#1f2c31;--svgfill2:#2f261f;--svgfill3:#1f2c22;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+h1{font-size:1.6rem;line-height:1.25;margin:.2em 0}
+h2{font-size:1.3rem;margin-top:2.2em;border-bottom:1px solid var(--line);padding-bottom:.25em}
+h3{font-size:1.08rem;margin-top:1.6em}
+a{color:var(--accent)}
+nav.toc{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;overflow-x:auto;white-space:nowrap;font-size:.85rem}
+nav.toc a{margin-right:12px;text-decoration:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:18px 0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px 16px;font-size:.9rem;color:var(--muted)}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:.84rem;line-height:1.45}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code);padding:0 3px;border-radius:3px}
+svg{width:100%;height:auto;display:block;margin:10px 0}
+svg text{fill:var(--fg);font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+.s-box{fill:var(--svgfill);stroke:var(--accent);stroke-width:1.5}
+.s-box2{fill:var(--svgfill2);stroke:var(--accent2);stroke-width:1.5}
+.s-box3{fill:var(--svgfill3);stroke:var(--ok);stroke-width:1.5}
+.s-line{stroke:var(--muted);stroke-width:1.5;fill:none}
+.s-acc{stroke:var(--accent);stroke-width:2;fill:none}
+.s-acc2{stroke:var(--accent2);stroke-width:2;fill:none;stroke-dasharray:5 4}
+.small{font-size:.85rem;color:var(--muted)}
+.warn{color:var(--warn)}
+.badge{display:inline-block;font-size:.75rem;border:1px solid var(--line);border-radius:10px;padding:0 7px;margin-right:4px}
+details{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0}
+summary{cursor:pointer;font-weight:600}
+ul.refs li{margin-bottom:10px}
+footer{margin-top:40px;font-size:.88rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<nav class="toc">
+<a href="#snap">Snapshot</a><a href="#fits">Where it fits</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anatomy">Anatomy</a><a href="#breakfix">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+<main>
+
+<div class="card">
+<div class="small">Thursday 2026-11-19 · CCIE Automation v1.1 daily page</div>
+<h1>3.1 (ACI) — Create, modify and troubleshoot Python scripts against the APIC REST API</h1>
+<div class="meta">
+<div><b>Domain:</b> 3.0 Network Automation and Assurance (weight ⚠ unverified, check blueprint)</div>
+<div><b>Tier:</b> 2 (proficiency)</div>
+<div><b>Read time:</b> ~18 min</div>
+<div><b>Unit:</b> 32 of 49</div>
+<div><b>Exam pins:</b> Python 3.13 · cisco.aci 2.12 (for comparison)</div>
+<div><b>Lab target:</b> DevNet Sandbox APIC (local APIC sim still deferred)</div>
+</div>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>APIC exposes one REST surface over the whole Management Information Tree (MIT). Every object has a class (<code>fvTenant</code>) and a unique DN (<code>uni/tn-Prod</code>).</li>
+<li>Two read shapes: <code>/api/mo/&lt;dn&gt;.json</code> (one object, optionally its subtree) and <code>/api/class/&lt;class&gt;.json</code> (every instance of a class). The suffix, not the headers, decides JSON vs XML.</li>
+<li>Only GET, POST and DELETE. POST both creates and updates; there is no PUT. Deletion is either DELETE or a POST with <code>"status":"deleted"</code>.</li>
+<li>Auth = POST <code>aaaLogin</code> → token → send it as a cookie on every call; <code>aaaRefresh</code> before the timeout (default 600 s; the login response tells you the real value in <code>refreshTimeoutSeconds</code>).</li>
+<li>Responses always wrap results in <code>imdata</code>, a list of one-key dicts: <code>{"&lt;class&gt;": {"attributes": {...}, "children": [...]}}</code>.</li>
+<li>Query knobs you must recognise on sight: <code>query-target</code>, <code>target-subtree-class</code>, <code>query-target-filter</code>, <code>rsp-subtree</code>, <code>rsp-subtree-include</code>, <code>rsp-prop-include</code>, <code>page</code>/<code>page-size</code>/<code>order-by</code>.</li>
+<li>Python-wise this is plain <code>requests</code>: a <code>Session</code> to carry the cookie, explicit <code>timeout</code>, <code>verify</code> handled on purpose, and dict navigation through <code>imdata</code>.</li>
+</ul>
+
+<h2 id="fits">Where this fits</h2>
+<svg viewBox="0 0 760 300" role="img" aria-label="Where 3.1 ACI fits among blueprint neighbours and tools">
+  <rect x="290" y="115" width="180" height="70" rx="10" class="s-box"/>
+  <text x="380" y="143" text-anchor="middle" font-size="15" font-weight="700">3.1 Python → APIC</text>
+  <text x="380" y="165" text-anchor="middle" font-size="12">requests + MIT REST</text>
+
+  <rect x="20" y="20" width="200" height="56" rx="8" class="s-box2"/>
+  <text x="120" y="44" text-anchor="middle" font-size="13" font-weight="600">2.3 Consume new API</text>
+  <text x="120" y="62" text-anchor="middle" font-size="11">class query, paging</text>
+
+  <rect x="20" y="122" width="200" height="56" rx="8" class="s-box2"/>
+  <text x="120" y="146" text-anchor="middle" font-size="13" font-weight="600">2.2 Python CLI app</text>
+  <text x="120" y="164" text-anchor="middle" font-size="11">argparse, timeouts</text>
+
+  <rect x="20" y="224" width="200" height="56" rx="8" class="s-box2"/>
+  <text x="120" y="248" text-anchor="middle" font-size="13" font-weight="600">5.4 / 5.5 Secrets, tokens</text>
+  <text x="120" y="266" text-anchor="middle" font-size="11">creds out of code</text>
+
+  <rect x="540" y="20" width="200" height="56" rx="8" class="s-box3"/>
+  <text x="640" y="44" text-anchor="middle" font-size="13" font-weight="600">2.7 Ansible cisco.aci</text>
+  <text x="640" y="62" text-anchor="middle" font-size="11">same objects, HTTPAPI</text>
+
+  <rect x="540" y="122" width="200" height="56" rx="8" class="s-box3"/>
+  <text x="640" y="146" text-anchor="middle" font-size="13" font-weight="600">2.8 Terraform ACI</text>
+  <text x="640" y="164" text-anchor="middle" font-size="11">aci_rest_managed = raw MO</text>
+
+  <rect x="540" y="224" width="200" height="56" rx="8" class="s-box3"/>
+  <text x="640" y="248" text-anchor="middle" font-size="13" font-weight="600">3.1 other APIs</text>
+  <text x="640" y="266" text-anchor="middle" font-size="11">IOS XE, CC, Meraki…</text>
+
+  <path d="M220 48 L290 130" class="s-line"/>
+  <path d="M220 150 L290 150" class="s-line"/>
+  <path d="M220 252 L290 170" class="s-line"/>
+  <path d="M470 130 L540 48" class="s-acc2"/>
+  <path d="M470 150 L540 150" class="s-acc2"/>
+  <path d="M470 170 L540 252" class="s-line"/>
+  <text x="505" y="108" text-anchor="middle" font-size="10" fill="var(--muted)">same MIT</text>
+</svg>
+<p class="small">Left: skills this page leans on. Right: tools that hit the same APIC object model. Dashed: Ansible and Terraform ACI drive the very same classes and DNs, so a Python script is the "no abstraction" version of what you already do in 2.7/2.8.</p>
+
+<h2 id="l1">L1 — Concept: the APIC is a database you talk to over HTTPS</h2>
+<p>Forget the CLI model. APIC holds the whole fabric as a tree of managed objects (MOs). The root is <code>uni</code> for the policy universe; tenants hang off it as <code>tn-&lt;name&gt;</code>, and everything you configure in a tenant (VRF, bridge domain, application profile, EPG, contract) is a child or grandchild. Each MO has a class name, which is its type, and a relative name (RN). Join the RNs from the root and you get the DN, the object's primary key. The Cisco guide states the rule plainly: a DN is a sequence of RNs, and you cannot rename an existing object. Renaming means delete and recreate, because the name is part of the key.</p>
+<p>Two families of objects matter for scripting. <b>Policy objects</b> are things you configure (<code>fvTenant</code>, <code>fvBD</code>, <code>fvAEPg</code>). <b>Relation objects</b> start with <code>Rs</code> and link one policy to another by name: <code>fvRsCtx</code> under a BD points at a VRF through <code>tnFvCtxName</code>; <code>fvRsBd</code> under an EPG points at a BD through <code>tnFvBDName</code>; <code>fvRsProv</code>/<code>fvRsCons</code> point an EPG at a contract through <code>tnVzBrCPName</code>. If you know the Terraform provider, this is exactly why <code>aci_rest_managed</code> needs <code>dn</code>, <code>class_name</code> and <code>content</code>: those three fields <em>are</em> an MO.</p>
+
+<svg viewBox="0 0 760 330" role="img" aria-label="ACI tenant subtree with relation objects">
+  <rect x="320" y="10" width="120" height="36" rx="6" class="s-box"/><text x="380" y="33" text-anchor="middle" font-size="13">uni (polUni)</text>
+  <rect x="300" y="72" width="160" height="40" rx="6" class="s-box"/><text x="380" y="90" text-anchor="middle" font-size="12" font-weight="700">fvTenant</text><text x="380" y="105" text-anchor="middle" font-size="11">uni/tn-Prod</text>
+  <path d="M380 46 L380 72" class="s-line"/>
+
+  <rect x="20" y="150" width="150" height="40" rx="6" class="s-box"/><text x="95" y="168" text-anchor="middle" font-size="12" font-weight="700">fvCtx (VRF)</text><text x="95" y="183" text-anchor="middle" font-size="11">…/ctx-V1</text>
+  <rect x="200" y="150" width="150" height="40" rx="6" class="s-box"/><text x="275" y="168" text-anchor="middle" font-size="12" font-weight="700">fvBD</text><text x="275" y="183" text-anchor="middle" font-size="11">…/BD-BD1 ⚠</text>
+  <rect x="400" y="150" width="150" height="40" rx="6" class="s-box"/><text x="475" y="168" text-anchor="middle" font-size="12" font-weight="700">fvAp</text><text x="475" y="183" text-anchor="middle" font-size="11">…/ap-App ⚠</text>
+  <rect x="590" y="150" width="150" height="40" rx="6" class="s-box"/><text x="665" y="168" text-anchor="middle" font-size="12" font-weight="700">vzBrCP</text><text x="665" y="183" text-anchor="middle" font-size="11">contract</text>
+  <path d="M380 112 L95 150 M380 112 L275 150 M380 112 L475 150 M380 112 L665 150" class="s-line"/>
+
+  <rect x="200" y="230" width="150" height="40" rx="6" class="s-box2"/><text x="275" y="248" text-anchor="middle" font-size="12">fvRsCtx</text><text x="275" y="263" text-anchor="middle" font-size="10">tnFvCtxName="V1"</text>
+  <rect x="200" y="280" width="150" height="40" rx="6" class="s-box3"/><text x="275" y="304" text-anchor="middle" font-size="12">fvSubnet ip=…/24</text>
+  <path d="M275 190 L275 230" class="s-line"/>
+  <path d="M200 250 C120 250 95 220 95 190" class="s-acc2"/>
+
+  <rect x="400" y="230" width="150" height="40" rx="6" class="s-box"/><text x="475" y="248" text-anchor="middle" font-size="12" font-weight="700">fvAEPg</text><text x="475" y="263" text-anchor="middle" font-size="10">…/epg-Web ⚠</text>
+  <path d="M475 190 L475 230" class="s-line"/>
+  <rect x="400" y="282" width="110" height="38" rx="6" class="s-box2"/><text x="455" y="305" text-anchor="middle" font-size="11">fvRsBd</text>
+  <rect x="520" y="282" width="130" height="38" rx="6" class="s-box2"/><text x="585" y="305" text-anchor="middle" font-size="11">fvRsProv / RsCons</text>
+  <path d="M400 300 C340 300 330 200 330 190" class="s-acc2"/>
+  <path d="M650 300 C700 300 690 220 680 190" class="s-acc2"/>
+</svg>
+<p class="small">Solid = containment (DN path). Dashed = relation by name (<code>Rs*</code> objects). RN prefixes marked ⚠ (<code>BD-</code>, <code>ap-</code>, <code>epg-</code>, <code>ctx-</code>) were not shown in today's fetched text; confirm with a GET in the sandbox before you hard-code them. <code>tn-</code> is confirmed.</p>
+
+<h2 id="l2">L2 — Mechanics: URL, verbs, payloads, auth</h2>
+
+<h3>URL grammar</h3>
+<p>The guide gives two forms: <code>https://host/api/mo/&lt;dn&gt;.{json|xml}?options</code> and <code>https://host/api/class/&lt;className&gt;.{json|xml}?options</code>. <code>/api/node/mo</code> and <code>/api/node/class</code> are interchangeable with these. Only HTTPS is on by default. Content-Type and Accept are ignored; the file-style suffix sets the encoding. That last point bites people coming from RESTCONF, where headers rule. The request body cap on <code>api</code> URIs is 1 MB.</p>
+
+<div class="tw"><table>
+<tr><th>Need</th><th>URL shape</th><th>Returns</th><th>Typical script use</th></tr>
+<tr><td>One known object</td><td><code>/api/mo/uni/tn-Prod.json</code></td><td>That MO (or empty imdata)</td><td>Existence check before create, read-back after POST</td></tr>
+<tr><td>Object + children</td><td><code>…/tn-Prod.json?rsp-subtree=children</code></td><td>MO with <code>children</code> list</td><td>Inventory of one tenant</td></tr>
+<tr><td>Everything under a DN of one class</td><td><code>…/tn-Prod.json?query-target=subtree&amp;target-subtree-class=fvAEPg</code></td><td>Flat list of EPGs</td><td>"List EPGs in tenant X"</td></tr>
+<tr><td>All instances fabric-wide</td><td><code>/api/class/fvTenant.json</code></td><td>Every tenant</td><td>Reports; pair with filter + paging</td></tr>
+<tr><td>Filtered class</td><td><code>/api/class/fvTenant.json?query-target-filter=eq(fvTenant.name,"Prod")</code></td><td>Matches only</td><td>Server-side filtering instead of Python loops</td></tr>
+<tr><td>Create/update</td><td>POST <code>/api/mo/uni.json</code> or <code>/api/mo/uni/tn-Prod.json</code></td><td>Empty imdata, totalCount 0 on success</td><td>Push a subtree in one call</td></tr>
+<tr><td>Delete</td><td>DELETE <code>/api/mo/&lt;dn&gt;.json</code> or POST <code>status:deleted</code></td><td>Empty imdata</td><td>Cleanup; status form lets you delete inside a bigger payload</td></tr>
+</table></div>
+
+<h3>Payload shape</h3>
+<p>JSON payloads mirror the tree: one top key = class; under it <code>attributes</code> (a dict of properties) and optionally <code>children</code> (a list of more one-key dicts). The guide adds two rules worth memorising: list <code>attributes</code> before <code>children</code>, and remember the API is case-sensitive. You can POST to the parent's DN with the child's <code>name</code>, or to the object's own DN; the guide shows both for a tenant (<code>POST /api/mo/uni.xml</code> with <code>&lt;fvTenant name="ExampleCorp"/&gt;</code>, and <code>POST /api/mo/uni/tn-ExampleCorp.xml</code> with the DN set). Posting a whole subtree in one call is normal and atomic from your script's point of view.</p>
+
+<h3>Authentication lifecycle</h3>
+<svg viewBox="0 0 760 340" role="img" aria-label="APIC session sequence">
+  <rect x="40" y="10" width="160" height="36" rx="6" class="s-box"/><text x="120" y="33" text-anchor="middle" font-size="13" font-weight="700">Python script</text>
+  <rect x="560" y="10" width="160" height="36" rx="6" class="s-box2"/><text x="640" y="33" text-anchor="middle" font-size="13" font-weight="700">APIC</text>
+  <path d="M120 46 L120 330 M640 46 L640 330" class="s-line" stroke-dasharray="3 4"/>
+  <path d="M120 80 L636 80" class="s-acc"/><text x="380" y="72" text-anchor="middle" font-size="12">POST /api/aaaLogin.json  {aaaUser:{attributes:{name,pwd}}}</text>
+  <path d="M640 118 L124 118" class="s-acc2"/><text x="380" y="110" text-anchor="middle" font-size="12">imdata[0].aaaLogin.attributes.token, refreshTimeoutSeconds + Set-Cookie</text>
+  <path d="M120 158 L636 158" class="s-acc"/><text x="380" y="150" text-anchor="middle" font-size="12">GET /api/class/fvTenant.json   (cookie APIC-cookie=token)</text>
+  <path d="M640 194 L124 194" class="s-acc2"/><text x="380" y="186" text-anchor="middle" font-size="12">{totalCount, imdata:[{fvTenant:{attributes}}]}</text>
+  <path d="M120 234 L636 234" class="s-acc"/><text x="380" y="226" text-anchor="middle" font-size="12">GET /api/aaaRefresh.json   (before timeout)</text>
+  <path d="M640 270 L124 270" class="s-acc2"/><text x="380" y="262" text-anchor="middle" font-size="12">new token — it changes every refresh</text>
+  <path d="M120 310 L636 310" class="s-acc"/><text x="380" y="302" text-anchor="middle" font-size="12">POST /api/aaaLogout.json  {aaaUser:{attributes:{name}}}</text>
+</svg>
+<p>From the guide: <code>aaaLogin</code> takes an <code>aaaUser</code> with <code>name</code> and <code>pwd</code>; the token comes back both in the body and as a cookie. <code>aaaRefresh</code> (GET with no body) resets the timer and returns a <em>new</em> token, so a script that caches the first token and refreshes without storing the new one will break on the next call ⚠ (behaviour inferred from "token changes on each refresh"; test it). <code>aaaLogout</code> does not end the session immediately; it lapses when the refresh timeout passes. Default session timeout is 600 s; read <code>refreshTimeoutSeconds</code> from the login response instead of assuming. For RADIUS/TACACS login domains, prefix the user as <code>apic:&lt;domain&gt;\&lt;user&gt;</code>. <code>aaaListDomains</code> works without logging in.</p>
+<p>There is an optional hardening mode: add <code>?gui-token-request=yes</code> to the login URI, get a <code>urlToken</code> back, and send it on every request as a <code>challenge</code> query parameter or <code>APIC-challenge</code> header. Recognise it if a task hands you a script that "worked yesterday" and now returns errors after someone enabled challenge tokens.</p>
+
+<h3>Python side: why a Session</h3>
+<p>The Requests docs say a <code>Session</code> persists cookies across requests and reuses TCP connections via urllib3 pooling. APIC returns the token as a Set-Cookie, so a <code>Session</code> that did the login automatically carries the cookie on later calls; you don't have to rebuild a <code>cookies=</code> dict each time (the Cisco Live lab does it manually, which works too). Two traps from the same page: method-level parameters (for example a <code>cookies=</code> passed to one call) are <em>not</em> persisted on the session, and requests have <em>no</em> timeout unless you set one. Pass <code>timeout=(connect, read)</code> on every call; the guide's own figure is 90 s per query on the APIC side, so a read timeout shorter than that can cut off a large but legitimate query.</p>
+<p><code>verify</code> defaults to True; an untrusted cert raises <code>SSLError</code>. The sandbox and most labs use self-signed APIC certs, so you'll see <code>verify=False</code> plus <code>urllib3.disable_warnings(InsecureRequestWarning)</code> in Cisco's lab code. Requests' docs are blunt that <code>verify=False</code> accepts any certificate. In an exam script, prefer <code>verify="/path/to/ca.pem"</code> if a CA is provided; otherwise do what the task says and don't spend time on it.</p>
+
+<h2 id="l3">L3 — Exam detail: query parameters, paging, errors, subscriptions</h2>
+
+<h3>Query parameter cheat-table (from the Cisco guide)</h3>
+<div class="tw"><table>
+<tr><th>Parameter</th><th>Values</th><th>Scope</th><th>Gotcha</th></tr>
+<tr><td><code>query-target</code></td><td><code>self</code> (default), <code>children</code>, <code>subtree</code></td><td>Which objects are <em>selected</em></td><td>Selects; doesn't nest. Result is a flat list.</td></tr>
+<tr><td><code>target-subtree-class</code></td><td>class, or comma list (no spaces)</td><td>Restricts the selection by class</td><td>Spaces in the comma list break it.</td></tr>
+<tr><td><code>query-target-filter</code></td><td><code>eq ne lt gt le ge bw not and or xor true false anybit allbits wcard pholder passive</code></td><td>Filters selected objects by attribute</td><td>Max 20 (attribute,value) expressions per scoping filter. Attribute is <code>class.prop</code>.</td></tr>
+<tr><td><code>rsp-subtree</code></td><td><code>no</code> (default), <code>children</code>, <code>full</code></td><td>What is <em>returned under</em> each match</td><td>Nests results in <code>children</code>.</td></tr>
+<tr><td><code>rsp-subtree-class</code> / <code>-filter</code></td><td>class / filter expr</td><td>Trims returned children</td><td>Needs <code>rsp-subtree</code> set to do anything ⚠.</td></tr>
+<tr><td><code>rsp-subtree-include</code></td><td><code>faults health stats relations tasks audit-logs event-logs fault-records health-records</code> + <code>count no-scoped required</code></td><td>Adds related data</td><td><code>required</code> = only return MOs that have it (e.g. tenants with faults) ⚠ semantics.</td></tr>
+<tr><td><code>rsp-prop-include</code></td><td><code>all</code>, <code>naming-only</code>, <code>config-only</code></td><td>Which attributes come back</td><td><code>config-only</code> gives you a re-POSTable shape.</td></tr>
+<tr><td><code>order-by</code>, <code>page-size</code>, <code>page</code></td><td><code>class.prop|asc|desc</code>; pages start at 0</td><td>Paging</td><td>Request pages in order from 0 for consistent sorting; <code>page=0</code> returns <code>totalCount</code>.</td></tr>
+</table></div>
+<p>Selection versus return is the mental split. <code>query-target</code> + <code>target-subtree-class</code> + <code>query-target-filter</code> decide <em>which MOs match</em>. <code>rsp-*</code> decide <em>what you get back for each match</em>. A task phrased "list every EPG in tenant Prod with its BD binding" wants subtree selection of <code>fvAEPg</code> plus <code>rsp-subtree=children</code> with <code>rsp-subtree-class=fvRsBd</code> ⚠ (combination not shown verbatim; verify in sandbox).</p>
+
+<h3>Errors and scale</h3>
+<p>The guide documents scale failures as HTTP 503 with "result dataset is too big" or "destination is not available", says queries can time out at 90 s, and recommends retrying timeouts 3–5 times and filtering when the set is too big. That gives you a clean troubleshooting order for a slow or failing class query: filter server-side, then page, then retry. The error body format itself (an <code>error</code> object with <code>code</code> and <code>text</code> inside <code>imdata</code>) was not in today's fetched text ⚠, so in a script, print <code>r.status_code</code> and <code>r.text</code> rather than assuming keys.</p>
+<p>Distinguishing auth failures: an expired or missing cookie typically comes back as 403 with a token message ⚠ (not in today's sources). Practically, if a long-running script dies after ten minutes, you forgot <code>aaaRefresh</code>; if it dies immediately on the second call, you're not carrying the cookie (wrong cookie name, or a per-call <code>cookies=</code> you expected the session to remember).</p>
+
+<h3>Subscriptions (recognise, don't over-invest)</h3>
+<p>APIC can push changes: open a WebSocket at <code>https://host/socket&lt;token&gt;</code>, add <code>?subscription=yes</code> to a query, get a <code>subscriptionId</code>, and refresh it with <code>GET /api/subscriptionRefresh.json?id=&lt;id&gt;</code> at least every 60 s. Stats objects don't generate notifications. Python's standard library has no WebSocket client, and nothing in the workstation tooling list names one ⚠, so treat this as read-and-recognise.</p>
+
+<h3>Python vs Ansible vs Terraform on the same task</h3>
+<div class="tw"><table>
+<tr><th>Concern</th><th>Python + requests</th><th>Ansible cisco.aci 2.12</th><th>Terraform ACI 2.17</th></tr>
+<tr><td>Auth</td><td>You call aaaLogin/aaaRefresh</td><td>Module/HTTPAPI handles it</td><td>Provider handles it</td></tr>
+<tr><td>Idempotency</td><td>POST is create-or-update, so mostly idempotent; you check existence for reporting</td><td><code>state: present</code> + changed flag</td><td>Plan diff vs state</td></tr>
+<tr><td>Raw escape hatch</td><td>— (it's all raw)</td><td><code>aci_rest</code></td><td><code>aci_rest_managed</code></td></tr>
+<tr><td>Read shape</td><td><code>imdata[i][class]["attributes"]</code></td><td><code>current</code> list</td><td>data sources / state</td></tr>
+<tr><td>Where errors show</td><td><code>status_code</code> + body</td><td>module <code>msg</code></td><td>apply diagnostics</td></tr>
+</table></div>
+
+<h2 id="anatomy">Anatomy — annotated snippets (Python 3.13, requests)</h2>
+<p class="small">Patterns consistent with the Cisco guide and the Cisco Live lab code. Not the drill solution. Whole-script behaviour ⚠ unverified — run against the sandbox.</p>
+<pre><code>import os, requests
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)  # lab only
+
+APIC = os.environ["APIC_IP"]                      # creds from env, never in code (5.4/5.5)
+s = requests.Session()                            # carries Set-Cookie token automatically
+s.verify = False                                  # self-signed APIC; use a CA path if given
+TO = (5, 90)                                      # connect, read — APIC query limit is 90 s
+
+login = {"aaaUser": {"attributes": {"name": os.environ["APIC_USERNAME"],
+                                    "pwd":  os.environ["APIC_PASSWORD"]}}}
+r = s.post(f"https://{APIC}/api/aaaLogin.json", json=login, timeout=TO)
+attrs = r.json()["imdata"][0]["aaaLogin"]["attributes"]
+ttl = int(attrs["refreshTimeoutSeconds"])         # don't assume 600</code></pre>
+<pre><code># Class query with server-side filter; read attributes by class key
+params = {"query-target-filter": 'eq(fvTenant.name,"Prod")'}
+r = s.get(f"https://{APIC}/api/class/fvTenant.json", params=params, timeout=TO)
+for mo in r.json()["imdata"]:
+    print(mo["fvTenant"]["attributes"]["dn"])     # → uni/tn-Prod</code></pre>
+<pre><code># One POST, whole subtree: VRF + BD bound to it + subnet   (guide 4.0 example, JSON form ⚠)
+bd = {"fvTenant": {"attributes": {"name": "Prod"}, "children": [
+        {"fvCtx": {"attributes": {"name": "V1"}}},
+        {"fvBD":  {"attributes": {"name": "BD1"}, "children": [
+            {"fvRsCtx":  {"attributes": {"tnFvCtxName": "V1"}}},   # relation by NAME
+            {"fvSubnet": {"attributes": {"ip": "10.10.100.1/24"}}}]}}]}}
+r = s.post(f"https://{APIC}/api/mo/uni.json", json=bd, timeout=TO)
+print(r.status_code, r.text)                      # success: empty imdata, totalCount "0"</code></pre>
+<pre><code># Delete inside a payload (status form) vs DELETE verb
+s.post(f"https://{APIC}/api/mo/uni/tn-Prod.json",
+       json={"fvTenant": {"attributes": {"name": "Prod", "status": "deleted"}}}, timeout=TO)
+# or: s.delete(f"https://{APIC}/api/mo/uni/tn-Prod.json", timeout=TO)</code></pre>
+<p class="small">Note on <code>json=</code> vs <code>data=json.dumps(...)</code>: both send the same body; the Cisco Live lab uses <code>data=</code>. APIC ignores Content-Type anyway (guide), so either works.</p>
+
+<h2 id="breakfix">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Login works, first GET fails auth</td><td>Token not sent: per-call <code>cookies=</code> on login only, or wrong cookie name (guide <code>APIC-cookie</code>; lab code <code>APIC-Cookie</code> ⚠ case)</td><td><code>print(s.cookies)</code>; <code>print(r.request.headers)</code></td><td>Use one <code>Session</code> for login and calls; or pass the cookie on every request</td></tr>
+<tr><td>Script dies ~10 min into a long run</td><td>No <code>aaaRefresh</code>; session timed out</td><td>Log <code>refreshTimeoutSeconds</code> at login; note failure time</td><td>Refresh at ~ttl/2 and store the new token (it changes)</td></tr>
+<tr><td>POST returns 200 but object isn't what you expected / duplicate-looking objects</td><td>Name typo or case mismatch creates a new MO; rename is impossible (name is in the DN)</td><td>GET <code>/api/class/fvBD.json?query-target-filter=wcard(fvBD.name,"BD")</code> ⚠ syntax</td><td>DELETE the stray DN; fix case; re-POST</td></tr>
+<tr><td>Class query returns 503 "dataset is too big" or hangs</td><td>Unfiltered fabric-wide class query; 90 s APIC limit</td><td>Same query with <code>page-size=1&amp;page=0</code> → read <code>totalCount</code></td><td>Add <code>query-target-filter</code>, scope to a DN with <code>query-target=subtree</code>, page from 0</td></tr>
+<tr><td>EPG exists but shows no BD / contract binding</td><td><code>fvRsBd</code>/<code>fvRsProv</code> points to a name that doesn't exist (relation by name resolves later) ⚠</td><td>GET EPG DN with <code>rsp-subtree=children&amp;rsp-subtree-include=faults</code></td><td>Correct <code>tnFvBDName</code>/<code>tnVzBrCPName</code>; re-POST the EPG</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><b>Requests API without internet:</b> <code>python3 -c "import requests; help(requests.Session.request)"</code> lists <code>timeout</code>, <code>verify</code>, <code>params</code>, <code>json</code> ⚠ (assumes requests installed in the uv env; check <code>uv pip list</code>).</li>
+<li><b>Payload shapes for free:</b> the installed collection documents ACI classes. <code>ansible-doc cisco.aci.aci_bd</code> / <code>aci_epg</code> show parameters that map onto MO attributes; <code>ansible-doc cisco.aci.aci_rest</code> shows raw path/content examples ⚠ (module content at 2.12 not checked today).</li>
+<li><b>Terraform schema:</b> <code>terraform providers schema -json | jq '.provider_schemas[].resource_schemas.aci_rest_managed'</code> ⚠ reminds you of the dn/class_name/content triple.</li>
+<li><b>Let APIC write the payload:</b> in the GUI, the API Inspector (click "welcome, &lt;name&gt;" → Show API Inspector) logs the exact REST calls the GUI makes. Do the task once in the GUI, copy URL + body, parametrize in Python.</li>
+<li><b>Re-POSTable read:</b> GET the object with <code>rsp-subtree=full&amp;rsp-prop-include=config-only</code>, strip <code>dn</code>/status if needed, and you have a template.</li>
+<li><b>Quick JSON look:</b> <code>python3 -m json.tool</code> on a saved response.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min) — "Ensure tenant baseline"</h2>
+<div class="card">
+<p><b>Target:</b> DevNet Sandbox APIC (ACI Simulator Always On). Use your own tenant name (e.g. <code>mh-drill</code>) — shared sandbox.</p>
+<p><b>Requirement:</b> Write <code>aci_baseline.py</code> that (1) logs in using env vars, (2) creates tenant <code>mh-drill</code> with VRF <code>V1</code>, BD <code>BD1</code> bound to <code>V1</code> with subnet <code>10.99.0.1/24</code>, AP <code>App</code>, EPG <code>Web</code> bound to <code>BD1</code> — in a single POST, (3) reads back every EPG in the tenant and prints <code>name → BD</code>, (4) exits non-zero if the binding is missing, (5) never hangs on an unreachable APIC.</p>
+<p><b>Reference names:</b> <code>aaaLogin</code>, <code>aaaUser.attributes.name/pwd</code>, <code>fvTenant</code>, <code>fvCtx</code>, <code>fvBD</code>, <code>fvRsCtx.tnFvCtxName</code>, <code>fvSubnet.ip</code>, <code>fvAp</code>, <code>fvAEPg</code>, <code>fvRsBd.tnFvBDName</code>, <code>query-target=subtree</code>, <code>target-subtree-class</code>, <code>rsp-subtree=children</code>, <code>rsp-subtree-class</code>.</p>
+<p><b>Verify:</b> run twice — second run must also succeed (POST is create-or-update). Then GUI → Tenants → mh-drill → EPG Web shows BD1. Then point <code>APIC_IP</code> at a dead IP: script must fail within your connect timeout. Finally DELETE <code>uni/tn-mh-drill</code>.</p>
+</div>
+<details><summary>Hint</summary>
+<p>Nest <code>fvAp</code> → <code>fvAEPg</code> → <code>fvRsBd</code> as children of the same <code>fvTenant</code> you use for VRF/BD. For the read-back, query the tenant DN with subtree selection of <code>fvAEPg</code> and ask for children of class <code>fvRsBd</code>; the BD name is in the relation's <code>tnFvBDName</code>. Wrap everything in one <code>Session</code> and pass <code>timeout=</code> every time.</p>
+</details>
+<details><summary>Solution (⚠ not executed against the sandbox today)</summary>
+<pre><code>#!/usr/bin/env python3
+import os, sys, requests
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
+APIC, T = os.environ["APIC_IP"], "mh-drill"
+TO = (5, 90)
+base = f"https://{APIC}/api"
+s = requests.Session(); s.verify = False
+
+def login():
+    body = {"aaaUser": {"attributes": {"name": os.environ["APIC_USERNAME"],
+                                       "pwd": os.environ["APIC_PASSWORD"]}}}
+    r = s.post(f"{base}/aaaLogin.json", json=body, timeout=TO)
+    if r.status_code != 200:
+        sys.exit(f"login failed {r.status_code}: {r.text}")
+
+def rel(cls, **a): return {cls: {"attributes": a}}
+
+payload = {"fvTenant": {"attributes": {"name": T}, "children": [
+    rel("fvCtx", name="V1"),
+    {"fvBD": {"attributes": {"name": "BD1"}, "children": [
+        rel("fvRsCtx", tnFvCtxName="V1"),
+        rel("fvSubnet", ip="10.99.0.1/24")]}},
+    {"fvAp": {"attributes": {"name": "App"}, "children": [
+        {"fvAEPg": {"attributes": {"name": "Web"}, "children": [
+            rel("fvRsBd", tnFvBDName="BD1")]}}]}}]}}
+
+try:
+    login()
+    r = s.post(f"{base}/mo/uni.json", json=payload, timeout=TO)
+    if r.status_code != 200:
+        sys.exit(f"POST failed {r.status_code}: {r.text}")
+    q = {"query-target": "subtree", "target-subtree-class": "fvAEPg",
+         "rsp-subtree": "children", "rsp-subtree-class": "fvRsBd"}
+    r = s.get(f"{base}/mo/uni/tn-{T}.json", params=q, timeout=TO)
+    ok = True
+    for mo in r.json()["imdata"]:
+        epg = mo["fvAEPg"]
+        bds = [c["fvRsBd"]["attributes"]["tnFvBDName"]
+               for c in epg.get("children", []) if "fvRsBd" in c]
+        print(f'{epg["attributes"]["name"]} -> {bds[0] if bds else "MISSING"}')
+        ok &= bool(bds and bds[0])
+    sys.exit(0 if ok else 2)
+except requests.exceptions.RequestException as e:
+    sys.exit(f"APIC unreachable/timeout: {e}")</code></pre>
+</details>
+
+<h2 id="recall">Recall check</h2>
+<ol>
+<li>Name the three APIC session endpoints, what each takes, and the one detail about <code>aaaRefresh</code> that breaks naive token caching.
+<details><summary>Answer</summary>aaaLogin (POST aaaUser name+pwd → token + cookie), aaaRefresh (GET no body, or POST login body → resets timer), aaaLogout (POST aaaUser name; session lapses after timeout). The token changes on every refresh, so store the new one. Default timeout 600 s; read refreshTimeoutSeconds.</details></li>
+<li>You need every EPG in tenant Prod. Write the URL two different ways and say which one the guide's 503 advice prefers for a big fabric.
+<details><summary>Answer</summary><code>/api/mo/uni/tn-Prod.json?query-target=subtree&amp;target-subtree-class=fvAEPg</code> (DN-scoped) or <code>/api/class/fvAEPg.json?query-target-filter=wcard(fvAEPg.dn,"tn-Prod/")</code> ⚠ syntax. Scoping to a DN / filtering is what the guide recommends over a broad class query.</details></li>
+<li>Which HTTP verbs does APIC accept, how do you delete an object without the DELETE verb, and why can't you rename a BD with a POST?
+<details><summary>Answer</summary>GET, POST, DELETE only (no PUT). POST the object with <code>"status":"deleted"</code>. The name is part of the RN/DN (primary key); the guide says you cannot rename an existing object — delete and recreate.</details></li>
+<li>Selection vs return: which parameters decide what matches, and which decide what's returned under each match?
+<details><summary>Answer</summary>Selection: query-target, target-subtree-class, query-target-filter. Return: rsp-subtree, rsp-subtree-class/-filter, rsp-subtree-include, rsp-prop-include.</details></li>
+<li>(from 2026-11-10) An app reads <code>secret/app</code> fine via the Vault CLI as admin but its token gets 403. What's the likely path error, and how do you find the right path fast?
+<details><summary>Answer</summary>KV v2: the API/policy path is <code>secret/data/app</code> (list uses <code>metadata/</code>). Use <code>-output-curl-string</code> / <code>-output-policy</code> to see the real path.</details></li>
+<li>(from 2026-11-12) A testcase's <code>@aetest.setup</code> raises AssertionError. What happens to its tests, and what does the testcase report?
+<details><summary>Answer</summary>Its tests are Blocked; Failed + Blocked rolls up to Failed.</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/dcn/aci/apic/all/apic-rest-api-configuration-guide/cisco-apic-rest-api-configuration-guide/m_using_the_rest_api.html" target="_blank" rel="noopener">Cisco APIC REST API Configuration Guide - Using the REST API</a> · all releases (updated 2021-09-29, refs to 6.0(3)) · verified 2026-11-19<br><span class="small">The core chapter: URL grammar, verbs, query parameters, paging, subscriptions, aaaLogin/Refresh/Logout, challenge token, 503 behaviour.</span></li>
+<li><span class="badge">✅</span><a href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/4-x/rest-api-config/Cisco-APIC-REST-API-Configuration-Guide-401/Cisco-APIC-REST-API-Configuration-Guide-401_chapter_01010.html" target="_blank" rel="noopener">Cisco APIC REST API Configuration Guide, Release 4.0(x) - Configuring Tenant Policies</a> · APIC 4.0(x) (updated 2024-01-19) · verified 2026-11-19<br><span class="small">Copyable tenant/VRF/BD/EPG/filter/contract payloads with the relation attribute names.</span></li>
+<li><span class="badge">✅</span><a href="https://aci-prog-lab.ciscolive.com/lab/pod1/requests/api_auth" target="_blank" rel="noopener">Requests Library Authentication (Cisco Live LTRDCN-3225)</a> · lab guide, undated · verified 2026-11-19<br><span class="small">Cisco's own Python login code: env-var creds, aaaLogin JSON, token extraction.</span></li>
+<li><span class="badge">✅</span><a href="https://aci-prog-lab.ciscolive.com/lab/pod1/requests/api_read" target="_blank" rel="noopener">Requests Library ACI Endpoints (Cisco Live LTRDCN-3225)</a> · lab guide · verified 2026-11-19<br><span class="small">Class query + imdata parsing pattern.</span></li>
+<li><span class="badge">✅</span><a href="https://aci-prog-lab.ciscolive.com/lab/pod1/api/class_dn" target="_blank" rel="noopener">Classes and DNs (Cisco Live LTRDCN-3225)</a> · lab guide · verified 2026-11-19<br><span class="small">Class vs DN URLs side by side, with filter and rsp-subtree examples.</span></li>
+<li><span class="badge">🔎</span><a href="https://developer.cisco.com/sandbox/detail/aci-simulator-always-on" target="_blank" rel="noopener">ACI Simulator Always On — DevNet Sandbox</a> · indexed 2026-11-19 (JS page; body not readable)<br><span class="small">Your lab target until the local APIC sim exists. Credentials are on the page once you load it in a browser.</span></li>
+</ul>
+<h3>Third-party</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://docs.python-requests.org/en/latest/user/advanced/" target="_blank" rel="noopener">Advanced Usage — Requests 2.34.2 documentation</a> · Requests 2.34.2 · verified 2026-11-19<br><span class="small">Session cookie persistence, verify semantics, timeouts (no default!).</span></li>
+</ul>
+
+<footer>
+<p><b>Links: 6 ✅ · 1 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims on this page:</b> Domain 3 weight; RN prefixes <code>ctx-</code>, <code>BD-</code>, <code>ap-</code>, <code>epg-</code> (only <code>tn-</code> confirmed); cookie name case (guide <code>APIC-cookie</code> vs lab code <code>APIC-Cookie</code>); error body <code>error.code/text</code> format; 403 on expired token; JSON form of the 4.0 XML tenant payloads; <code>rsp-subtree-class</code> needing <code>rsp-subtree</code>; <code>required</code> include semantics; combined subtree+children query in drill; <code>wcard</code> syntax on dn; requests/uv packages on workstation; <code>ansible-doc</code>/<code>terraform providers schema</code> output; sandbox read-write access and credentials; drill solution not executed; recall answers 5–6 restated from earlier pages.</p>
+<p><b>Tomorrow:</b> Friday weekly review 8 — units 29–32 (5.5 REST API security, 2.9.b NSO YANG, 2.9.a NSO templates, 3.1 ACI Python). Next new topic Monday: 1.1 Design a solution.</p>
+</footer>
+</main>
+</body>
+</html>
+
+</body></html>

@@ -1,0 +1,302 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NSO Service Templates</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d2329;--muted:#5b6670;--card:#ffffff;--line:#d9dde1;--accent:#0b6e8a;--accent2:#a85d00;--ok:#1f7a3a;--warn:#9a5b00;--bad:#a12b2b;--code:#f2f3f1;--svgfill:#eef5f7;--svgfill2:#fbf0e2;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#14181c;--fg:#e4e8eb;--muted:#9aa5ae;--card:#1b2126;--line:#33404a;--accent:#4fb3d1;--accent2:#e0a050;--ok:#5cc47a;--warn:#e0a94a;--bad:#e67474;--code:#20272d;--svgfill:#1d2d35;--svgfill2:#332a1d;}}
+:root[data-theme="dark"]{--bg:#14181c;--fg:#e4e8eb;--muted:#9aa5ae;--card:#1b2126;--line:#33404a;--accent:#4fb3d1;--accent2:#e0a050;--ok:#5cc47a;--warn:#e0a94a;--bad:#e67474;--code:#20272d;--svgfill:#1d2d35;--svgfill2:#332a1d;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav.toc{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px;overflow-x:auto;white-space:nowrap;font-size:13px}
+nav.toc a{color:var(--accent);text-decoration:none;margin-right:12px}
+h1{font-size:1.6rem;margin:0 0 4px}h2{font-size:1.25rem;margin:36px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}h3{font-size:1.05rem;margin:22px 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:16px 0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px;color:var(--muted)}
+.meta b{color:var(--fg)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-size:13px;line-height:1.45}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+svg{width:100%;height:auto;display:block;margin:12px 0}
+svg text{fill:var(--fg);font-family:inherit}
+.b{fill:var(--svgfill);stroke:var(--accent);stroke-width:1.5}
+.b2{fill:var(--svgfill2);stroke:var(--accent2);stroke-width:1.5}
+.ln{stroke:var(--muted);stroke-width:1.5;fill:none}
+.warn{color:var(--warn)}
+.badge{display:inline-block;font-size:12px;padding:0 6px;border-radius:10px;border:1px solid var(--ok);color:var(--ok);margin-right:4px}
+details{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+a{color:var(--accent)}
+.small{font-size:13px;color:var(--muted)}
+ul.refs li{margin-bottom:10px}
+</style>
+</head>
+<body>
+<nav class="toc"><a href="#snap">Snapshot</a><a href="#fit">Where it fits</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main>
+
+<div class="card" style="margin-top:20px">
+<h1>NSO: service template from a provided device config</h1>
+<div class="meta">
+<span><b>Date</b> 2026-11-18 (Wed)</span>
+<span><b>Blueprint</b> 2.9.a</span>
+<span><b>Domain</b> 2 — Network Programmability &amp; Automation (weight <span class="warn">⚠ not verified this run</span>)</span>
+<span><b>Tier</b> 1 (gap)</span>
+<span><b>Read</b> ~18 min</span>
+<span><b>Unit</b> 31 of 49</span>
+</div>
+<p class="small">Pins: NSO 6.5 docs, cisco-ios-cli NED. Lab status: NSO is still unbuilt per tracker, so this page is reading plus paper drill. Prereq was yesterday's 2.9.b (service YANG).</p>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>An NSO service template is the device config you already know, captured as XML in NSO's device-model schema, with the per-instance values replaced by <code>{...}</code> XPath expressions.</li>
+<li>You don't hand-write the XML. Put the config into NSO (or sync it from a device), then pipe it through <code>| display xml-template</code> and save it into the package's <code>templates/</code> directory.</li>
+<li>The <code>servicepoint</code> attribute on <code>&lt;config-template&gt;</code> must match the <code>ncs:servicepoint</code> in the service YANG. That one string ties the YANG list to the template.</li>
+<li><code>{/leaf}</code> reads the service instance. <code>{$VAR}</code> reads a variable set in Python. <code>{.}</code> is the current node inside a <code>&lt;?foreach?&gt;</code>.</li>
+<li>FASTMAP means you only write create logic. NSO works out modify and delete itself, so the template must give the same output for the same inputs every time.</li>
+<li>Verify with <code>commit dry-run outformat native</code> before you commit. Debug with <code>commit dry-run | debug template</code>.</li>
+<li>Once deployed, use <code>check-sync</code>, <code>re-deploy</code>, and <code>display service-meta-data</code> (refcount/backpointer) to prove the service owns what it should.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 720 300" role="img" aria-label="2.9 sub-items and NSO toolchain">
+<rect class="b" x="10" y="20" width="160" height="56" rx="8"/><text x="90" y="44" text-anchor="middle" font-size="14" font-weight="700">2.9.b YANG</text><text x="90" y="64" text-anchor="middle" font-size="12">service inputs (done 11-17)</text>
+<rect class="b2" x="200" y="20" width="160" height="56" rx="8"/><text x="280" y="44" text-anchor="middle" font-size="14" font-weight="700">2.9.a Template</text><text x="280" y="64" text-anchor="middle" font-size="12">inputs → device XML (today)</text>
+<rect class="b" x="390" y="20" width="160" height="56" rx="8"/><text x="470" y="44" text-anchor="middle" font-size="14" font-weight="700">2.9.c Actions</text><text x="470" y="64" text-anchor="middle" font-size="12">verify oper status</text>
+<rect class="b" x="580" y="20" width="130" height="56" rx="8"/><text x="645" y="44" text-anchor="middle" font-size="14" font-weight="700">2.9.d Logs</text><text x="645" y="64" text-anchor="middle" font-size="12">Python VM log</text>
+<path class="ln" d="M170 48 H200 M360 48 H390 M550 48 H580"/>
+<rect class="b" x="10" y="130" width="140" height="50" rx="8"/><text x="80" y="160" text-anchor="middle" font-size="13">service YANG (.fxs)</text>
+<rect class="b2" x="190" y="130" width="160" height="50" rx="8"/><text x="270" y="152" text-anchor="middle" font-size="13">Service Manager</text><text x="270" y="170" text-anchor="middle" font-size="11">template + optional Python</text>
+<rect class="b" x="390" y="130" width="140" height="50" rx="8"/><text x="460" y="152" text-anchor="middle" font-size="13">Device Manager</text><text x="460" y="170" text-anchor="middle" font-size="11">/devices/device/config</text>
+<rect class="b" x="570" y="130" width="140" height="50" rx="8"/><text x="640" y="152" text-anchor="middle" font-size="13">NED cisco-ios-cli</text><text x="640" y="170" text-anchor="middle" font-size="11">renders native CLI</text>
+<path class="ln" d="M150 155 H190 M350 155 H390 M530 155 H570"/>
+<rect class="b" x="570" y="230" width="140" height="44" rx="8"/><text x="640" y="257" text-anchor="middle" font-size="13">IOS / netsim device</text>
+<path class="ln" d="M640 180 V230"/>
+<text x="10" y="225" font-size="12" fill="currentColor">Neighbors: 2.6 (YANG-driven config), 2.4 (payloads), 3.1 (NSO REST API)</text>
+<text x="10" y="245" font-size="12">Template lives at the Service → Device boundary: it speaks the NED's YANG, never raw CLI.</text>
+</svg>
+
+<h2 id="l1">L1 — Concept</h2>
+<p>An NSO service has three parts that ship together in one package: a YANG service model (the inputs and their validation), a mapping from those inputs to device configuration, and optional code. For 2.9 the blueprint wants a python-and-template package on the cisco-ios-cli NED, and 2.9.a is the mapping part. In NSO, the mapping is usually an XML template.</p>
+<p>The key idea is that the template does not contain CLI. It contains data that follows the YANG schema under <code>/devices/device/config</code>, which is the NED's model of the device. The NED turns that data into native commands when the transaction is pushed. So the template has the shape of a NETCONF payload that uses NSO's device tree: <code>devices → device → name → config → (NED namespace) → …</code>. You already did RESTCONF/NETCONF payloads in 2.4. This is the same skill, except the schema is the NED's and the values are XPath expressions.</p>
+<p>The blueprint verb is "from a provided device config". The task shape that fits this verb: you are given working IOS config (on a device, in a file, or in the task text), and you have to turn it into a reusable template driven by the service model's leaves. The work is mostly mechanical. Most of the risk is in small mismatches: the servicepoint name, namespaces, leaf names, and the context node.</p>
+
+<div class="tw"><table>
+<tr><th>Mapping option</th><th>Skeleton flag (<code>--service-skeleton</code>)</th><th>Use when</th></tr>
+<tr><td>Template only</td><td><code>template</code></td><td>Inputs map straight to config: no maths, no lookups beyond XPath</td></tr>
+<tr><td>Python + template</td><td><code>python-and-template</code></td><td>You need to compute values (netmask from CIDR, IP allocation) and pass them as <code>$VARS</code>. This is the tracker's target.</td></tr>
+<tr><td>Python only</td><td><code>python</code></td><td>Logic-heavy. The "Develop a Simple Service" example still applies a template from <code>cb_create()</code>.</td></tr>
+<tr><td>Java / Java + template</td><td><code>java</code>, <code>java-and-template</code></td><td>Out of scope for the tracker's plan.</td></tr>
+</table></div>
+
+<h2 id="l2">L2 — Mechanics</h2>
+<h3>The capture-and-parameterize pipeline</h3>
+<svg viewBox="0 0 720 330" role="img" aria-label="Pipeline from device config to verified service">
+<g font-size="12">
+<rect class="b" x="10" y="10" width="220" height="54" rx="8"/><text x="120" y="32" text-anchor="middle" font-weight="700">1 Get config into NSO</text><text x="120" y="50" text-anchor="middle">devices sync-from, or type it under config</text>
+<rect class="b" x="250" y="10" width="220" height="54" rx="8"/><text x="360" y="32" text-anchor="middle" font-weight="700">2 Capture as XML</text><text x="360" y="50" text-anchor="middle">show running-config … | display xml-template</text>
+<rect class="b" x="490" y="10" width="220" height="54" rx="8"/><text x="600" y="32" text-anchor="middle" font-weight="700">3 Save into package</text><text x="600" y="50" text-anchor="middle">| save packages/&lt;pkg&gt;/templates/x.xml</text>
+<rect class="b2" x="490" y="100" width="220" height="54" rx="8"/><text x="600" y="122" text-anchor="middle" font-weight="700">4 Parameterize</text><text x="600" y="140" text-anchor="middle">literals → {/leaf} / {$VAR}</text>
+<rect class="b2" x="250" y="100" width="220" height="54" rx="8"/><text x="360" y="122" text-anchor="middle" font-weight="700">5 Bind</text><text x="360" y="140" text-anchor="middle">servicepoint= matches YANG</text>
+<rect class="b" x="10" y="100" width="220" height="54" rx="8"/><text x="120" y="122" text-anchor="middle" font-weight="700">6 Load</text><text x="120" y="140" text-anchor="middle">make; packages package X redeploy</text>
+<rect class="b" x="10" y="190" width="220" height="54" rx="8"/><text x="120" y="212" text-anchor="middle" font-weight="700">7 Instance + dry-run</text><text x="120" y="230" text-anchor="middle">commit dry-run outformat native</text>
+<rect class="b" x="250" y="190" width="220" height="54" rx="8"/><text x="360" y="212" text-anchor="middle" font-weight="700">8 Commit</text><text x="360" y="230" text-anchor="middle">NED pushes native CLI</text>
+<rect class="b" x="490" y="190" width="220" height="54" rx="8"/><text x="600" y="212" text-anchor="middle" font-weight="700">9 Prove ownership</text><text x="600" y="230" text-anchor="middle">check-sync · service-meta-data</text>
+<path class="ln" d="M230 37 H250 M470 37 H490 M600 64 V100 M490 127 H470 M250 127 H230 M120 154 V190 M230 217 H250 M470 217 H490"/>
+<text x="10" y="280" font-size="12">Loop back to 4 when dry-run is wrong: commit dry-run | debug template shows each XPath result.</text>
+<text x="10" y="300" font-size="12">Package load failed? show packages package X oper-status → error-info names file:line.</text>
+</g>
+</svg>
+<p><b>Step 1–3.</b> "Develop a Simple Service" (NSO 6.5) captures the config and writes the file in one CLI line: <code>show running-config devices device ex1 config sys dns | display xml-template | save packages/dns-config/templates/dns-config-tpl.xml</code>. The page says any <code>.xml</code> file in <code>templates/</code> is loaded as a template. Its name is the filename without <code>.xml</code>, and that is the name Python passes to <code>Template.apply()</code>. If you are typing config into NSO instead of syncing it, the Templates page shows <code>show configuration | display xml-template</code> in config mode, before you commit. That captures only your uncommitted change, which is often exactly the fragment you want.</p>
+<p><b>Step 4.</b> Find every literal that changes between instances. In the 6.5 example, the device name becomes <code>{/device}</code> and the DNS address becomes <code>{$DNS_IP}</code>, a variable that Python sets with <code>ncs.template.Variables()</code>. Expressions start at the service instance, so <code>/device</code> means "the <code>device</code> leaf of this service instance", not a path from the root of CDB. Literal text and expressions can be mixed in one value, and the result is a string concatenation. This is how you build <code>Loopback{/id}</code>-style names or descriptions.</p>
+<p><b>Step 5.</b> Add <code>servicepoint="…"</code> to the root element. The template-only skeleton generates this. In a python-and-template package, Python applies the template by name, and in the 6.5 example the root carries no servicepoint because the Python callback owns that registration. Know both patterns, and know which one you are in.</p>
+<p><b>Step 6.</b> Compile the YANG (<code>make -C &lt;pkg&gt;/src</code>), then run <code>packages package &lt;pkg&gt; redeploy</code> to reload one package, or <code>packages reload</code> to reload all of them. Package Management says the result is <code>true</code> when the package is <code>up</code>.</p>
+
+<h3>Variable forms compared</h3>
+<div class="tw"><table>
+<tr><th>Form</th><th>Source</th><th>Example</th><th>Notes</th></tr>
+<tr><td><code>{/leaf}</code></td><td>Service instance node (context/root at start)</td><td><code>&lt;name&gt;{/device}&lt;/name&gt;</code></td><td>Most common. Typos give empty results, not errors.</td></tr>
+<tr><td><code>{$VAR}</code></td><td>Python <code>Variables().add()</code> or <code>&lt;?set?&gt;</code></td><td><code>{$DNS_IP}</code></td><td>Values are strings. Compare numbers with <code>number()</code>.</td></tr>
+<tr><td><code>{$DEVICE}</code></td><td>Predefined</td><td>current device name</td><td>Can't be overridden</td></tr>
+<tr><td><code>{.}</code></td><td>Current node in <code>&lt;?foreach?&gt;</code></td><td><code>&lt;?foreach {/target-device}?&gt;&lt;name&gt;{.}&lt;/name&gt;</code></td><td>Explicit loop over a leaf-list</td></tr>
+<tr><td>node-set on a key</td><td>Implicit loop</td><td><code>&lt;name&gt;{/device}&lt;/name&gt;</code> with leaf-list device</td><td>Configures one list entry per value and switches the context to that entry</td></tr>
+</table></div>
+
+<h3>Operation tags</h3>
+<div class="tw"><table>
+<tr><th>tags=</th><th>Behaviour</th><th>Inherited by children?</th><th>Typical place</th></tr>
+<tr><td><code>merge</code> (default)</td><td>Merge or create</td><td>Yes</td><td><code>&lt;config tags="merge"&gt;</code></td></tr>
+<tr><td><code>nocreate</code></td><td>Merge only if the node exists</td><td>Yes</td><td><code>&lt;device tags="nocreate"&gt;</code>, so you never invent a device</td></tr>
+<tr><td><code>replace</code></td><td>Replace the node or create it</td><td>No</td><td>A subtree the service must fully own</td></tr>
+<tr><td><code>create</code></td><td>Fail if the node already exists</td><td>No</td><td>Detect collisions</td></tr>
+<tr><td><code>delete</code></td><td>Delete the node</td><td>—</td><td>Removing a default</td></tr>
+</table></div>
+
+<h2 id="l3">L3 — Exam depth</h2>
+<h3>FASTMAP: why "create only" works</h3>
+<svg viewBox="0 0 720 250" role="img" aria-label="FASTMAP sequence">
+<g font-size="12">
+<text x="70" y="20" text-anchor="middle" font-weight="700">Operator</text><text x="270" y="20" text-anchor="middle" font-weight="700">Service Mgr</text><text x="470" y="20" text-anchor="middle" font-weight="700">Template</text><text x="650" y="20" text-anchor="middle" font-weight="700">Device</text>
+<path class="ln" d="M70 28 V240 M270 28 V240 M470 28 V240 M650 28 V240" stroke-dasharray="4 4"/>
+<path class="ln" d="M70 50 H270"/><text x="170" y="45" text-anchor="middle">create / modify instance</text>
+<path class="ln" d="M270 75 H470"/><text x="370" y="70" text-anchor="middle">run create() from scratch</text>
+<path class="ln" d="M470 100 H270"/><text x="370" y="95" text-anchor="middle">desired device config</text>
+<rect class="b2" x="190" y="110" width="160" height="40" rx="6"/><text x="270" y="128" text-anchor="middle">diff vs stored</text><text x="270" y="143" text-anchor="middle">reverse-diff → minimal Δ</text>
+<path class="ln" d="M270 170 H650"/><text x="460" y="165" text-anchor="middle">only the minimal change (via NED)</text>
+<path class="ln" d="M70 210 H270"/><text x="170" y="205" text-anchor="middle">delete instance</text>
+<path class="ln" d="M270 230 H650"/><text x="460" y="225" text-anchor="middle">apply stored reverse-diff</text>
+</g>
+</svg>
+<p>The Services page says that at run time NSO "renders the minimum resulting change" for any change to an instance. The Implementing Services page adds the condition: the create logic must give the same device changes for the same inputs. In practice this means no <code>now()</code>-style timestamps, no random values, and no reading of device state that changes between runs. If you break this, every <code>re-deploy</code> shows drift.</p>
+
+<h3>Exam-grade details</h3>
+<ul>
+<li><b>Empty means skipped, not an error.</b> The Templates page says an empty node-set or an empty string means the statement is ignored. A mistyped leaf name like <code>{/devcie}</code> gives no error and simply leaves that part of the config out. Always check with dry-run.</li>
+<li><b>Strings, not numbers.</b> <code>{$x &gt; $y}</code> with x='9', y='11' is true, because both are strings. Use <code>number()</code>.</li>
+<li><b>Context switching.</b> When a key leaf takes its value from a node-set, NSO moves the context to the matching list entry. Inside that subtree, <code>/leaf</code> still resolves from the root node (the service), but relative paths now resolve from the new context. <span class="warn">⚠ unverified — test in lab: exact root vs context behaviour for relative paths after an implicit loop.</span></li>
+<li><b>Multi-device in one instance.</b> If <code>device</code> is a leaf-list, <code>&lt;name&gt;{/device}&lt;/name&gt;</code> loops over every value (implicit loop). <code>&lt;?foreach {/device}?&gt;…{.}…&lt;?end?&gt;</code> is the explicit form. Every <code>&lt;?if?&gt;</code> and <code>&lt;?foreach?&gt;</code> needs its own <code>&lt;?end?&gt;</code>.</li>
+<li><b>Multi-NED.</b> Only the namespaces the target device advertises are applied. You can also gate blocks with <code>&lt;?if-ned-id …?&gt;</code>. That matters if the task mixes IOS and IOS XR, which is not the tracker's case.</li>
+<li><b>One template per servicepoint and callback type.</b> A second template that claims the same servicepoint is a load conflict.</li>
+<li><b>Brownfield.</b> If the config already exists on the device, a new service does not own it. <code>re-deploy reconcile</code> (Lifecycle Operations) makes the service take ownership of data that was there before it. <code>commit no-overwrite</code> refuses to overwrite data NSO did not create.</li>
+</ul>
+
+<div class="tw"><table>
+<tr><th>Preview format</th><th>Shows</th><th>Use it to</th></tr>
+<tr><td><code>commit dry-run</code></td><td>Service-level and device-tree diff (+/−)</td><td>See which CDB paths change</td></tr>
+<tr><td><code>commit dry-run outformat native</code></td><td>Only <code>/devices/device/config</code> changes, in device CLI</td><td>Compare against the "provided device config", line by line</td></tr>
+<tr><td><code>commit dry-run outformat cli</code></td><td>NSO CLI-style diff</td><td>Quick read</td></tr>
+<tr><td><code>outformat native reverse</code></td><td>Commands that would undo the change</td><td>Rollback planning</td></tr>
+<tr><td><code>commit dry-run | debug template</code></td><td>Each template step and XPath result</td><td>Find empty expressions and context mistakes</td></tr>
+</table></div>
+
+<h2 id="anat">Anatomy</h2>
+<p class="small">Annotated, not a drill solution. Structure from the NSO 6.5 Templates and Implementing Services pages. The IOS NED inner element names are <span class="warn">⚠ unverified — test in lab</span>. Get them from your own <code>display xml-template</code> output, not from memory.</p>
+<pre><code>&lt;!-- templates/loopback-template.xml --&gt;
+&lt;config-template xmlns="http://tail-f.com/ns/config/1.0"
+                 servicepoint="loopback"&gt;        &lt;!-- = ncs:servicepoint in YANG --&gt;
+  &lt;devices xmlns="http://tail-f.com/ns/ncs"&gt;
+    &lt;device tags="nocreate"&gt;                     &lt;!-- never create a device --&gt;
+      &lt;name&gt;{/device}&lt;/name&gt;                     &lt;!-- leaf-list? implicit loop --&gt;
+      &lt;config tags="merge"&gt;
+        &lt;interface xmlns="urn:ios"&gt;              &lt;!-- cisco-ios-cli NED ns --&gt;
+          &lt;Loopback&gt;                            &lt;!-- ⚠ names from YOUR capture --&gt;
+            &lt;name&gt;{/loopback-id}&lt;/name&gt;
+            &lt;description&gt;svc {/name}&lt;/description&gt;   &lt;!-- literal + XPath concat --&gt;
+            &lt;ip&gt;&lt;address&gt;&lt;primary&gt;
+              &lt;address&gt;{/ip}&lt;/address&gt;
+              &lt;mask&gt;{$NETMASK}&lt;/mask&gt;             &lt;!-- set in Python cb_create --&gt;
+            &lt;/primary&gt;&lt;/address&gt;&lt;/ip&gt;
+          &lt;/Loopback&gt;
+        &lt;/interface&gt;
+      &lt;/config&gt;
+    &lt;/device&gt;
+  &lt;/devices&gt;
+&lt;/config-template&gt;</code></pre>
+<pre><code># python/&lt;pkg&gt;/main.py (python-and-template) — pattern from "Develop a Simple Service"
+vars = ncs.template.Variables()
+vars.add('NETMASK', '255.255.255.255')       # computed value goes here
+template = ncs.template.Template(service)
+template.apply('loopback-template', vars)   # file name, no .xml</code></pre>
+<pre><code>admin@ncs# show running-config devices device r1 config interface Loopback 100 | display xml-template
+admin@ncs# packages package loopback redeploy
+admin@ncs(config)# loopback L100 device r1 loopback-id 100 ip 10.255.0.1
+admin@ncs(config-loopback-L100)# commit dry-run outformat native
+admin@ncs(config-loopback-L100)# commit dry-run | debug template
+admin@ncs# show running-config devices device r1 config interface | display service-meta-data</code></pre>
+<p class="small">The CLI lines follow the documented command forms. The service instance syntax depends on your YANG list (<span class="warn">⚠ unverified — test in lab</span>).</p>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Likely cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Package won't load. <code>oper-status file-load-error</code></td><td>Template <code>servicepoint</code> doesn't match the YANG <code>ncs:servicepoint</code></td><td><code>show packages package X oper-status</code> → <code>error-info "…xml:2 Unknown servicepoint: …"</code></td><td>Make the two strings identical, rebuild, then <code>packages package X redeploy</code></td></tr>
+<tr><td>Commit succeeds but part of the config is missing</td><td>XPath typo or wrong context. An empty result is silently ignored.</td><td><code>commit dry-run | debug template</code></td><td>Fix the leaf name or path. Check where the context moved after a key loop.</td></tr>
+<tr><td>Dry-run shows nothing for device r2</td><td><code>&lt;device tags="nocreate"&gt;</code> and r2 isn't in <code>/devices/device</code>, or it isn't in the leaf-list</td><td><code>show devices list</code>; <code>show running-config &lt;svc&gt;</code></td><td>Add or sync the device. Fix the instance input.</td></tr>
+<tr><td>Python <code>apply()</code> raises template not found</td><td>Name passed with <code>.xml</code>, a different filename, or the file isn't in <code>templates/</code></td><td><code>ls packages/X/templates</code></td><td>Pass the bare filename. Redeploy the package.</td></tr>
+<tr><td>Service <code>check-sync</code> says <code>in-sync false</code> after someone edited the router</td><td>Out-of-band change</td><td><code>devices check-sync</code>; <code>&lt;svc&gt; X deep-check-sync outformat cli</code></td><td>To make the device authoritative: <code>devices device r1 sync-from</code>, then <code>&lt;svc&gt; X re-deploy</code> to restore the intent</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline, on the workstation)</h2>
+<ul>
+<li><b>Don't type XML.</b> Configure once by hand in NSO config mode, run <code>show configuration | display xml-template</code>, and copy. It's faster and the namespaces are correct.</li>
+<li><code>| display xpath</code> on <code>show running-config devices device r1 config …</code> gives the exact instance path. Use it to check names before you write expressions.</li>
+<li>NSO CLI <code>?</code> and tab completion under <code>devices device r1 config</code> show the NED's real element names, for example whether Loopback's key is <code>name</code>.</li>
+<li><code>ncs-make-package --help</code> (<span class="warn">⚠ unverified flag</span>) or the man page: <code>--service-skeleton template|python-and-template</code>, <code>--no-test</code>, <code>--build</code>, <code>--dest</code>.</li>
+<li><code>packages package X redeploy</code> beats <code>packages reload</code> when you're iterating on one package.</li>
+<li>Keep <code>commit dry-run outformat native</code> next to the provided config. If the two differ, read them line by line.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min, paper or netsim)</h2>
+<div class="card">
+<p><b>Requirement.</b> You are given this working config from router <code>r1</code>:</p>
+<pre><code>interface Loopback200
+ description MGMT-ANCHOR
+ ip address 10.200.0.1 255.255.255.255</code></pre>
+<p>Build a <b>template-only</b> service <code>lo-anchor</code> with YANG inputs <code>name</code> (key), <code>device</code> (leaf-list, leafref to <code>/ncs:devices/ncs:device/ncs:name</code>), <code>id</code> (uint16), and <code>ip</code> (inet:ipv4-address). The mask is fixed at /32. The description must read <code>MGMT-ANCHOR-&lt;name&gt;</code>. One instance must be able to target two routers.</p>
+<p><b>Reference names/paths.</b> Template root ns <code>http://tail-f.com/ns/config/1.0</code>. Device tree ns <code>http://tail-f.com/ns/ncs</code>. IOS NED ns <code>urn:ios</code>. Skeleton: <code>ncs-make-package --build --no-test --service-skeleton template lo-anchor</code>.</p>
+<p><b>Verify.</b> (1) <code>show packages package lo-anchor oper-status</code> shows up. (2) Instance with <code>device [ r1 r2 ]</code>: <code>commit dry-run outformat native</code> shows the three lines on both devices. (3) After commit, <code>lo-anchor X check-sync</code> returns in-sync true. (4) Delete the instance, dry-run, and confirm only Loopback200 is removed.</p>
+<p><b>Target.</b> NSO 6.5 with netsim cisco-ios-cli devices (not built yet). Until it is, write it on paper and check your work against the Implementing Services examples.</p>
+</div>
+<details><summary>Hint</summary><p>Capture first: <code>show running-config devices device r1 config interface Loopback 200 | display xml-template</code>. With a leaf-list, <code>&lt;name&gt;{/device}&lt;/name&gt;</code> already loops. Concatenate the description as literal text plus <code>{/name}</code>. A fixed mask can stay a literal. Template-only means no <code>$VARS</code> from Python.</p></details>
+<details><summary>Solution (structure; NED element names ⚠ unverified)</summary>
+<pre><code>&lt;config-template xmlns="http://tail-f.com/ns/config/1.0" servicepoint="lo-anchor"&gt;
+  &lt;devices xmlns="http://tail-f.com/ns/ncs"&gt;
+    &lt;device tags="nocreate"&gt;
+      &lt;name&gt;{/device}&lt;/name&gt;
+      &lt;config tags="merge"&gt;
+        &lt;interface xmlns="urn:ios"&gt;
+          &lt;Loopback&gt;
+            &lt;name&gt;{/id}&lt;/name&gt;
+            &lt;description&gt;MGMT-ANCHOR-{/name}&lt;/description&gt;
+            &lt;ip&gt;&lt;address&gt;&lt;primary&gt;
+              &lt;address&gt;{/ip}&lt;/address&gt;
+              &lt;mask&gt;255.255.255.255&lt;/mask&gt;
+            &lt;/primary&gt;&lt;/address&gt;&lt;/ip&gt;
+          &lt;/Loopback&gt;
+        &lt;/interface&gt;
+      &lt;/config&gt;
+    &lt;/device&gt;
+  &lt;/devices&gt;
+&lt;/config-template&gt;</code></pre>
+<p>YANG: <code>list lo-anchor { key name; uses ncs:service-data; ncs:servicepoint lo-anchor; … }</code>. This is the 2.9.b pattern. The servicepoint string must be identical in both files.</p></details>
+
+<h2 id="recall">Recall check</h2>
+<details><summary>1. Where does a template's servicepoint have to match, and what do you see when it doesn't?</summary><p>It must match <code>ncs:servicepoint</code> in the service YANG list. On a mismatch the package fails to load: <code>oper-status file-load-error</code>, with <code>error-info</code> giving file:line "Unknown servicepoint: …".</p></details>
+<details><summary>2. Give the one-liner that captures r1's DNS config as a template straight into a package, and the name Python uses to apply it.</summary><p><code>show running-config devices device r1 config … | display xml-template | save packages/&lt;pkg&gt;/templates/&lt;name&gt;.xml</code>. Python calls <code>Template(service).apply('&lt;name&gt;', vars)</code> with no <code>.xml</code>.</p></details>
+<details><summary>3. A template uses <code>{/devcie}</code> by mistake. What happens at commit, and how do you find it?</summary><p>No error. The empty result is ignored, so that statement is skipped and the config is missing. <code>commit dry-run | debug template</code> shows the XPath result.</p></details>
+<details><summary>4. Which tag goes on <code>&lt;device&gt;</code>, why, and what does <code>replace</code> do differently from <code>merge</code> for children?</summary><p><code>nocreate</code>, so the service never creates a device entry. <code>merge</code> and <code>nocreate</code> are inherited by children. <code>replace</code> (and <code>create</code>) apply only to the node they are on, and <code>replace</code> replaces that node.</p></details>
+<details><summary>5. (from 2026-11-11) Give the import block's two required pieces for an ACI VRF, the ID format, and the constraint on the ID.</summary><p><code>to</code> = an address that matches an existing resource block. <code>id</code> = the full DN, <code>uni/tn-T/ctx-V</code>. The ID must be known at plan time.</p></details>
+<details><summary>6. (from 2026-11-12) Rank the seven AEtest results. What do Errored + Failed and Passed + Skipped roll up to?</summary><p>Aborted &gt; Errored &gt; Failed &gt; Blocked &gt; Passx &gt; Passed &gt; Skipped. Errored + Failed = Errored. Passed + Skipped = Passed.</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco (NSO 6.5)</h3>
+<ul class="refs">
+<li><span class="badge">✅</span><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/templates.md" target="_blank" rel="noopener">Templates</a> — NSO 6.5, verified 2026-11-18. Reference for tags, processing instructions, variables, the context node, and <code>debug template</code>.</li>
+<li><span class="badge">✅</span><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/implementing-services.md" target="_blank" rel="noopener">Implementing Services</a> — NSO 6.5, verified 2026-11-18. Walks the DNS and GigabitEthernet examples from config to template, plus <code>if-ned-id</code> and <code>foreach</code>.</li>
+<li><span class="badge">✅</span><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/develop-a-simple-service.md" target="_blank" rel="noopener">Develop a Simple Service</a> — NSO 6.5, verified 2026-11-18. Shows the <code>display xml-template | save</code> one-liner, <code>{/device}</code>, and <code>{$DNS_IP}</code> from Python.</li>
+<li><span class="badge">✅</span><a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/managing-network-services.md" target="_blank" rel="noopener">Manage Network Services</a> — NSO 6.5, verified 2026-11-18. Covers dry-run outformats, check-sync, deep-check-sync, re-deploy, and service-meta-data.</li>
+<li><span class="badge">✅</span><a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/lifecycle-operations.md" target="_blank" rel="noopener">Lifecycle Operations</a> — NSO 6.5, verified 2026-11-18. Covers sync-from, compare-config, native outformat with reverse, and re-deploy reconcile.</li>
+<li><span class="badge">✅</span><a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/package-mgmt.md" target="_blank" rel="noopener">Package Management</a> — NSO 6.5, verified 2026-11-18. Shows oper-status errors and single-package redeploy.</li>
+<li><span class="badge">✅</span><a href="https://nso-docs.cisco.com/guides/nso-6.5/resources/man/ncs-make-package.1.md" target="_blank" rel="noopener">ncs-make-package</a> — NSO 6.5 man page, verified 2026-11-18. Lists skeleton types and <code>--no-test</code>/<code>--build</code>/<code>--dest</code>.</li>
+</ul>
+<h3>Standards / Third-party</h3>
+<p class="small">None needed today. Template expressions are XPath 1.0, and YANG references (RFC 7950) were covered on 11-17.</p>
+
+<div class="card small">
+<p><b>Links:</b> 7 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims:</b> Domain 2 weight. cisco-ios-cli NED element names for Loopback/ip address/primary/mask. Root vs context resolution of relative paths after an implicit key loop. Whether a python-and-template root should also carry a servicepoint attribute (6.5 example omits it; Templates page says one template per servicepoint and callback type). Service instance CLI syntax in the anatomy and drill. <code>ncs-make-package --help</code> flag. Files generated by the template skeleton (the man page doesn't list them; Implementing Services shows <code>dns/templates/dns-template.xml</code>). Drill solution not compiled. Recall answers 5–6 restated from earlier pages.</p>
+<p><b>Tomorrow (Thu 2026-11-19):</b> unit 32, 3.1.aci — Python scripts against APIs: ACI. Friday: weekly review 8 (units 29–32).</p>
+</div>
+</main>
+</body>
+</html>
+
+</body></html>

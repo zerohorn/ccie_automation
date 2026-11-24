@@ -1,0 +1,389 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Designing Automation Solutions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: single 860px reading column, sticky chip TOC, cards only for header, drill and recall */
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --fg:#1b2430; --muted:#5a6676; --line:#d5dbe3;
+  --accent:#0b6e8a; --accent-soft:#e1f1f5; --warn:#a35a00; --warn-soft:#fff2df;
+  --ok:#1f7a3f; --bad:#b3261e; --code:#eef1f5;
+  --s1:#0b6e8a; --s2:#6b4fa3; --s3:#1f7a3f; --s4:#a35a00;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161d; --panel:#18202a; --fg:#e3e8ee; --muted:#9aa7b6; --line:#2c3846;
+  --accent:#5cc3de; --accent-soft:#16323b; --warn:#f0b04f; --warn-soft:#33270f;
+  --ok:#6fd18f; --bad:#ff8a80; --code:#1f2934;
+  --s1:#5cc3de; --s2:#b49cf0; --s3:#6fd18f; --s4:#f0b04f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161d; --panel:#18202a; --fg:#e3e8ee; --muted:#9aa7b6; --line:#2c3846;
+  --accent:#5cc3de; --accent-soft:#16323b; --warn:#f0b04f; --warn-soft:#33270f;
+  --ok:#6fd18f; --bad:#ff8a80; --code:#1f2934;
+  --s1:#5cc3de; --s2:#b49cf0; --s3:#6fd18f; --s4:#f0b04f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 3rem}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+main{max-width:860px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;line-height:1.25}
+h1{font-size:1.75rem;margin:.2rem 0 .4rem}
+h2{font-size:1.35rem;margin:2.4rem 0 .6rem;padding-top:.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.08rem;margin:1.4rem 0 .4rem}
+p,li{max-width:68ch}
+a{color:var(--accent)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:.5rem 0;border-bottom:1px solid var(--line);
+  display:flex;gap:.4rem;overflow-x:auto;white-space:nowrap;font-size:.82rem}
+nav.toc a{text-decoration:none;padding:.2rem .55rem;border:1px solid var(--line);border-radius:999px;color:var(--fg)}
+nav.toc a:hover{border-color:var(--accent);color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1rem 1.2rem}
+.hdr{margin-top:1rem}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.4rem 1rem;font-size:.86rem;margin-top:.6rem}
+.meta div{min-width:0}.meta b{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.eyebrow{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);font-weight:700}
+.tw{overflow-x:auto;margin:.8rem 0}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:560px}
+th,td{border:1px solid var(--line);padding:.45rem .55rem;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:.8rem;overflow-x:auto;font-size:.82rem;line-height:1.45}
+code{font-family:var(--mono);font-size:.88em}
+p code,li code,td code{background:var(--code);padding:0 .25em;border-radius:4px}
+.fig{overflow-x:auto;margin:1rem 0}
+.fig svg{width:100%;height:auto;min-width:340px;display:block}
+.cap{font-size:.82rem;color:var(--muted);margin-top:.3rem}
+.warn{background:var(--warn-soft);border-left:3px solid var(--warn);padding:.5rem .8rem;border-radius:4px;font-size:.9rem}
+.badge{display:inline-block;font-size:.72rem;padding:.05rem .4rem;border-radius:4px;border:1px solid var(--ok);color:var(--ok);font-weight:600;white-space:nowrap}
+details{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.5rem .8rem;margin:.5rem 0}
+summary{cursor:pointer;font-weight:600}
+.refs li{margin:.5rem 0}
+.refs .t{font-weight:600}
+.refs .m{font-size:.82rem;color:var(--muted)}
+footer{margin-top:2.5rem;font-size:.86rem;color:var(--muted);border-top:1px solid var(--line);padding-top:1rem}
+svg text{font-family:var(--sans)}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+
+<main>
+<nav class="toc" aria-label="Contents">
+<a href="#snap">Snapshot</a><a href="#fits">Where it fits</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a>
+</nav>
+
+<section class="card hdr">
+<div class="eyebrow">CCIE Automation v1.1 · Daily page</div>
+<h1>1.1 Design a solution: on-prem, hybrid or public cloud</h1>
+<p style="margin:.2rem 0;color:var(--muted)">1.1.a Deployment · 1.1.b Reliability · 1.1.c Performance · 1.1.d Infrastructure observability</p>
+<div class="meta">
+<div><b>Date</b>Mon 2026-11-23</div>
+<div><b>Domain</b>1.0 Software Design, Dev &amp; Deployment · 20%</div>
+<div><b>Tier</b>T3 (proficiency check)</div>
+<div><b>Read time</b>~18 min</div>
+<div><b>Progress</b>Unit 33 of 49</div>
+</div>
+</section>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>1.1 is the only blueprint item with the verb <b>Design</b>. Expect task shapes like "pick and justify a deployment" or "change this Compose/K8s/client config to meet requirement X", not a blank-page architecture.</li>
+<li>Four lenses, one per sub-item: <b>where it runs</b> (container, VM, orchestrator), <b>what happens when it fails</b>, <b>how it behaves under load</b>, and <b>how you know</b>.</li>
+<li>Reliability for stateful automation (NSO, Vault, GitLab) is a consensus problem. NSO HA Raft needs at least three nodes. Two-node HA can't tell a dead peer from a broken link.</li>
+<li>Rate limiting is half the performance story for network automation. You consume other people's limits (Meraki: 10 req/s per org) more often than you set your own. Handle 429 + <code>Retry-After</code> correctly.</li>
+<li>Kubernetes splits health into three probes: startup (is it booted?), liveness (restart it?), readiness (send it traffic?). Compose has one <code>healthcheck</code> plus <code>depends_on</code> conditions.</li>
+<li>Observability has three signals: metrics, logs, traces. On this exam, metrics usually means Prometheus-style counters and gauges in Grafana, plus device telemetry from 3.4/3.5.</li>
+</ul>
+
+<h2 id="fits">Where this fits</h2>
+<div class="fig">
+<svg viewBox="0 0 760 330" role="img" aria-label="1.1 design lenses mapped to blueprint neighbours">
+<rect x="0" y="0" width="760" height="330" fill="var(--panel)" stroke="var(--line)"/>
+<rect x="290" y="130" width="180" height="70" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+<text x="380" y="160" text-anchor="middle" font-size="16" font-weight="700" fill="var(--fg)">1.1 Design</text>
+<text x="380" y="182" text-anchor="middle" font-size="12" fill="var(--muted)">choose · justify · adjust</text>
+<g font-size="12" fill="var(--fg)">
+<rect x="20" y="20" width="220" height="80" rx="8" fill="var(--panel)" stroke="var(--s1)" stroke-width="2"/>
+<text x="30" y="42" font-weight="700" fill="var(--s1)">1.1.a Deployment</text>
+<text x="30" y="62">4.1 Dockerfile · 4.2 Compose</text><text x="30" y="80">4.3 Kubernetes · 4.4 networks</text>
+<rect x="520" y="20" width="220" height="80" rx="8" fill="var(--panel)" stroke="var(--s2)" stroke-width="2"/>
+<text x="530" y="42" font-weight="700" fill="var(--s2)">1.1.b Reliability</text>
+<text x="530" y="62">NSO HA Raft (2.9) · replicas</text><text x="530" y="80">probes · restart policies</text>
+<rect x="20" y="230" width="220" height="80" rx="8" fill="var(--panel)" stroke="var(--s3)" stroke-width="2"/>
+<text x="30" y="252" font-weight="700" fill="var(--s3)">1.1.c Performance</text>
+<text x="30" y="272">3.1 API clients · 2.1 your API</text><text x="30" y="290">HPA · 429 / Retry-After</text>
+<rect x="520" y="230" width="220" height="80" rx="8" fill="var(--panel)" stroke="var(--s4)" stroke-width="2"/>
+<text x="530" y="252" font-weight="700" fill="var(--s4)">1.1.d Observability</text>
+<text x="530" y="272">3.4/3.5 telemetry · Grafana</text><text x="530" y="290">1.5 AppD / ThousandEyes</text>
+</g>
+<g stroke="var(--muted)" stroke-width="1.5" fill="none">
+<line x1="240" y1="80" x2="290" y2="140"/><line x1="520" y1="80" x2="470" y2="140"/>
+<line x1="240" y1="250" x2="290" y2="190"/><line x1="520" y1="250" x2="470" y2="190"/>
+</g>
+<text x="380" y="40" text-anchor="middle" font-size="11" fill="var(--muted)">1.2 Modify builds on this:</text>
+<text x="380" y="56" text-anchor="middle" font-size="11" fill="var(--muted)">gap analysis = design lenses applied</text>
+<text x="380" y="72" text-anchor="middle" font-size="11" fill="var(--muted)">to an existing solution</text>
+<text x="380" y="290" text-anchor="middle" font-size="11" fill="var(--muted)">1.3/1.4 CI/CD delivers the design;</text>
+<text x="380" y="306" text-anchor="middle" font-size="11" fill="var(--muted)">5.x secures it</text>
+</svg>
+<div class="cap">1.1 is a hub. Each lens is examined hands-on in a later domain, so this page builds the decision framework those units plug into.</div>
+</div>
+
+<h2 id="l1">L1 · Concept: four lenses on one solution</h2>
+<p>Take a typical exam-scale solution: a small Python REST service (2.1) that reads a source of truth, pushes config to devices through RESTCONF or a controller API, and exposes status. "Designing" it means answering four questions in order, because each answer constrains the next.</p>
+<h3>Where does it run? (1.1.a)</h3>
+<p>The blueprint lists containers, VMs, orchestration, automation, components and infra requirements. In practice the choice is a ladder. A <b>VM</b> suits a vendor appliance or a stateful platform shipped as an OVA. A <b>container under Compose</b> suits a few cooperating services on one host. An <b>orchestrator</b> (Kubernetes) suits services that need replicas, rolling updates, autoscaling or scheduling across nodes. Maintainability and modularity come from splitting by responsibility (API, worker, DB, collector) so each part can be rebuilt and replaced independently. Compose describes a service the same way: something that "can be scaled or replaced independently".</p>
+<h3>What happens when it breaks? (1.1.b)</h3>
+<p>Availability means a replacement is ready. Resiliency means the system recovers on its own. Stateless tiers get availability from replicas behind a Service or load balancer. Stateful tiers need replication with a clear rule for who is primary. That rule is where two-node designs fail.</p>
+<h3>How does it behave under load? (1.1.c)</h3>
+<p>Scalability is about adding capacity: horizontal (more replicas) or vertical (bigger instances). Latency is the per-request cost, and each hop, poll interval and serial loop adds to it. Rate limiting is the contract between client and server. In network automation the controller usually enforces the limit, and your design has to live within it.</p>
+<h3>How do you know? (1.1.d)</h3>
+<p>Monitoring answers known questions with predefined checks ("is it up?"). Observability lets you ask new questions from the signals the system already emits. You need metrics for trends and alerting, logs for events, and traces for following one request across services. On this exam that means device telemetry (3.4/3.5), application metrics in Grafana, and the AppDynamics/ThousandEyes view from 1.5.</p>
+
+<div class="tw"><table>
+<caption style="text-align:left;font-weight:600;padding-bottom:.4rem">Deployment target comparison (1.1.a)</caption>
+<tr><th>Property</th><th>VM</th><th>Container + Compose</th><th>Kubernetes</th></tr>
+<tr><td>Unit of deploy</td><td>Whole OS image</td><td>Image per service, one host</td><td>Pod template in a Deployment/StatefulSet</td></tr>
+<tr><td>Self-healing</td><td>Hypervisor HA only</td><td><code>restart:</code> policy on one host</td><td>Controllers recreate Pods; liveness restarts containers</td></tr>
+<tr><td>Startup ordering</td><td>Init system</td><td><code>depends_on</code> + <code>condition: service_healthy</code></td><td>None between Pods; readiness gates traffic instead</td></tr>
+<tr><td>Scaling</td><td>Manual / vertical</td><td>Manual replica count on one host</td><td>Replicas + HPA on metrics</td></tr>
+<tr><td>Updates</td><td>Patch in place or redeploy</td><td>Recreate containers</td><td>Rolling update, 25% surge / 25% unavailable by default</td></tr>
+<tr><td>Fits on exam lab</td><td>CML nodes, NSO host</td><td>Docker 28 on workstation</td><td>kubectl 1.33 against a cluster</td></tr>
+</table></div>
+
+<h2 id="l2">L2 · Mechanics</h2>
+<h3>Reliability mechanics: restart, probe, replicate, elect</h3>
+<p>There are four layers. Each one covers failures the layer below it can't.</p>
+<ol>
+<li><b>Restart.</b> Compose <code>restart</code> values are <code>no</code> (the default), <code>always</code>, <code>on-failure[:max-retries]</code> and <code>unless-stopped</code>. In Kubernetes a crashing container is restarted with exponential backoff. Repeated crashes show as <code>CrashLoopBackOff</code>.</li>
+<li><b>Probe.</b> When a liveness probe fails, the kubelet kills and restarts the container. When a readiness probe fails, the Pod's IP is removed from the EndpointSlices of every matching Service. The container keeps running, but it stops getting traffic. A startup probe holds off the other two until <code>failureThreshold × periodSeconds</code> has elapsed. The docs' example is 30 × 10 = 300 s.</li>
+<li><b>Replicate.</b> A Deployment keeps N Pods. Stateless tiers can survive losing a node when replicas are spread across nodes.</li>
+<li><b>Elect.</b> Stateful tiers need consensus. NSO 6.5 offers three HA modes, and only one can run at a time. <b>HA Raft</b> is consensus-based and hands-off. <b>Rule-based HA</b> (since 5.4) lets you influence primary selection but may need manual operator action. <b>External HA</b> gives data replication only. Raft needs at least three nodes. Three tolerates one failure, and five tolerates two. An even node count adds no fault tolerance.</li>
+</ol>
+
+<div class="fig">
+<svg viewBox="0 0 760 300" role="img" aria-label="Kubernetes probe decision flow">
+<rect x="0" y="0" width="760" height="300" fill="var(--panel)" stroke="var(--line)"/>
+<g font-size="12" fill="var(--fg)">
+<rect x="20" y="120" width="120" height="50" rx="8" fill="var(--accent-soft)" stroke="var(--accent)"/>
+<text x="80" y="142" text-anchor="middle" font-weight="700">Container</text><text x="80" y="160" text-anchor="middle">starts</text>
+<rect x="190" y="120" width="140" height="50" rx="8" fill="var(--panel)" stroke="var(--s2)" stroke-width="2"/>
+<text x="260" y="142" text-anchor="middle" font-weight="700">startupProbe</text><text x="260" y="160" text-anchor="middle">until 1st success</text>
+<rect x="390" y="40" width="160" height="50" rx="8" fill="var(--panel)" stroke="var(--s4)" stroke-width="2"/>
+<text x="470" y="62" text-anchor="middle" font-weight="700">livenessProbe</text><text x="470" y="80" text-anchor="middle">periodic</text>
+<rect x="390" y="200" width="160" height="50" rx="8" fill="var(--panel)" stroke="var(--s3)" stroke-width="2"/>
+<text x="470" y="222" text-anchor="middle" font-weight="700">readinessProbe</text><text x="470" y="240" text-anchor="middle">whole lifecycle</text>
+<rect x="590" y="40" width="155" height="50" rx="8" fill="var(--panel)" stroke="var(--bad)"/>
+<text x="667" y="62" text-anchor="middle">fail → kill + restart</text><text x="667" y="80" text-anchor="middle">(backoff, CrashLoop)</text>
+<rect x="590" y="200" width="155" height="50" rx="8" fill="var(--panel)" stroke="var(--bad)"/>
+<text x="667" y="222" text-anchor="middle">fail → removed from</text><text x="667" y="240" text-anchor="middle">Service endpoints</text>
+<rect x="190" y="230" width="140" height="44" rx="8" fill="var(--panel)" stroke="var(--bad)"/>
+<text x="260" y="250" text-anchor="middle">never succeeds →</text><text x="260" y="266" text-anchor="middle">kill + restart policy</text>
+</g>
+<g stroke="var(--muted)" stroke-width="1.5" fill="none">
+<line x1="140" y1="145" x2="190" y2="145"/>
+<path d="M330 135 L390 70"/><path d="M330 155 L390 220"/>
+<line x1="550" y1="65" x2="590" y2="65"/><line x1="550" y1="225" x2="590" y2="225"/>
+<line x1="260" y1="170" x2="260" y2="230"/>
+</g>
+<text x="350" y="112" font-size="11" fill="var(--muted)">success hands over</text>
+</svg>
+<div class="cap">Startup gates the other two probes. Liveness restarts the container. Readiness only stops traffic to it. Mixing up the last two causes most probe-related outages.</div>
+</div>
+
+<h3>Performance mechanics: autoscale and back off</h3>
+<p><b>Horizontal Pod Autoscaler.</b> The controller loop runs every 15 s by default and computes <code>desiredReplicas = ceil(currentReplicas × currentMetric / desiredMetric)</code>. If the ratio is within the tolerance (0.1 by default), it skips scaling. For scale-down it takes the highest recommendation within a stabilization window, 5 minutes by default, so replicas drop gradually. Resource metrics come from <code>metrics.k8s.io</code>, normally served by metrics-server. Without it, a CPU-based HPA has nothing to act on.</p>
+<p><b>Being a polite client.</b> RFC 6585 §4 defines 429 Too Many Requests and says the response MAY carry <code>Retry-After</code>. RFC 9110 §10.2.3 allows that value to be an HTTP-date or delay-seconds, so a robust client handles both forms. Meraki's published budget: 10 requests/s per organization, shared by every application using that org, with a burst of 10 extra in the first second (30 in 2 s). There is a separate cap of 100 requests/s per source IP. Meraki implements this as a token bucket. Its remedies are design changes, not just retries: batch writes with action batches, use org-wide calls instead of per-device loops, and replace polling with webhooks (Push API) where the topic supports it.</p>
+
+<div class="fig">
+<svg viewBox="0 0 760 260" role="img" aria-label="Sequence: client hits 429 and honours Retry-After">
+<rect x="0" y="0" width="760" height="260" fill="var(--panel)" stroke="var(--line)"/>
+<g font-size="12" fill="var(--fg)">
+<text x="120" y="28" text-anchor="middle" font-weight="700">Automation client</text>
+<text x="620" y="28" text-anchor="middle" font-weight="700">Controller API (token bucket)</text>
+</g>
+<g stroke="var(--line)" stroke-width="2"><line x1="120" y1="38" x2="120" y2="250"/><line x1="620" y1="38" x2="620" y2="250"/></g>
+<g stroke="var(--accent)" stroke-width="1.6" fill="none">
+<line x1="120" y1="60" x2="612" y2="60"/><line x1="120" y1="100" x2="612" y2="100"/><line x1="120" y1="200" x2="612" y2="200"/>
+</g>
+<g stroke="var(--bad)" stroke-width="1.6" fill="none"><line x1="620" y1="125" x2="128" y2="125"/></g>
+<g stroke="var(--ok)" stroke-width="1.6" fill="none"><line x1="620" y1="80" x2="128" y2="80"/><line x1="620" y1="225" x2="128" y2="225"/></g>
+<g font-size="11.5" fill="var(--fg)">
+<text x="360" y="55" text-anchor="middle">GET … (bucket has tokens)</text>
+<text x="360" y="76" text-anchor="middle" fill="var(--ok)">200 OK</text>
+<text x="360" y="95" text-anchor="middle">GET … (burst exceeded budget)</text>
+<text x="360" y="120" text-anchor="middle" fill="var(--bad)">429 Too Many Requests · Retry-After: 2</text>
+<rect x="135" y="140" width="250" height="40" rx="6" fill="var(--warn-soft)" stroke="var(--warn)"/>
+<text x="260" y="158" text-anchor="middle">sleep(Retry-After), else backoff</text>
+<text x="260" y="173" text-anchor="middle">cap attempts; log the wait</text>
+<text x="360" y="195" text-anchor="middle">retry same request</text>
+<text x="360" y="220" text-anchor="middle" fill="var(--ok)">200 OK</text>
+</g>
+</svg>
+<div class="cap">The server tells you how long to wait. Use exponential backoff only when Retry-After is absent, and always cap the number of retries.</div>
+</div>
+
+<h3>Observability mechanics: metric types and the pull model</h3>
+<p>Grafana's Prometheus primer describes a <b>counter</b> as a number that only increases (total bytes written, total requests). You chart it through a rate function, for example the increase over 5-minute windows. A <b>gauge</b> can go up or down (RAM in use, queue depth). Prometheus scrapes targets on an interval, and the Prometheus data source comes preinstalled in Grafana, queried with PromQL. Grafana exposes its own <code>/metrics</code> endpoint once internal metrics are enabled. Device telemetry from 3.4/3.5 fills the same role for the network: periodic subscriptions behave like gauges sampled on a cadence, and on-change subscriptions behave like events.</p>
+
+<h2 id="l3">L3 · Exam detail</h2>
+<div class="tw"><table>
+<caption style="text-align:left;font-weight:600;padding-bottom:.4rem">Requirement → design move → where it lives</caption>
+<tr><th>Requirement phrase</th><th>Design move</th><th>Concrete knob</th></tr>
+<tr><td>"API must not start until DB accepts connections"</td><td>Health-gated dependency</td><td>Compose <code>depends_on: db: condition: service_healthy</code> + <code>healthcheck</code> on db</td></tr>
+<tr><td>"Survive the app process hanging"</td><td>Liveness, not readiness</td><td><code>livenessProbe</code> httpGet <code>/healthz</code></td></tr>
+<tr><td>"Don't send traffic while warming cache"</td><td>Readiness gate</td><td><code>readinessProbe</code>. The Pod stays Running but leaves the endpoints.</td></tr>
+<tr><td>"Slow boot keeps getting killed"</td><td>Startup probe</td><td><code>startupProbe</code> with <code>failureThreshold × periodSeconds</code> ≥ worst-case boot</td></tr>
+<tr><td>"Orchestrator must survive one node loss"</td><td>Consensus HA</td><td>NSO HA Raft, 3 nodes. Check with <code>show ha-raft</code>.</td></tr>
+<tr><td>"Scale with load"</td><td>HPA on CPU or custom metric</td><td>HPA v2 + metrics-server. 15 s loop, 5 min scale-down window.</td></tr>
+<tr><td>"Script hits 429 against Meraki"</td><td>Honour Retry-After, cut call volume</td><td>Org-wide endpoints, action batches, webhooks. The official library retries 429 automatically.</td></tr>
+<tr><td>"Run NSO in Kubernetes"</td><td>Stateful workload</td><td>StatefulSet + PVCs, own namespace, LoadBalancer for SSH/NETCONF, Ingress for HTTP(S), no hostPath in production</td></tr>
+</table></div>
+<p><b>Hybrid and cloud placement.</b> The blueprint names on-prem, hybrid and public cloud. The practical rules: state stays close to its consumers, controllers stay reachable from the devices they manage, and anything that crosses a boundary needs TLS (5.2) and secret handling (5.4). Dial-out telemetry (3.4) is the network version of the same idea. The device initiates the connection, so the collector can sit behind a firewall or in a cloud VPC.</p>
+<p><b>Trap: two-node HA.</b> Any requirement that says "two NSO nodes, automatic failover" conflicts with the NSO docs. Raft needs three because two nodes can't tell a dead peer from a partition. Rule-based HA with two nodes works, but expect manual intervention. Put that trade-off in your design note.</p>
+<p><b>Trap: readiness used as liveness.</b> If a readiness endpoint checks a downstream dependency and someone copies it into a liveness probe, a database blip restarts every API replica at once. Keep liveness local. Readiness can include dependencies.</p>
+<p><b>Version note.</b> Kubernetes docs fetched are the main branch (newer than the 1.33 pin). The HPA default values used here (15 s, 0.1, 5 min) are long-standing, but confirm them on a 1.33 cluster. Docker docs are current, not pinned to 28. Grafana docs are "latest", against the 12.2 pin.</p>
+
+<h2 id="anat">Anatomy</h2>
+<p>These fragments are annotated, not the drill solution.</p>
+<pre><code># Compose: health-gated start + restart policy (shape from docs.docker.com startup-order example)
+services:
+  api:
+    build: .
+    restart: unless-stopped          # no | always | on-failure[:N] | unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy   # or service_started / service_completed_successfully
+        restart: true                # restart api if db is restarted by a Compose operation
+  db:
+    image: postgres:18
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s</code></pre>
+<pre><code># Kubernetes container probes (field names from the probes task page)
+livenessProbe:
+  httpGet: {path: /healthz, port: liveness-port}
+  failureThreshold: 1
+  periodSeconds: 10
+startupProbe:                        # 30 x 10 s = 300 s to finish booting
+  httpGet: {path: /healthz, port: liveness-port}
+  failureThreshold: 30
+  periodSeconds: 10</code></pre>
+<pre><code># Python 3.13 client: honour Retry-After (RFC 9110: seconds OR HTTP-date), cap retries
+import time, random, requests
+from email.utils import parsedate_to_datetime      # ⚠ unverified — test in lab
+from datetime import datetime, timezone
+
+def retry_after_seconds(value: str | None, attempt: int) -> float:
+    if value is None:
+        return min(2 ** attempt, 30) + random.random()   # fallback backoff + jitter
+    if value.isdigit():
+        return float(value)                               # delay-seconds form
+    when = parsedate_to_datetime(value)                   # HTTP-date form
+    return max(0.0, (when - datetime.now(timezone.utc)).total_seconds())
+
+def get(session: requests.Session, url: str, max_tries: int = 5):
+    for attempt in range(max_tries):
+        r = session.get(url, timeout=10)
+        if r.status_code != 429:
+            r.raise_for_status()
+            return r.json()
+        time.sleep(retry_after_seconds(r.headers.get("Retry-After"), attempt))
+    raise RuntimeError(f"rate limited after {max_tries} tries: {url}")</code></pre>
+<p class="warn">The Python fragment matches the RFC and Meraki behaviour described above, but it has not been run. ⚠ unverified — test in lab.</p>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>API container exits on <code>compose up</code> with "connection refused" to DB, then works on retry</td><td><code>depends_on</code> with default <code>service_started</code>. The DB process isn't accepting connections yet.</td><td><code>docker compose ps</code> (health column) · <code>docker compose logs db</code></td><td>Add <code>healthcheck</code> to db and <code>condition: service_healthy</code></td></tr>
+<tr><td>Pods <code>Running</code> but Service returns no backends</td><td>Readiness probe failing (wrong path/port)</td><td><code>kubectl describe pod</code> events · <code>kubectl get endpointslices -l kubernetes.io/service-name=&lt;svc&gt;</code> ⚠</td><td>Fix probe path/port. Check the app actually listens there.</td></tr>
+<tr><td><code>CrashLoopBackOff</code> on a slow-booting app</td><td>Liveness kills it before boot completes</td><td><code>kubectl describe pod</code> → liveness failures, restart count</td><td>Add <code>startupProbe</code> sized to worst-case boot</td></tr>
+<tr><td>HPA shows <code>&lt;unknown&gt;</code> target and never scales</td><td>No resource metrics API (metrics-server missing) or no CPU requests on containers ⚠</td><td><code>kubectl get hpa</code> · <code>kubectl top pods</code> ⚠</td><td>Install metrics-server. Set <code>resources.requests</code>.</td></tr>
+<tr><td>Meraki script fails with 429 overnight while another app also runs</td><td>Org budget (10 req/s) is shared across apps. Per-device polling loop.</td><td>Dashboard → Organization → API &amp; Webhooks → API Analytics</td><td>Honour Retry-After. Switch to org-wide endpoints, action batches, webhooks.</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>kubectl explain deployment.spec.strategy.rollingUpdate</code> and <code>kubectl explain pod.spec.containers.livenessProbe</code> give field names without the docs ⚠ (needs API server reachability).</li>
+<li><code>kubectl explain hpa.spec.behavior --api-version=autoscaling/v2</code> shows the scaling policy fields ⚠.</li>
+<li><code>docker compose config</code> renders and validates the merged file. Use it before <code>up</code> to catch indentation errors under <code>depends_on</code> ⚠.</li>
+<li><code>docker inspect --format '{{json .State.Health}}' &lt;ctr&gt;</code> shows the healthcheck log ⚠.</li>
+<li>NSO CLI: <code>show ha-raft</code> displays leader and members. <code>ha-raft ?</code> lists actions such as <code>create-cluster</code>.</li>
+<li>Python: <code>python3 -c "help('email.utils')"</code> for date parsing. <code>python3 -m http.server</code> gives a quick local target ⚠.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Requirement.</b> Containerise the 2.1 FastAPI "devices" service (or any small HTTP app) with a Postgres or Redis backend. It must:</p>
+<ol>
+<li>not start until the backend reports healthy,</li>
+<li>restart on crash but stay down after <code>docker compose stop</code>,</li>
+<li>expose a <code>/healthz</code> that checks only the local process,</li>
+<li>in its outbound client, honour 429 + Retry-After with at most 5 tries.</li>
+</ol>
+<p>Then write three lines of design justification: why Compose rather than Kubernetes here, what would change for 3 replicas, and what you would monitor.</p>
+<p><b>Reference fields.</b> <code>services.&lt;n&gt;.restart</code>, <code>depends_on.&lt;svc&gt;.condition</code>, <code>healthcheck.test / interval / retries / start_period / timeout</code>.</p>
+<p><b>Verification.</b> <code>docker compose up -d</code>, then <code>docker compose ps</code> shows db <i>healthy</i> before api starts. <code>docker kill</code> the api container and it returns. <code>docker compose stop api</code> and it stays down. Point the client at a stub that returns <code>429</code> with <code>Retry-After: 2</code>: you should see roughly 2 s gaps and a clean failure after 5 tries.</p>
+<p><b>Target.</b> Candidate Workstation (Docker 28 + Compose). No network device needed.</p>
+<details><summary>Hint</summary><p><code>unless-stopped</code> is the only restart value that both restarts after a crash and respects an explicit stop. For the 429 stub, a FastAPI route can return <code>Response(status_code=429, headers={"Retry-After": "2"})</code> ⚠.</p></details>
+<details><summary>Solution</summary>
+<pre><code>services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/healthz || exit 1"]   # ⚠ curl must exist in image
+      interval: 10s
+      retries: 3
+  db:
+    image: postgres:18
+    environment: {POSTGRES_USER: app, POSTGRES_PASSWORD: example, POSTGRES_DB: app}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s</code></pre>
+<p>Client: reuse <code>get()</code> from Anatomy. Justification: one host, three services, no autoscaling requirement, so Compose. For 3 replicas with rolling updates and traffic gating, move to a Kubernetes Deployment with readiness and liveness probes. Monitor request rate and error rate (counters → rate), p95 latency, the count of 429s received, and DB connection gauge. ⚠ Solution not executed this run.</p>
+</details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<details><summary>1. A requirement says "two NSO nodes with automatic failover and no split-brain." What do you push back with?</summary><p>NSO HA Raft needs at least three nodes. Three tolerates one failure, five tolerates two. A two-node system can't distinguish a failed peer from a lost link. Rule-based HA works with two nodes but may need manual operator action.</p></details>
+<details><summary>2. Liveness vs readiness failure: what does Kubernetes do in each case?</summary><p>Liveness: the kubelet kills and restarts the container, with backoff that can lead to CrashLoopBackOff. Readiness: the Pod's IP is removed from matching Services' EndpointSlices and the container keeps running.</p></details>
+<details><summary>3. Meraki returns 429. Give the budget numbers, two forms Retry-After can take, and two design changes beyond retrying.</summary><p>10 req/s per org shared across apps (+10 burst in the first second, 30 in 2 s), 100 req/s per source IP. Retry-After is delay-seconds or an HTTP-date (RFC 9110 §10.2.3). Design changes: action batches, org-wide endpoints instead of per-device loops, Push API webhooks instead of polling, configuration templates.</p></details>
+<details><summary>4. HPA: give the replica formula, default loop interval, default tolerance and default scale-down stabilization window.</summary><p>desired = ceil(current × currentMetric / desiredMetric). 15 s sync period, 0.1 tolerance, 5-minute downscale stabilization. Needs metrics.k8s.io (metrics-server) for resource metrics.</p></details>
+<details><summary>5. (from 2026-11-17, 2.9.b) A leaf with <code>when</code> and a leaf with <code>must</code> both evaluate false. What does the operator see in each case?</summary><p>when: the node is not configurable / removed, with no error. must: the commit is rejected with the error-message. (Restated from the 2026-11-17 page.)</p></details>
+<details><summary>6. (from 2026-11-16, 5.5) Why must a JWT verifier pass <code>algorithms=[...]</code> instead of trusting the token header, and which two attacks does that stop?</summary><p>The alg header is attacker-controlled. Pinning algorithms stops "alg: none" and RS256→HS256 key confusion (RFC 8725). (Restated from the 2026-11-16 page.)</p></details>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul class="refs">
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/high-availability" target="_blank" rel="noopener" class="t">High Availability | Guides and References NSO 6.5 (EoM) | Cisco Crosswork NSO Documentation</a> <span class="badge">✅</span><div class="m">NSO 6.5 · verified 2026-11-23 · Raft vs rule-based vs external HA, 3-node rule, <code>show ha-raft</code>, migration.</div></li>
+<li><a href="https://developer.cisco.com/meraki/api-v1/rate-limit/" target="_blank" rel="noopener" class="t">Rate Limit - Meraki Dashboard API v1 - Cisco Meraki Developer Hub</a> <span class="badge">✅</span><div class="m">Meraki API v1 · verified 2026-11-23 · Per-org/per-IP budgets, 429 body, efficient-endpoint table.</div></li>
+<li><a href="https://nso-docs.cisco.com/resources/best-practices/nso-on-kubernetes" target="_blank" rel="noopener" class="t">NSO on Kubernetes | NSO Resources | Cisco Crosswork NSO Documentation</a> <span class="badge">✅</span><div class="m">Unversioned best-practice page · verified 2026-11-23 · Worked example of deploying a stateful automation platform on K8s.</div></li>
+</ul>
+<h3>Standards</h3>
+<ul class="refs">
+<li><a href="https://www.rfc-editor.org/info/rfc6585/" target="_blank" rel="noopener" class="t">RFC 6585: Additional HTTP Status Codes | RFC Editor</a> <span class="badge">✅</span><div class="m">RFC · verified 2026-11-23 · §4 defines 429 and optional Retry-After.</div></li>
+<li><a href="https://www.rfc-editor.org/info/rfc9110/" target="_blank" rel="noopener" class="t">RFC 9110: HTTP Semantics | RFC Editor</a> <span class="badge">✅</span><div class="m">RFC · verified 2026-11-23 · §10.2.3 Retry-After syntax (HTTP-date / delay-seconds).</div></li>
+</ul>
+<h3>Third-party</h3>
+<ul class="refs">
+<li><a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" target="_blank" rel="noopener" class="t">Configure Liveness, Readiness and Startup Probes | Kubernetes</a> <span class="badge">✅</span><div class="m">docs main branch (pin 1.33) · verified 2026-11-23 · Probe YAML and startup-probe sizing.</div></li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/" target="_blank" rel="noopener" class="t">Horizontal Pod Autoscaling | Kubernetes</a> <span class="badge">✅</span><div class="m">docs main branch (pin 1.33) · verified 2026-11-23 · Algorithm, tolerance, stabilization, behavior policies.</div></li>
+<li><a href="https://docs.docker.com/compose/how-tos/startup-order/" target="_blank" rel="noopener" class="t">Control startup and shutdown order in Compose | Docker Docs</a> <span class="badge">✅</span><div class="m">current docs (pin Docker 28) · verified 2026-11-23 · <code>depends_on</code> conditions with healthcheck example.</div></li>
+</ul>
+<p style="font-size:.88rem">Also verified this run and usable from the body text: <a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" target="_blank" rel="noopener">Pod Lifecycle | Kubernetes</a> <span class="badge">✅</span> · <a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" target="_blank" rel="noopener">Deployments | Kubernetes</a> <span class="badge">✅</span> · <a href="https://docs.docker.com/reference/compose-file/services/" target="_blank" rel="noopener">Define services in Docker Compose | Docker Docs</a> <span class="badge">✅</span> · <a href="https://developer.cisco.com/meraki/api-v1/python/" target="_blank" rel="noopener">Meraki Python Library for Dashboard API</a> <span class="badge">✅</span> · <a href="https://grafana.com/docs/grafana/latest/fundamentals/intro-to-prometheus/" target="_blank" rel="noopener">What is Prometheus? | Grafana documentation</a> <span class="badge">✅</span> · <a href="https://grafana.com/docs/grafana/latest/datasources/prometheus/" target="_blank" rel="noopener">Prometheus data source | Grafana documentation</a> <span class="badge">✅</span></p>
+
+<footer>
+<p><b>Links: 14 ✅ · 0 🔎 · 0 removed</b></p>
+<p><b>⚠ Unverified claims:</b> exam task shapes for 1.1 (inferred from the blueprint verb only); Python Retry-After helper and drill client not executed; <code>parsedate_to_datetime</code> usage; FastAPI 429 Response snippet; drill Compose solution and curl in image; <code>kubectl explain</code> paths, <code>endpointslices -l</code> selector, <code>kubectl top</code> and HPA <code>&lt;unknown&gt;</code>/CPU-requests cause (not read on today's pages); <code>docker compose config</code> and <code>docker inspect</code> health format; NSO <code>ha-raft ?</code> output; HPA defaults on a 1.33 cluster (docs are main branch); recall answers 5–6 restated from earlier pages.</p>
+<p><b>Tomorrow:</b> Unit 34 · 2.9.c-d NSO: actions to verify operational status + monitor via the NCS Python VM log.</p>
+</footer>
+</main>
+
+</body></html>

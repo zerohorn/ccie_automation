@@ -1,0 +1,237 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Genie Parse, Learn, Diff</title>
+<style>
+:root{--bg:#fbfbfa;--fg:#1c1f23;--mut:#5b636d;--card:#fff;--bd:#d9dde2;--ac:#0b6bcb;--ac2:#0f8a5f;--wn:#b45309;--bad:#b42318;--code:#f1f3f5;--sv1:#dbeafe;--sv2:#dcfce7;--sv3:#fef3c7;--sv4:#fee2e2;--svs:#334155}
+@media (prefers-color-scheme:dark){:root{--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:0 16px 48px}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--bd);padding:8px 16px;z-index:5;display:flex;gap:12px;overflow-x:auto;white-space:nowrap;font-size:14px}
+nav a{color:var(--ac);text-decoration:none}
+h1{font-size:26px;margin:20px 0 4px}h2{font-size:21px;margin:32px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:17px;margin:20px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--mut);font-size:14px}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45;margin:10px 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+svg{width:100%;height:auto;display:block;margin:12px 0}
+svg text{fill:var(--fg);font:12px system-ui,sans-serif}
+svg .s{stroke:var(--svs);stroke-width:1.3;fill:none}
+svg .m{fill:var(--mut)}
+a{color:var(--ac)}
+.b{display:inline-block;font-size:12px;border:1px solid var(--bd);border-radius:10px;padding:0 6px;margin-left:4px}
+.ok{color:var(--ac2)}.wn{color:var(--wn)}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+ul{padding-left:20px}li{margin:3px 0}
+.tag{font-size:12px;color:var(--wn)}
+footer{margin-top:36px;border-top:1px solid var(--bd);padding-top:12px;font-size:14px;color:var(--mut)}
+</style>
+</head>
+<body>
+<nav><a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main id="top">
+<h1>Genie Parse, Learn, Diff</h1>
+<div class="card meta">
+<span><b>Date</b> Mon 2026-11-09</span>
+<span><b>Blueprint</b> 3.3.b: gather config/operational state via Genie parsers/models</span>
+<span><b>Domain</b> 3 (weight not checked)</span>
+<span><b>Tier</b> 1 (gap)</span>
+<span><b>Read</b> ~18 min</span>
+<span><b>Unit</b> 25 of 49</span>
+</div>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>Genie turns <code>show</code> output into Python dicts. A <b>parser</b> handles one command. An <b>Ops model</b> (<code>learn</code>) runs several commands and merges them into one OS-neutral structure in <code>.info</code>.</li>
+<li>Same two operations exist in Python (<code>device.parse()</code>, <code>device.learn()</code>) and as CLI (<code>genie parse</code>, <code>genie learn</code>), both driven by the testbed from 3.3.a.</li>
+<li><code>genie diff</code> compares two saved snapshots (files or directories) and is the pre/post-change check. It skips volatile keys (counters, timers) by default.</li>
+<li>Which parser class loads depends on the device's <code>os</code> in the testbed. Wrong <code>os</code> means "could not find parser" or wrong schema.</li>
+<li>Parsers wrap CLI. They do not make an IOSv speak RESTCONF. Lab split: IOSv/IOSvL2 = CLI parsers only; Cat8000V = CLI parsers too (RESTCONF stays for 2.x tasks); N9Kv = NX-OS parsers.</li>
+<li>The blueprint verb is gather state. Expect "get this value out of that device and prove it changed", not "write a new parser".</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<svg viewBox="0 0 760 250" role="img" aria-label="Position of 3.3.b between 3.3.a testbed and 3.3.c AEtest, and the tool chain from testbed to diff">
+<rect class="s" x="10" y="14" width="740" height="52" rx="8"/>
+<text x="20" y="34" class="m">Blueprint 3.3 pyATS</text>
+<rect x="150" y="24" width="150" height="34" rx="6" fill="var(--sv1)" class="s"/><text x="160" y="45">3.3.a testbed file</text>
+<rect x="320" y="24" width="190" height="34" rx="6" fill="var(--sv3)" stroke="var(--ac)" stroke-width="2"/><text x="328" y="45"><tspan font-weight="700">3.3.b parse / learn (today)</tspan></text>
+<rect x="530" y="24" width="200" height="34" rx="6" fill="var(--sv1)" class="s"/><text x="540" y="45">3.3.c AEtest jobs</text>
+<path class="s" d="M300 41H320M510 41H530"/>
+<text x="10" y="100" class="m">Tool chain for one pre/post check</text>
+<rect x="10" y="112" width="110" height="46" rx="6" fill="var(--sv1)" class="s"/><text x="20" y="132">testbed.yaml</text><text x="20" y="148" class="m">os, creds, via</text>
+<rect x="150" y="112" width="110" height="46" rx="6" fill="var(--sv1)" class="s"/><text x="160" y="132">Unicon SSH</text><text x="160" y="148" class="m">CLI session</text>
+<rect x="290" y="112" width="130" height="46" rx="6" fill="var(--sv2)" class="s"/><text x="300" y="132">show cmd output</text><text x="300" y="148" class="m">raw text</text>
+<rect x="450" y="112" width="130" height="46" rx="6" fill="var(--sv3)" stroke="var(--ac)" stroke-width="2"/><text x="460" y="132">Genie parser</text><text x="460" y="148" class="m">schema'd dict</text>
+<rect x="610" y="112" width="140" height="46" rx="6" fill="var(--sv3)" stroke="var(--ac)" stroke-width="2"/><text x="620" y="132">Ops model</text><text x="620" y="148" class="m">.info, many cmds</text>
+<path class="s" d="M120 135H150M260 135H290M420 135H450M580 135H610"/>
+<rect x="450" y="190" width="130" height="40" rx="6" fill="var(--sv2)" class="s"/><text x="460" y="214">snapshot files</text>
+<rect x="610" y="190" width="140" height="40" rx="6" fill="var(--sv4)" class="s"/><text x="620" y="214">genie diff</text>
+<path class="s" d="M515 158V190M680 158V174H515M580 210H610"/>
+</svg>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+<h3>L1: concept</h3>
+<p>You already read CLI as text. Genie does what <code>TextFSM</code> or regex scripts do, but the parsers are maintained per OS and per command, and each one returns a dict that conforms to a declared schema. Because the schema is fixed, <code>output['platform']['software']['system_version']</code> works the same way every run, which is what makes a test assert on it. Genie is the library layer on top of pyATS (the framework), and it contains parsers, Ops (operational state), Conf (configure by object), and a harness of triggers and verifications; <a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/overview/introduction.html" target="_blank" rel="noopener">the introduction</a> <span class="b ok">✅</span> lays these out. Blueprint 3.3.b only needs parsers and Ops.</p>
+
+<h3>L2: mechanics</h3>
+<svg viewBox="0 0 760 270" role="img" aria-label="Sequence: script calls parse or learn, Unicon sends show commands, parser returns dict or Ops builds info, snapshots saved, diff compares">
+<g class="s"><path d="M80 40V260M260 40V260M440 40V260M640 40V260" stroke-dasharray="4 4"/></g>
+<text x="40" y="24">Script / CLI</text><text x="225" y="24">Unicon</text><text x="400" y="24">Device</text><text x="590" y="24">Genie lib</text>
+<path class="s" d="M80 60H260"/><text x="95" y="55">connect()</text>
+<path class="s" d="M260 90H440"/><text x="270" y="85">show command(s)</text>
+<path class="s" d="M440 115H260"/><text x="300" y="110" class="m">raw text</text>
+<path class="s" d="M260 140H640"/><text x="400" y="135">text + device.os</text>
+<path class="s" d="M640 165H80"/><text x="240" y="160">parse: dict   |   learn: Ops obj, .info</text>
+<path class="s" d="M80 195H100M100 195V215H80"/><text x="110" y="210" class="m">save as file (--output) = snapshot</text>
+<path class="s" d="M80 245H640"/><text x="250" y="240">genie diff pre/ post/  (default excludes applied)</text>
+</svg>
+<p><b>Parse</b> takes one command and returns one dict. <b>Learn</b> takes a feature name, runs the several commands that feature needs, parses each, and merges the results into one structure that the docs describe as the same across operating systems. The Ops page says the learned data lives in <code>.info</code>, a nested dict keyed by item (for example interface name) then property (<code>oper_status</code>, <code>duplex_mode</code>, <code>counters</code>); see <a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cookbooks/ops.html" target="_blank" rel="noopener">the Ops cookbook</a> <span class="b ok">✅</span>.</p>
+<p>The right parser is chosen by abstraction: libraries are grouped under named tokens such as <code>nxos</code> or <code>iosxe</code>, the lookup tries longer token combinations first and raises <code>LookupError</code> if nothing matches (<a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/abstract/concept.html" target="_blank" rel="noopener">abstraction concept</a> <span class="b ok">✅</span>). The page does not say how the testbed <code>os</code> feeds this; that link is practical knowledge, so treat it as <span class="wn">⚠ unverified: confirm in lab</span> with <code>device.os</code> printed from <code>genie shell</code>.</p>
+
+<h3>L3: exam detail</h3>
+<div class="tw"><table>
+<caption class="tag">Four ways to get state out of a device. Sources: Genie cookbook, parse, learn pages.</caption>
+<tr><th>Method</th><th>Returns</th><th>Commands run</th><th>Use when</th></tr>
+<tr><td><code>dev.execute('show x')</code></td><td>raw string</td><td>1</td><td>No parser exists, or you want raw text</td></tr>
+<tr><td><code>dev.parse('show x')</code></td><td>dict</td><td>1</td><td>Assert one value or compare one command</td></tr>
+<tr><td><code>dev.learn('feature')</code></td><td>Ops object, data in <code>.info</code></td><td>several</td><td>Whole-feature snapshot, pre/post</td></tr>
+<tr><td><code>genie parse / learn</code> (CLI)</td><td>files in <code>--output</code></td><td>as above</td><td>Quick snapshots with no script</td></tr>
+</table></div>
+<div class="tw"><table>
+<caption class="tag">CLI option facts to know cold. Source: genie parse / learn / diff pages.</caption>
+<tr><th>Option</th><th>parse</th><th>learn</th><th>diff</th></tr>
+<tr><td>Arguments</td><td>one or more quoted commands</td><td>one or more features (space-separated in the examples), or <code>all</code></td><td>two paths: pre, post (files or dirs)</td></tr>
+<tr><td><code>--testbed-file</code>, <code>--devices</code></td><td>yes</td><td>yes (no <code>--devices</code> = all devices)</td><td>n/a</td></tr>
+<tr><td><code>--output DIR</code></td><td>without it, JSON prints to terminal</td><td>default = current directory</td><td>default = current directory</td></tr>
+<tr><td>Others</td><td><code>--fuzzy</code>, <code>--raw</code>, <code>--timeout</code>, <code>--via</code>, <code>--developer</code></td><td><code>--single-process</code> (default is parallel), <code>--via</code></td><td><code>--exclude</code>, <code>--no-default-exclusion</code>, <code>--verbose</code></td></tr>
+<tr><td>Files written</td><td><code>&lt;dev&gt;_&lt;cmd&gt;_parsed.txt</code>, <code>_console.txt</code>, <code>connection_&lt;dev&gt;.txt</code></td><td><code>&lt;feature&gt;_&lt;os&gt;_&lt;dev&gt;_ops.txt</code>, <code>_console.txt</code>, <code>_exception.txt</code> on failure</td><td><code>diff_&lt;snapshot&gt;.txt</code>, unified-diff style, <code>-</code> old, <code>+</code> new</td></tr>
+</table></div>
+<ul>
+<li>Diff default excludes: parse snapshots use each OS's <code>verification_datafile.yaml</code>, learn snapshots use <code>pts_datafile.yaml</code>. <code>--exclude</code> adds keys; <code>--no-default-exclusion</code> removes the default list and makes the diff noisy.</li>
+<li>Directory diff matches files <b>by name</b> (for example <code>bgp_nxos_nxos-osv-1_ops.txt</code>), so pre and post must be produced the same way.</li>
+<li>Python parse extras: <code>parse('all')</code> runs every available parser; <code>fuzzy=True</code> matches several commands with limited regex; <code>raw_data=True</code> exposes raw output via <code>out.raw_output</code> (needs pyATS 22.5+).</li>
+<li>Limiting learn: Ops accepts a command list or attribute list to cut execution time (Ops cookbook).</li>
+<li>Learn failures come back as exception objects in <code>learn('all')</code> results, and the CLI reports "Feature not yet developed for this os" for missing models.</li>
+</ul>
+
+<h2 id="anat">Anatomy</h2>
+<p class="tag">Docs are undated and unversioned; the lab pyATS version is unknown. Device names below are placeholders (<span class="wn">⚠ unverified: use your testbed names</span>).</p>
+<pre><code># Python: one command -> dict
+from pyats.topology import loader
+tb  = loader.load('testbed.yaml')
+dev = tb.devices['c8kv-1']
+dev.connect()
+out = dev.parse('show version')          # dict
+print(out.keys())                        # discover top-level keys first
+
+# Python: whole feature -> Ops object
+snap = dev.learn('ospf')                 # example feature from the docs
+print(snap.info)                         # nested dict
+</code></pre>
+<pre><code># CLI: same via the testbed
+genie parse "show version" --testbed-file testbed.yaml --devices c8kv-1 --output pre
+genie learn ospf interface --testbed-file testbed.yaml --output pre
+# ...change something...
+genie learn ospf interface --testbed-file testbed.yaml --output post
+genie diff pre post --output diff_out
+</code></pre>
+<p>The docs' only concrete parse key path is NX-OS <code>show version</code>: <code>['platform']['software']['system_version']</code>. Key paths for IOS and IOS XE commands are <span class="wn">⚠ unverified: print them in lab</span>. <code>genie shell --testbed-file tb.yaml</code> preloads <code>testbed</code> (<a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_shell.html" target="_blank" rel="noopener">genie shell</a> <span class="b ok">✅</span>), which is the fastest place to explore.</p>
+
+<h2 id="bf">Break/fix table</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>"Could not find parser" for a command</td><td>No parser for that exact command on this OS, or wrong <code>os</code> in testbed</td><td><code>print(dev.os)</code> in <code>genie shell</code>; retry with <code>--fuzzy</code> / <code>fuzzy=True</code></td><td>Correct <code>os</code>; use the exact command string; fall back to <code>execute()</code></td></tr>
+<tr><td>Parse raises on a command that runs fine by hand (<code>SchemaEmptyParserError</code> by name <span class="wn">⚠ not on fetched pages</span>)</td><td>Output empty or in a format the parser regex does not match (feature off, wrong mode, other release)</td><td>Re-run with <code>--raw</code> / <code>raw_data=True</code> and read the raw text</td><td>Fix the device state or mode; if release differs, compare with raw text and use <code>execute()</code></td></tr>
+<tr><td><code>learn</code> reports "Feature not yet developed for this os"</td><td>No Ops model for that feature on this OS</td><td>Summary table and <code>_exception.txt</code> from <code>genie learn</code></td><td>Parse the individual commands instead, or pick a supported feature</td></tr>
+<tr><td><code>genie diff</code> floods with changed lines</td><td>Volatile keys not excluded (counters, timers) or <code>--no-default-exclusion</code> was set</td><td>Re-run without that flag; read the <code>+</code>/<code>-</code> lines</td><td>Keep defaults; add <code>--exclude key ...</code> for extra noisy keys</td></tr>
+<tr><td><code>genie diff</code> compares nothing</td><td>Snapshot files do not match by name, or a directory was never created</td><td><code>ls pre post</code></td><td>Produce both with the same command, devices, and features; create snapshot dirs before diffing</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes</h2>
+<ul>
+<li>The feature browser listing parsers and models is a JavaScript app (<span class="wn">Search: Genie feature browser, Available Parsers</span>). Plan for no browser access: use the offline route below.</li>
+<li><code>genie --help</code>, then <code>genie parse --help</code>, <code>genie learn --help</code>, <code>genie diff --help</code> list the flags. The top-level help names <code>create, diff, dnac, learn, parse, run, shell</code>.</li>
+<li><code>genie shell --testbed-file tb.yaml</code>, then <code>testbed.devices</code>, <code>dev.connect()</code>, <code>help(dev.parse)</code>.</li>
+<li>Find a parser offline: <code>python -c "import genie.libs.parser as p; print(p.__path__)"</code>, then <code>grep -rn "show ip interface brief" &lt;path&gt;/ios</code> <span class="wn">⚠ unverified: test in lab</span>. Parser source also shows the schema, so you get key paths without running anything.</li>
+<li>Print before you assert: <code>import json; print(json.dumps(out, indent=2))</code>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min)</h2>
+<div class="card">
+<p><b>Target:</b> IOSv 15.9 (CLI, <code>os: ios</code>) and Cat8000V (<code>os: iosxe</code>). IOSv SSH needs the legacy KEX workaround from your 3.3.a testbed.</p>
+<p><b>Requirement:</b> Show that shutting a loopback is visible in a Genie diff, and that counters are not.</p>
+<ol>
+<li>Take a <code>pre</code> snapshot of <code>interface</code> on both devices.</li>
+<li>Shut one loopback on the Cat8000V. Take a <code>post</code> snapshot.</li>
+<li>Diff the two. The only changes shown must belong to that loopback.</li>
+<li>Repeat the diff with <code>--no-default-exclusion</code> and note what appears.</li>
+</ol>
+<p><b>Reference:</b> commands <code>genie learn</code>, <code>genie diff</code>; flags <code>--testbed-file --devices --output --exclude --no-default-exclusion</code>; Ops data in <code>.info</code>.</p>
+<p><b>Verify:</b> diff file contains <code>-</code> / <code>+</code> lines for the loopback only; CLI <code>show ip interface brief</code> on the device agrees.</p>
+<details><summary>Hint</summary><p>Use the same <code>--output</code> layout for both runs and let learn run on both devices at once. If learn fails for IOSv, read <code>_exception.txt</code> and fall back to <code>genie parse "show ip interface brief"</code>.</p></details>
+<details><summary>Solution</summary>
+<pre><code>genie learn interface --testbed-file testbed.yaml --output pre
+# on c8kv-1: interface Loopback99 / shutdown
+genie learn interface --testbed-file testbed.yaml --output post
+genie diff pre post --output diff_out
+genie diff pre post --output diff_all --no-default-exclusion
+</code></pre>
+<p class="tag">⚠ unverified: test in lab. Whether the interface model exists for each OS on your pyATS version, and the exact diff file names.</p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p>Today</p>
+<ol>
+<li>What is the difference in what <code>parse</code> and <code>learn</code> return, and how many commands each runs?
+<details><summary>Answer</summary>Parse: one command, one dict. Learn: a feature, several commands, one Ops object with data in <code>.info</code>.</details></li>
+<li>A <code>genie diff</code> shows hundreds of changed lines, mostly counters. Where do the default exclusions come from for parse vs learn snapshots, and which two flags change them?
+<details><summary>Answer</summary>Parse: each OS's <code>verification_datafile.yaml</code>. Learn: <code>pts_datafile.yaml</code>. <code>--exclude</code> adds keys; <code>--no-default-exclusion</code> turns the list off (the likely cause of the noise).</details></li>
+<li><code>genie parse "show interfaces"</code> prints JSON on screen. What do you add to keep files, and which flag stores unparsed output?
+<details><summary>Answer</summary><code>--output DIR</code> writes <code>_parsed.txt</code> and <code>_console.txt</code>. <code>--raw</code> stores device output without parsing.</details></li>
+<li><code>genie learn</code> says "Feature not yet developed for this os". What does that mean and what is your fallback?
+<details><summary>Answer</summary>No Ops model for that feature on that OS. Parse the individual show commands instead (or learn a feature that exists); check <code>_exception.txt</code>.</details></li>
+</ol>
+<p>From history</p>
+<ol start="5">
+<li>(from 2026-11-03) A connection has no credentials, the device has none, and the testbed has only <code>default</code>. The task enters enable mode. Which credential does the lookup use, and in what order does it search?
+<details><summary>Answer</summary>Connection, then device, then testbed; a missing named credential falls back to <code>default</code>.</details></li>
+<li>(from 2026-11-05) Running your CLI with no arguments crashes with AttributeError on <code>args.func</code>. Why, and what is the fix?
+<details><summary>Answer</summary>In argparse, subparsers are not required by default. Set <code>required=True</code> on <code>add_subparsers</code> so it prints usage and exits 2.</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_parse.html" target="_blank" rel="noopener">Genie Parse</a> <span class="b ok">✅</span> docs unversioned · verified 2026-11-09. Best for options (<code>--fuzzy</code>, <code>--raw</code>, <code>--output</code>) and output file names.</li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_learn.html" target="_blank" rel="noopener">Genie Learn — Genie Documentation</a> <span class="b ok">✅</span> unversioned · verified 2026-11-09. Best for learn flags, <code>all</code>, and failure files.</li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_diff.html" target="_blank" rel="noopener">Genie Diff</a> <span class="b ok">✅</span> unversioned · verified 2026-11-09. Best for exclude rules and the diff file format.</li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cookbooks/explore.html?highlight=parse" target="_blank" rel="noopener">1. Parse devices' outputs into structured output — Genie Documentation</a> <span class="b ok">✅</span> unversioned · verified 2026-11-09. Best for the shortest parse and learn walkthrough, Python and CLI.</li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cookbooks/ops.html" target="_blank" rel="noopener">Genie Ops cookbook (page heading "1. Summary")</a> <span class="b ok">✅</span> unversioned · verified 2026-11-09. Best for <code>.info</code>, limiting learn, snapshots and <code>diff()</code>.</li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cookbooks/parsers.html" target="_blank" rel="noopener">Genie parsers cookbook</a> <span class="b ok">✅</span> unversioned · verified 2026-11-09. Best for <code>parse('all')</code>, <code>fuzzy=True</code>, <code>raw_data=True</code>.</li>
+<li><a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/abstract/concept.html" target="_blank" rel="noopener">Concept — Genie Documentation (Library Abstraction)</a> <span class="b ok">✅</span> unversioned · verified 2026-11-09. Best for how tokens select a library and when <code>LookupError</code> is raised.</li>
+</ul>
+<p class="tag">No standards or third-party links apply today. Search: "Genie feature browser Available Parsers" (JavaScript app, not linked).</p>
+
+<footer>
+<p><b>Links:</b> 9 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims:</b> Domain 3 weight; testbed <code>os</code> drives parser selection; key paths for IOS/IOS XE commands; <code>SchemaEmptyParserError</code> naming and trigger (not on fetched pages); whether an interface Ops model exists for ios/iosxe on your pyATS version; exact diff file names; <code>genie.libs.parser</code> path and grep route; pyATS version and Python 3.13 support on the workstation; device names; IOSv legacy KEX settings carried from 3.3.a.</p>
+<p><b>Version flag:</b> Genie docs are undated and unversioned; the pins list no pyATS version. <code>raw_data=True</code> needs pyATS 22.5+ per the parsers cookbook.</p>
+<p><b>Tomorrow:</b> Unit 26 of 49, 5.4: use a secret management system to secure an application (Vault 1.20).</p>
+</footer>
+</main>
+</body>
+</html>
+
+</body></html>
