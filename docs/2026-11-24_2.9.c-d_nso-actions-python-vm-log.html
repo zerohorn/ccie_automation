@@ -1,0 +1,350 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NSO Actions and Logs</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#fbfbfa;--fg:#1c1f23;--mut:#5b636d;--card:#fff;--bd:#d9dde2;--ac:#0b6bcb;--ac2:#0f8a5f;--wn:#b45309;--bad:#b42318;--code:#f1f3f5;--sv1:#dbeafe;--sv2:#dcfce7;--sv3:#fef3c7;--sv4:#fee2e2;--svs:#334155}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--bd);padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5;display:flex;gap:12px;overflow-x:auto;white-space:nowrap;font-size:14px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+h1,h2,h3{text-wrap:balance}
+nav a{color:var(--ac);text-decoration:none}
+h1{font-size:26px;margin:20px 0 4px}h2{font-size:21px;margin:32px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:17px;margin:20px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--mut);font-size:14px}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:580px}
+th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+caption{text-align:left;padding-bottom:4px}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45;margin:10px 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+.svgw{max-width:580px;margin:12px auto}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font:13px system-ui,sans-serif}
+svg .s{stroke:var(--svs);stroke-width:1.3;fill:none}
+svg .m{fill:var(--mut)}
+svg .hl{stroke:var(--ac);stroke-width:2}
+a{color:var(--ac)}
+.b{display:inline-block;font-size:12px;border:1px solid var(--bd);border-radius:10px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.ok{color:var(--ac2)}.wn{color:var(--wn)}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+ul{padding-left:20px}li{margin:3px 0}
+.tag{font-size:12px;color:var(--wn)}
+.small{font-size:14px;color:var(--mut)}
+footer{margin-top:36px;border-top:1px solid var(--bd);padding-top:12px;font-size:14px;color:var(--mut)}
+</style>
+<nav><a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#layers">Layers</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main id="top">
+<h1>NSO Actions and Logs</h1>
+<div class="card meta">
+<span><b>Date</b> Tue 2026-11-24</span>
+<span><b>Blueprint</b> 2.9.c Basic actions to verify operational status · 2.9.d Monitor service status via the NCS Python VM log</span>
+<span><b>Domain</b> 2.0 Infrastructure as Code (30% per tracker)</span>
+<span><b>Tier</b> 1 (gap)</span>
+<span><b>Read</b> ~19 min</span>
+<span><b>Unit</b> 34 of 49</span>
+<span><b>Docs</b> NSO 6.5 guides · cisco-ios NED README v6.116.4 · TAC note on NSO 6.4.1</span>
+</div>
+<p class="small">Lab status: NSO is still unbuilt (tracker). This page is reading plus a paper drill until an NSO 6.5 local install exists.</p>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>An <b>action</b> is an on-demand operation modelled in YANG, with input and output. It does not create configuration. NSO uses actions for tests, checks and one-off tasks; services handle configuration.</li>
+<li>Two families matter for 2.9.c. <b>Built-in</b> actions ship with NSO: <code>devices device X connect</code>, <code>ping</code>, <code>check-sync</code>, <code>compare-config</code>, and per-service <code>check-sync</code>, <code>deep-check-sync</code>, <code>get-modifications</code>, <code>re-deploy dry-run</code>. <b>Custom</b> actions are ones you write: YANG <code>action</code> + <code>tailf:actionpoint</code> + a Python <code>ncs.dp.Action</code> class.</li>
+<li>Custom actions use the same callback pattern as services. The actionpoint name in YANG must equal the first argument of <code>register_action()</code> in <code>Application.setup()</code>.</li>
+<li>The <code>trans</code> handed to <code>cb_action</code> is read-only. An action reads CDB and the device, then writes to <code>output</code>.</li>
+<li>Python package code runs in an NSO-managed Python VM. <code>self.log</code> output goes to <code>logs/ncs-python-vm-&lt;pkg&gt;.log</code>. Stdout and Python compile errors go to the shared <code>logs/ncs-python-vm.log</code>.</li>
+<li>Default Python VM log level is info. <code>python-vm logging level level-debug</code> raises it for every VM. <code>vm-levels &lt;pkg&gt;</code> raises one VM and wins over the global setting.</li>
+<li>The cisco-ios-cli NED is Java. Its device traffic shows in the NED trace file and <code>ncs-java-vm.log</code>, not in the Python VM log.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<div class="svgw">
+<svg viewBox="0 0 460 420" role="img" aria-label="Blueprint 2.9 sub-items in order, then the runtime path from northbound CLI to NSO core, Python VM and Java NED, the device, and the log file each part writes">
+<text x="8" y="18" class="m">Blueprint 2.9: one NSO service package</text>
+<rect x="8" y="26" width="104" height="40" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="44">2.9.b</text><text x="16" y="60" class="m">YANG model</text>
+<rect x="120" y="26" width="104" height="40" rx="6" fill="var(--sv1)" class="s"/><text x="128" y="44">2.9.a</text><text x="128" y="60" class="m">XML template</text>
+<rect x="232" y="26" width="104" height="40" rx="6" fill="var(--sv3)" class="hl"/><text x="240" y="44" font-weight="700">2.9.c today</text><text x="240" y="60" class="m">actions</text>
+<rect x="344" y="26" width="108" height="40" rx="6" fill="var(--sv3)" class="hl"/><text x="352" y="44" font-weight="700">2.9.d today</text><text x="352" y="60" class="m">Python VM log</text>
+<path class="s" d="M112 46H120M224 46H232M336 46H344"/>
+<text x="8" y="96" class="m">Runtime path for one action call</text>
+<rect x="110" y="106" width="240" height="40" rx="6" fill="var(--sv2)" class="s"/><text x="122" y="124">Northbound: ncs_cli -C, RESTCONF</text><text x="122" y="140" class="m">operator or script invokes action</text>
+<rect x="110" y="168" width="240" height="44" rx="6" fill="var(--sv1)" class="s"/><text x="122" y="186">NSO core (ncs.smp)</text><text x="122" y="203" class="m">CDB, actionpoint lookup, timeouts</text>
+<rect x="8" y="240" width="176" height="50" rx="6" fill="var(--sv3)" class="hl"/><text x="16" y="259">Python VM (per pkg)</text><text x="16" y="276" class="m">Main.setup, cb_action</text>
+<rect x="276" y="240" width="176" height="50" rx="6" fill="var(--sv1)" class="s"/><text x="284" y="259">Java VM</text><text x="284" y="276" class="m">cisco-ios-cli NED</text>
+<rect x="276" y="312" width="176" height="44" rx="6" fill="var(--sv2)" class="s"/><text x="284" y="330">Device r1</text><text x="284" y="347" class="m">IOSv, Cat8000V, netsim</text>
+<path class="s" d="M230 146V168M180 212L96 240M280 212L364 240M364 290V312"/>
+<path class="s" d="M184 270H276" stroke-dasharray="4 3"/><text x="194" y="262" class="m">live-status</text>
+<rect x="8" y="370" width="176" height="42" rx="6" fill="var(--sv4)" class="s"/><text x="16" y="388">ncs-python-vm-&lt;pkg&gt;.log</text><text x="16" y="405" class="m">+ ncs-python-vm.log</text>
+<rect x="276" y="370" width="176" height="42" rx="6" fill="var(--sv4)" class="s"/><text x="284" y="388">ncs-java-vm.log</text><text x="284" y="405" class="m">+ ned-...-&lt;dev&gt;.trace</text>
+<path class="s" d="M96 290V370M440 356V370" stroke-dasharray="4 3"/>
+</svg>
+</div>
+
+<h2 id="layers">Fundamentals to exam depth</h2>
+<h3>L1: concept — what an action is, and why NSO has them</h3>
+<p>You already know NETCONF RPCs: a named operation with input and output, separate from the datastore. YANG 1.1 adds the <code>action</code> statement, which is an RPC bound to a node in the data tree. <a href="https://www.rfc-editor.org/info/rfc7950/#section-7.15" target="_blank" rel="noopener">RFC 7950 section 7.15</a> <span class="b ok">✅</span> states the difference: an action is tied to a datastore node, an rpc is not. It also bars actions at the top level of a module or under a keyless list, which is why NSO examples wrap them in a container or put them inside a list entry.</p>
+<p>NSO's guide frames the split between services and actions plainly. Services own configuration through FASTMAP. Actions cover the rest: verification, one-time tasks and tests. It names a self-test action inside a service package as a common case (<a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/applications-in-nso.md" target="_blank" rel="noopener">Applications in NSO</a> <span class="b ok">✅</span>). For 2.9.c, "verify operational status" means read-only questions. Can NSO reach the device? Does NSO's copy match the device? Is the service's config still there? What does the device report right now?</p>
+<p>2.9.d is the other half. Your service and action code runs in a separate Python process. When it fails, the CLI often shows little, and the details are in the Python VM log. Knowing which file to open, and how to make it verbose, is the skill.</p>
+
+<h3>L2: mechanics — wiring a custom action</h3>
+<p>Four pieces have to line up. Each one maps to something you already did in 2.9.a and 2.9.b:</p>
+<ol>
+<li><b>YANG</b>: an <code>action</code> with <code>tailf:actionpoint NAME</code>, an <code>input</code> and an <code>output</code>. YANG 1.1 is required for <code>action</code>; YANG 1.0 models use the older <code>tailf:action</code> extension.</li>
+<li><b>Registration</b>: <code>package-meta-data.xml</code> names a <code>python-class-name</code>. NSO starts a Python VM, creates that <code>ncs.application.Application</code> subclass and calls <code>setup()</code>, where you call <code>self.register_action('NAME', MyAction)</code>.</li>
+<li><b>Callback</b>: <code>MyAction(ncs.dp.Action)</code> implements <code>cb_action(self, uinfo, name, kp, input, output, trans)</code> under the <code>@Action.action</code> decorator. The decorator turns <code>input</code> and <code>output</code> into Maagic nodes. <code>kp</code> is the keypath of the node the action was called on, so a list-level action knows which instance it serves.</li>
+<li><b>Compile and load</b>: YANG changes need <code>make -C packages/&lt;pkg&gt;/src</code> and <code>packages reload</code>. Code-only or template-only changes can use <code>packages package &lt;pkg&gt; redeploy</code>.</li>
+</ol>
+<div class="svgw">
+<svg viewBox="0 0 460 370" role="img" aria-label="Sequence of one custom action call: operator to NSO core, worker socket to Python VM, Python requests live-status, NED queries device, output returns to operator, log written to the package log file">
+<rect x="160" y="78" width="10" height="236" fill="var(--sv4)" class="s"/>
+<g class="s" stroke-dasharray="4 4"><path d="M45 40V334M165 40V334M290 40V334M405 40V334"/></g>
+<text x="12" y="24">Operator</text><text x="128" y="24">NSO core</text><text x="248" y="24">Python VM</text><text x="370" y="24">NED+device</text>
+<path class="s" d="M45 60H165"/><text x="52" y="54">1 svc L10 self-test</text>
+<path class="s" d="M165 90H290"/><text x="176" y="84">2 actionpoint lookup</text><text x="176" y="106" class="m">worker socket</text>
+<rect x="294" y="96" width="162" height="22" rx="4" fill="var(--sv3)" class="s"/><text x="300" y="112">cb_action(), read trans</text>
+<path class="s" d="M290 146H165"/><text x="176" y="140">3 live-status exec any</text>
+<path class="s" d="M165 176H405"/><text x="222" y="170">4 "show ip interface brief"</text>
+<path class="s" d="M405 202H165"/><text x="300" y="196" class="m">raw text</text>
+<path class="s" d="M165 226H290"/><text x="176" y="220" class="m">5 result string</text>
+<path class="s" d="M290 244H310V266H290"/><text x="314" y="254">6 self.log.info()</text><text x="314" y="270" class="m">to pkg log file</text>
+<path class="s" d="M290 294H165"/><text x="176" y="288">7 output leafs</text>
+<path class="s" d="M165 318H45"/><text x="52" y="312">8 success true</text>
+<text x="8" y="358" class="m">Shaded bar: action-timeout (default 240 s), steps 2 to 7</text>
+</svg>
+</div>
+<p>You can also call actions from Python. The Python API overview shows <code>root.devices.check_sync()</code> and input objects built with <code>get_input()</code>, then called like a function (<a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/api-overview/python-api-overview.md" target="_blank" rel="noopener">Python API Overview</a> <span class="b ok">✅</span>). That is how a custom action calls built-in actions such as <code>connect</code>, <code>sync_from</code>, or the NED's <code>live-status exec any</code>. Hyphens become underscores in Maagic. When two loaded modules use the same name, a <code>prefix__name</code> form picks one.</p>
+
+<h3>L3: exam detail</h3>
+<div class="tw"><table>
+<caption class="tag">Built-in verification actions. Sources: Lifecycle Operations, Services Deep Dive, Manage Network Services (NSO 6.5).</caption>
+<tr><th>Action</th><th>Compares / does</th><th>Touches device?</th><th>Changes anything?</th></tr>
+<tr><td><code>devices device r1 connect</code></td><td>Opens a session; meant for testing new NEDs and devices</td><td>yes</td><td>no</td></tr>
+<tr><td><code>devices device r1 ping</code></td><td>ICMP ping to the device</td><td>yes</td><td>no</td></tr>
+<tr><td><code>devices device r1 check-sync</code></td><td>Device signature vs NSO's stored copy; may return unsupported for some NEDs</td><td>yes (cheap)</td><td>no</td></tr>
+<tr><td><code>devices device r1 compare-config</code></td><td>Full device config vs NSO's copy</td><td>yes (full read)</td><td>no</td></tr>
+<tr><td><code>&lt;svc&gt; check-sync</code></td><td>Re-runs FASTMAP and compares its output to CDB. <code>outformat cli|xml|native</code> shows the diff</td><td>no</td><td>no</td></tr>
+<tr><td><code>&lt;svc&gt; deep-check-sync</code></td><td>Service forward diff vs config fetched from the touched devices; catches out-of-band edits</td><td>yes (heavy)</td><td>no</td></tr>
+<tr><td><code>&lt;svc&gt; get-modifications</code></td><td>What this service changed, as if it were alone; <code>reverse</code> shows the undo</td><td>no</td><td>no</td></tr>
+<tr><td><code>&lt;svc&gt; re-deploy dry-run</code></td><td>What a re-deploy would push; <code>{ outformat native }</code> shows device CLI</td><td>no</td><td>no (without dry-run: yes)</td></tr>
+<tr><td><code>devices device r1 sync-from</code></td><td>Pulls device config into CDB</td><td>yes</td><td><b>yes</b>: CDB overwritten</td></tr>
+</table></div>
+<ul>
+<li>Know the three comparisons in Manage Network Services: device vs CDB (<code>devices check-sync</code>), service vs CDB (<code>check-sync</code>), service vs the device itself (<code>deep-check-sync</code>). A service that reports <code>in-sync true</code> can still be broken on the box.</li>
+<li>Forward <code>get-modifications</code> output needs <code>/services/global-settings/collect-forward-diff</code> set to true. The reverse form always works. The default value is not stated on the page: <span class="wn">⚠ check in lab</span>.</li>
+<li><code>@Action.action</code> is for actions and passes <code>kp</code> and <code>trans</code>. <code>@Action.rpc</code> is for rpcs and passes only <code>uinfo, name, input, output</code> (<a href="https://nso-docs.cisco.com/guides/nso-6.5/developer-reference/pyapi/ncs.dp.md" target="_blank" rel="noopener">ncs.dp Module</a> <span class="b ok">✅</span>). The Python API overview's double example omits <code>trans</code>; the reference and the Applications page include it, so write it.</li>
+<li><code>ncs-make-package --service-skeleton python --action-example &lt;pkg&gt;</code> generates an action skeleton. That is the fastest correct starting point.</li>
+</ul>
+<div class="tw"><table>
+<caption class="tag">Log files for 2.9.d. Sources: System Management, NSO Python VM, TAC note 222924, cisco-ios NED README.</caption>
+<tr><th>File (in <code>logs/</code>)</th><th>What lands there</th><th>Turn up verbosity</th></tr>
+<tr><td><code>ncs-python-vm-&lt;pkg&gt;.log</code></td><td><code>self.log.*</code> from your Application, Service and Action classes. Name follows the package or <code>python-package/vm-name</code></td><td><code>python-vm logging level level-debug</code> or <code>vm-levels &lt;pkg&gt;</code></td></tr>
+<tr><td><code>ncs-python-vm.log</code></td><td>Stdout from all Python VMs (<code>print()</code>), Python compile errors</td><td>n/a</td></tr>
+<tr><td><code>devel.log</code></td><td>NSO library side of user-code calls; used together with the VM logs</td><td><code>&lt;developer-log-level&gt;trace</code> in ncs.conf, then <code>ncs --reload</code></td></tr>
+<tr><td><code>ncs.log</code></td><td>Daemon log: startup, package load, VM start or fail (<code>NCS_PYTHON_VM_START</code>, <code>NCS_PYTHON_VM_FAIL</code>)</td><td>ncs.conf <code>ncs-log</code></td></tr>
+<tr><td><code>ncs-java-vm.log</code></td><td>Java code, including Java NEDs such as cisco-ios-cli</td><td><code>java-vm java-logging logger ... level ...</code></td></tr>
+<tr><td><code>ned-cisco-ios-cli-...-&lt;dev&gt;.trace</code></td><td>Messages sent to and received from the device, plus NED debug printouts</td><td><code>devices device r1 trace raw</code> (or <code>pretty</code>)</td></tr>
+</table></div>
+<p>The Python levels map to the standard library: <code>level-critical</code> down to <code>level-debug</code>, matching CRITICAL 50 to DEBUG 10 (<a href="https://docs.python.org/3.13/library/logging.html#levels" target="_blank" rel="noopener">Python logging levels</a> <span class="b ok">✅</span>). Messages below the configured level are dropped, so <code>self.log.debug()</code> writes nothing at the default info level. Operational state is under <code>python-vm status</code>: <code>start</code> lists each class NSO tried to start and whether it worked, with <code>error-info</code>. <code>current</code> lists the threads that are running now (<a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/nso-virtual-machines/nso-python-vm.md" target="_blank" rel="noopener">NSO Python VM</a> <span class="b ok">✅</span>).</p>
+<div class="svgw">
+<svg viewBox="0 0 460 300" role="img" aria-label="Log routing: which source writes to which NSO log file">
+<text x="8" y="18" class="m">Where each message goes</text>
+<rect x="8" y="30" width="190" height="34" rx="6" fill="var(--sv3)" class="s"/><text x="16" y="52">self.log.info/debug(...)</text>
+<rect x="8" y="78" width="190" height="34" rx="6" fill="var(--sv3)" class="s"/><text x="16" y="100">print(), tracebacks at load</text>
+<rect x="8" y="126" width="190" height="34" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="148">NSO library side of calls</text>
+<rect x="8" y="174" width="190" height="34" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="196">daemon: VM start / fail</text>
+<rect x="8" y="222" width="190" height="34" rx="6" fill="var(--sv2)" class="s"/><text x="16" y="244">NED (Java) and device I/O</text>
+<rect x="262" y="30" width="190" height="34" rx="6" fill="var(--sv4)" class="hl"/><text x="270" y="52">ncs-python-vm-&lt;pkg&gt;.log</text>
+<rect x="262" y="78" width="190" height="34" rx="6" fill="var(--sv4)" class="s"/><text x="270" y="100">ncs-python-vm.log</text>
+<rect x="262" y="126" width="190" height="34" rx="6" fill="var(--sv4)" class="s"/><text x="270" y="148">devel.log</text>
+<rect x="262" y="174" width="190" height="34" rx="6" fill="var(--sv4)" class="s"/><text x="270" y="196">ncs.log</text>
+<rect x="262" y="222" width="190" height="34" rx="6" fill="var(--sv4)" class="s"/><text x="270" y="244">ncs-java-vm.log, *.trace</text>
+<path class="s" d="M198 47H262M198 95H262M198 143H262M198 191H262M198 239H262"/>
+<text x="8" y="284" class="m">Gate on line 1: python-vm logging level (default info)</text>
+</svg>
+</div>
+<p>Timeouts finish the picture. <code>/ncs-config/api/action-timeout</code> defaults to <code>PT240S</code> (<a href="https://nso-docs.cisco.com/guides/nso-6.5/resources/man/ncs.conf.5.md" target="_blank" rel="noopener">ncs.conf</a> <span class="b ok">✅</span>). When it fires, NSO kills only the worker socket for that call and invokes <code>cb_abort()</code> if you defined one. The Python VM is not restarted. Without <code>cb_abort</code>, the user has to wait for the callback to finish before running the action again. The other API timeouts are different: when <code>query-timeout</code>, <code>connect-timeout</code> or <code>new-session-timeout</code> fires, NSO closes the socket and the VM exits. <code>python-vm/start-timeout</code> (PT30S) bounds startup, and <code>auto-restart</code> (true) brings a VM back after it exits.</p>
+
+<h2 id="anat">Anatomy</h2>
+<p class="tag">Pinned to NSO 6.5 docs. Snippets follow the guide's count-devices and double examples; lines marked ⚠ are not on a fetched page.</p>
+<pre><code>// src/yang/svc-check.yang
+module svc-check {
+  yang-version 1.1;                       // 'action' needs YANG 1.1
+  namespace "urn:hornlab:svc-check";
+  prefix svc-check;
+  import tailf-common { prefix tailf; }
+  import tailf-ncs    { prefix ncs; }
+
+  container svc-check {                   // actions can't be top-level (RFC 7950 s7.15)
+    action reach {
+      tailf:actionpoint reach-action;     // NAME #1
+      input  { leaf device { type leafref { path "/ncs:devices/ncs:device/ncs:name"; } } }
+      output { leaf result { type boolean; } leaf info { type string; } }
+    }
+  }
+}</code></pre>
+<pre><code># python/svc_check/main.py
+import ncs
+from ncs.dp import Action
+
+class Reach(Action):
+    @Action.action
+    def cb_action(self, uinfo, name, kp, input, output, trans):
+        self.log.info('action ', name, ' device ', input.device)   # ncs.log.Log joins *args
+        root = ncs.maagic.get_root(trans)                           # read-only transaction
+        res = root.devices.device[input.device].connect()          # ⚠ connect() output leaf names
+        output.result = res.result
+        output.info = res.info
+        self.log.debug('connect info: ', res.info)                 # dropped at default level-info
+
+class Main(ncs.application.Application):
+    def setup(self):
+        self.log.info('Main RUNNING')
+        self.register_action('reach-action', Reach)                 # NAME #2 == NAME #1
+    def teardown(self):
+        self.log.info('Main FINISHED')</code></pre>
+<pre><code>admin@ncs# svc-check reach device r1                 ⚠ output shape
+admin@ncs# show python-vm status start
+admin@ncs# config
+admin@ncs(config)# python-vm logging level level-debug    # all VMs
+admin@ncs(config)# commit
+$ tail -f logs/ncs-python-vm-svc-check.log</code></pre>
+<p>The C-style <code>python-vm logging level ...</code> form is on <a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/system-management.md" target="_blank" rel="noopener">System Management</a> <span class="b ok">✅</span> and on the TAC note. The TAC note commits with <code>commit no-networking</code>. The per-package form is documented only in J-style (<code>set python-vm logging vm-levels pkg_name level level-debug</code>). The C-style <code>python-vm logging vm-levels &lt;pkg&gt; level level-debug</code> is <span class="wn">⚠ unverified: confirm with ?</span>.</p>
+<pre><code># cisco-ios NED (README v6.116.4): any exec command as an action
+admin@ncs# devices device r1 live-status exec any "show ip interface brief"
+admin@ncs# devices device r1 live-status exec any "show version ; show clock"   # space;space
+admin@ncs# show devices device r1 live-status ios-stats:interfaces              # TTL-based show</code></pre>
+
+<h2 id="bf">Break/fix table</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>Action call aborts with a "no registration found for callpoint" style error (<span class="wn">⚠ exact text for actions not seen; the service form is on Implementing Services</span>)</td><td>Actionpoint name in YANG differs from the <code>register_action()</code> string, or <code>setup()</code> crashed so nothing registered</td><td><code>show python-vm status start</code> (status, error-info); <code>grep -i error logs/ncs-python-vm.log</code></td><td>Make the names match; fix the traceback; <code>packages package &lt;pkg&gt; redeploy</code> (code only) or <code>make</code> + <code>packages reload</code> (YANG)</td></tr>
+<tr><td><code>packages reload</code> shows <code>result false</code>, <code>info SyntaxError: invalid syntax</code></td><td>Python syntax error in the package</td><td><code>show packages package &lt;pkg&gt; oper-status</code>; <code>logs/ncs-python-vm.log</code></td><td>Fix the code, then <code>packages reload</code> again until it reports <code>result true</code></td></tr>
+<tr><td><code>self.log.debug()</code> lines never appear</td><td>Level is info by default, or the wrong file is open</td><td><code>show running-config python-vm logging</code>; <code>ls logs/ncs-python-vm*</code></td><td><code>python-vm logging level level-debug</code> (or per-VM <code>vm-levels</code>), commit, then re-run</td></tr>
+<tr><td>Need to see what the device returned, but the Python log only has your lines</td><td>cisco-ios-cli is a Java NED; device I/O is not in Python logs</td><td><code>ls logs/ned-*</code>; <code>show devices device r1 active-settings</code> (<span class="wn">⚠ trace field name</span>)</td><td><code>devices device r1 trace raw</code>, commit, re-run; read <code>logs/ned-cisco-ios-cli-...-r1.trace</code>; <code>clear-trace</code> afterwards</td></tr>
+<tr><td>Service <code>check-sync</code> says <code>in-sync true</code>, but the loopback is gone on the router</td><td>check-sync only compares the service with CDB; the change was made out of band</td><td><code>&lt;svc&gt; deep-check-sync outformat cli</code>; <code>devices device r1 check-sync</code></td><td>The guide's sequence: <code>devices device r1 sync-from</code> (CDB now matches the box), then <code>&lt;svc&gt; re-deploy dry-run { outformat native }</code>, then <code>re-deploy</code>. A plain re-deploy before sync-from finds nothing to push, because CDB still holds the loopback. <code>sync-to</code> also works but pushes NSO's whole copy, undoing every out-of-band edit on r1</td></tr>
+</table></div>
+<p class="small">Other symptom: an action that waits on a slow device fails after about four minutes. That is <code>action-timeout</code> (PT240S). Raise it in ncs.conf only if the device work really takes that long, and add <code>cb_abort()</code> so a timed-out call releases the user.</p>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>ncs-make-package --service-skeleton python --action-example mypkg</code> gives you correct YANG, Python and <code>package-meta-data.xml</code> to copy from. Diff it against your package when wiring breaks.</li>
+<li>NSO CLI: type <code>devices device r1 </code> then <code>?</code> to list device actions; <code>&lt;svc&gt; &lt;key&gt; ?</code> lists service actions; <code>show python-vm ?</code> and <code>python-vm logging ?</code> in config mode show the knobs.</li>
+<li><code>man ncs.conf</code> (System Management points there), then search <code>/action-timeout</code> or <code>/python-vm</code> for defaults.</li>
+<li><code>tail -f logs/ncs-python-vm-&lt;pkg&gt;.log</code> in a second terminal while you run the action. <code>grep -n Traceback logs/ncs-python-vm*.log</code> finds crashes fast.</li>
+<li><code>ncs --status | less</code> shows loaded packages and daemon state. <code>show packages package &lt;pkg&gt; oper-status</code> narrows to one package.</li>
+<li>Python API help: <code>source $NCS_DIR/ncsrc</code>, then <code>python3 -c "import ncs.dp; help(ncs.dp.Action)"</code> <span class="wn">⚠ unverified: test in lab</span>.</li>
+</ul>
+
+<h2 id="drill">Micro-drill (about 10 min, paper until NSO is built)</h2>
+<div class="card">
+<p><b>Target:</b> NSO 6.5 local install with one cisco-ios-cli device <code>r1</code> (netsim or IOSv 15.9; IOSv may need legacy SSH algorithms <span class="wn">⚠</span>). Service from last week's drill: list <code>loopback</code> with leafs <code>device</code> (leafref), <code>id</code> (uint16), <code>ip</code>.</p>
+<p><b>Requirement:</b></p>
+<ol>
+<li>Add a <code>self-test</code> action to each <code>loopback</code> service instance. Output: <code>success</code> (boolean) and <code>message</code> (string).</li>
+<li>The action runs <code>show ip interface brief</code> on the instance's device and reports success only when <code>Loopback&lt;id&gt;</code> is present and up.</li>
+<li>Log one info line per call (instance, device, result) and the raw device output at debug.</li>
+<li>Show the debug line appears for this package only, without raising every VM.</li>
+</ol>
+<p><b>Reference:</b> <code>tailf:actionpoint</code>, <code>register_action()</code>, <code>@Action.action</code>, <code>cb_action(self, uinfo, name, kp, input, output, trans)</code>, <code>ncs.maagic.get_node()</code>, <code>live-status exec any</code>, <code>python-vm logging vm-levels</code>.</p>
+<p><b>Verify:</b> <code>loopback L10 self-test</code> returns <code>success true</code>. Shut Loopback10 on r1 and re-run: <code>success false</code>. The <code>logs/ncs-python-vm-loopback.log</code> file shows the info line at default level and the raw output only after the per-VM debug setting. <code>show python-vm status current</code> lists the package.</p>
+<details><summary>Hint</summary><p>Put the action inside the service list, after <code>uses ncs:service-data</code>. <code>kp</code> is the keypath of that list entry, so turn it into the service node, read <code>device</code> and <code>id</code>, then call the NED's exec action through <code>root.devices.device[...]</code>. Build the live-status input with <code>get_input()</code> and call the action object with it. You need <code>yang-version 1.1</code> at the top of the module.</p></details>
+<details><summary>Solution</summary>
+<pre><code>// add inside: list loopback { ... uses ncs:service-data; ncs:servicepoint loopback-servicepoint; ...
+    action self-test {
+      tailf:actionpoint loopback-self-test;
+      output {
+        leaf success { type boolean; }
+        leaf message { type string; }
+      }
+    }</code></pre>
+<pre><code># python/loopback/main.py (additions)
+from ncs.dp import Action
+
+class SelfTest(Action):
+    @Action.action
+    def cb_action(self, uinfo, name, kp, input, output, trans):
+        svc  = ncs.maagic.get_node(trans, kp)              # ⚠ kp accepted directly
+        root = ncs.maagic.get_root(trans)
+        ex   = root.devices.device[svc.device].live_status.ios_stats__exec.any   # ⚠ path/prefix
+        inp  = ex.get_input()
+        inp.args = ['show ip interface brief']             # ⚠ input leaf name 'args'
+        raw  = ex(inp).result                              # ⚠ output leaf name 'result'
+        self.log.debug('raw output: ', raw)
+        want = 'Loopback%d' % svc.id
+        line = next((l for l in raw.splitlines() if l.startswith(want)), '')
+        output.success = bool(line) and line.split()[-1] == 'up'    # ⚠ column layout
+        output.message = line or want + ' not found'
+        self.log.info('self-test ', svc.name, ' on ', svc.device, ': ', output.success)
+
+class Main(ncs.application.Application):
+    def setup(self):
+        self.register_service('loopback-servicepoint', ServiceCallbacks)
+        self.register_action('loopback-self-test', SelfTest)</code></pre>
+<pre><code>$ make -C packages/loopback/src           # YANG changed: compile + reload
+admin@ncs# packages reload
+admin@ncs# loopback L10 self-test
+admin@ncs# config
+admin@ncs(config)# python-vm logging vm-levels loopback level level-debug   # ⚠ C-style form
+admin@ncs(config)# commit
+$ grep 'raw output' logs/ncs-python-vm-loopback.log</code></pre>
+<p class="tag">⚠ unverified: not compiled or run. The Maagic path to the cisco-ios NED exec action, its input and output leaf names, the get_node(kp) call, the column layout and the C-style vm-levels form are from practice, not from a fetched page.</p></details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p>Today</p>
+<ol>
+<li>For a custom action, which two names must match, and where does each live? They match but the action still fails. What do you check first?
+<details><summary>Answer</summary>The <code>tailf:actionpoint</code> name in YANG and the first argument of <code>register_action()</code> in <code>Application.setup()</code>. Next, <code>show python-vm status start</code> for the class status and error-info, and <code>logs/ncs-python-vm.log</code> for a traceback that stopped <code>setup()</code>. Then package oper-status.</details></li>
+<li>What does each compare: <code>devices device r1 check-sync</code>, service <code>check-sync</code>, service <code>deep-check-sync</code>?
+<details><summary>Answer</summary>Device: the device's config signature vs NSO's stored copy (may be unsupported for some NEDs). Service check-sync: FASTMAP output vs CDB, with no device contact. Deep: the service's forward diff vs config fetched from the devices it touched. Only deep catches an out-of-band change to service config.</details></li>
+<li>Where do <code>self.log.debug()</code>, <code>print()</code> and a SyntaxError in <code>main.py</code> each end up, and what must change before you see the debug line?
+<details><summary>Answer</summary>Debug: <code>logs/ncs-python-vm-&lt;pkg&gt;.log</code>, but only after <code>python-vm logging level level-debug</code> or a <code>vm-levels</code> entry for that VM (default is info). print/stdout: shared <code>logs/ncs-python-vm.log</code>. SyntaxError: <code>ncs-python-vm.log</code>, and <code>packages reload</code> reports <code>result false</code> with the error.</details></li>
+<li>An action that runs <code>live-status exec any</code> against a slow device fails after about four minutes. Which setting and default apply, what does NSO do, and what does <code>cb_abort</code> change?
+<details><summary>Answer</summary><code>/ncs-config/api/action-timeout</code>, default PT240S. NSO closes that action's worker socket; the Python VM is not restarted. With <code>cb_abort()</code> defined, NSO calls it and releases the user's session for that action. Without it, the user waits for the callback to finish.</details></li>
+</ol>
+<p>From history</p>
+<ol start="5">
+<li>(from 2026-11-18) A template uses <code>{/devcie}</code> by mistake. What happens at commit, and how do you find it?
+<details><summary>Answer</summary>The XPath returns an empty result, which the template ignores, so the config is silently missing. Find it with <code>commit dry-run | debug template</code>. (Restated from the 2026-11-18 page.)</details></li>
+<li>(from 2026-11-19) Which HTTP verbs does APIC accept, how do you delete without DELETE, and why can't you rename a BD?
+<details><summary>Answer</summary>GET, POST and DELETE; no PUT. POST the object with <code>status="deleted"</code> (flagged ⚠ on 2026-11-20 as not seen verbatim). The name is part of the DN, so it cannot be renamed; create a new object and delete the old one. (Restated from the 2026-11-19 page.)</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/applications-in-nso.md" target="_blank" rel="noopener">Applications in NSO</a> <span class="b ok">✅ verified 2026-11-24</span> NSO 6.5. Best for action YANG, <code>register_action</code>, <code>cb_action</code> arguments, action timeouts and <code>cb_abort</code>.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/nso-virtual-machines/nso-python-vm.md" target="_blank" rel="noopener">NSO Python VM</a> <span class="b ok">✅ verified 2026-11-24</span> NSO 6.5. Best for log level and <code>vm-levels</code>, log file naming, <code>status start/current</code>, the python-vm YANG tree.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/lifecycle-operations.md" target="_blank" rel="noopener">Lifecycle Operations</a> <span class="b ok">✅ verified 2026-11-24</span> NSO 6.5. Best for one-line definitions of every device and service action.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/system-management.md" target="_blank" rel="noopener">System Management</a> <span class="b ok">✅ verified 2026-11-24</span> NSO 6.5. Best for the list of log files and what each is for.</li>
+<li><a href="https://www.cisco.com/c/en/us/support/docs/cloud-systems-management/crosswork-network-services-orchestrator-6/222924-enable-nso-logs-and-verbosities.html" target="_blank" rel="noopener">Enable NSO Logs and Verbosities - Cisco</a> <span class="b ok">✅ verified 2026-11-24</span> written on NSO 6.4.1 (pin 6.5). Best for C-style commands to raise, revert and show each log.</li>
+<li><a href="https://nso-docs.cisco.com/neds/cisco-provided-neds/cisco-ios/cisco-ios" target="_blank" rel="noopener">README v6.116.4 2026-11-19 | NED READMEs | Cisco Crosswork NSO Documentation</a> <span class="b ok">✅ verified 2026-11-24</span> cisco-ios NED 6.116.4 (workstation NED version unknown). Best for <code>live-status exec any</code>, live-status show and NED trace setup.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/info/rfc7950/#section-7.15" target="_blank" rel="noopener">RFC 7950: The YANG 1.1 Data Modeling Language</a> <span class="b ok">✅ verified 2026-11-24</span> RFC, section 7.15. Best for action vs rpc and where an action may be defined.</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://docs.python.org/3.13/library/logging.html#levels" target="_blank" rel="noopener">logging — Logging facility for Python — Python 3.13.18 documentation</a> <span class="b ok">✅ verified 2026-11-24</span> Python 3.13. Best for level numbers and what each level means.</li>
+</ul>
+<p class="small">Also verified this run and linked inline: Python API Overview, ncs.dp Module, ncs.conf (NSO 6.5). Read but not linked: Services Deep Dive, Manage Network Services, Implementing Services, Log Messages and Formats, ncs.log Module, NSO Device Manager.</p>
+
+<footer>
+<p><b>Links:</b> 11 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims:</b> default of <code>collect-forward-diff</code>; exact "no registration found" text for actions; <code>connect()</code> output leaf names from Python; CLI output shape of the custom action; C-style <code>python-vm logging vm-levels</code> form; Maagic path <code>live_status.ios_stats__exec.any</code>, its <code>args</code> input and <code>result</code> output; <code>ncs.maagic.get_node(trans, kp)</code>; <code>show ip interface brief</code> column layout; <code>active-settings</code> trace field; <code>help(ncs.dp.Action)</code> from the shell; IOSv legacy SSH needs with NSO; cisco-ios NED version on the workstation; whether the lab NSO uses a netsim or real IOSv; drill solution not compiled or run; recall answers 5 and 6 restated from earlier pages.</p>
+<p><b>Version flag:</b> NSO guides are the 6.5 paths. The TAC note was written on NSO 6.4.1. The cisco-ios NED README is v6.116.4 (2026-11-19), newer than anything pinned. Python docs 3.13.18.</p>
+<p><b>Tomorrow:</b> Unit 35 of 49, 3.1.iosxe: Python scripts against APIs, IOS XE (Cat8000V RESTCONF/NETCONF).</p>
+</footer>
+</main>
+
+</body></html>
