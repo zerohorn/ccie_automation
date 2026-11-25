@@ -1,0 +1,415 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Python Against IOS XE</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* VOICE work, study page in a 35-page series
+   IDEA one request drawn as its layers: URL, headers, body, status, error
+   PICTURE toolchain map, NETCONF sequence, verb and datastore decision flow
+   COLOUR series tokens: near-white ground, blue accent, green ok, amber warn
+   TYPE system UI stack (no external fonts per spec)
+   LAYOUT single 860px column, sticky mini TOC, tables in scroll wrappers */
+:root{--bg:#fbfbfa;--fg:#1c1f23;--mut:#5b636d;--card:#fff;--bd:#d9dde2;--ac:#0b6bcb;--ac2:#0f8a5f;--wn:#b45309;--bad:#b42318;--code:#f1f3f5;--sv1:#dbeafe;--sv2:#dcfce7;--sv3:#fef3c7;--sv4:#fee2e2;--svs:#334155}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:clip}
+main{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--bd);padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5;display:flex;gap:12px;overflow-x:auto;white-space:nowrap;font-size:14px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+h1,h2,h3{text-wrap:balance}
+nav a{color:var(--ac);text-decoration:none}
+h1{font-size:26px;margin:20px 0 4px}h2{font-size:21px;margin:32px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:17px;margin:20px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--mut);font-size:14px}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:580px}
+th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+caption{text-align:left;padding-bottom:4px}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45;margin:10px 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;overflow-wrap:anywhere}
+pre code{overflow-wrap:normal}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+.svgw{max-width:580px;margin:12px auto}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font:13px system-ui,sans-serif}
+svg .s{stroke:var(--svs);stroke-width:1.3;fill:none}
+svg .m{fill:var(--mut)}
+svg .hl{stroke:var(--ac);stroke-width:2}
+svg .ar{stroke:var(--svs);stroke-width:1.3;fill:none;marker-end:url(#ah)}
+a{color:var(--ac)}
+.b{display:inline-block;font-size:12px;border:1px solid var(--bd);border-radius:10px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.ok{color:var(--ac2)}.wn{color:var(--wn)}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+ul{padding-left:20px}li{margin:3px 0}
+.tag{font-size:12px;color:var(--wn);white-space:nowrap}
+.small{font-size:14px;color:var(--mut)}
+.url{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;line-height:2;overflow-wrap:anywhere;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:10px 12px}
+.url span{padding:2px 4px;border-radius:4px;margin-right:1px}
+.u1{background:var(--sv1)}.u2{background:var(--sv2)}.u3{background:var(--sv3)}.u4{background:var(--sv4)}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:6px 14px;font-size:14px;margin-top:8px}
+.legend span{min-width:0}
+footer{margin-top:36px;border-top:1px solid var(--bd);padding-top:12px;font-size:14px;color:var(--mut)}
+</style>
+<nav><a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main id="top">
+<h1>Python Against IOS XE</h1>
+<div class="card meta">
+<span><b>Date</b> Wed 2026-11-25</span>
+<span><b>Blueprint</b> 3.1 Create/modify/troubleshoot Python scripts against APIs: IOS XE slice</span>
+<span><b>Domain</b> 3.0 Network Programmability and Automation (25% per tracker)</span>
+<span><b>Tier</b> 2</span>
+<span><b>Read</b> ~18 min</span>
+<span><b>Unit</b> 35 of 49</span>
+<span><b>Docs</b> IOS XE 17.5 guide (lab 17.16) · RFC 8040, 7951, 6241 · ncclient 0.7.1 · Requests 2.34.2 · Python 3.13.18</span>
+</div>
+<p class="small">Lab target: router1, Cat8000V at 10.0.0.251. Its CML day-0 config has <code>restconf</code> and <code>ip http secure-server</code>, but not <code>netconf-yang</code>; your notes enable NETCONF by hand. Units 2.4 to 2.6 covered payload shape. Today covers the Python around it: how the script calls the API, and how that call fails.</p>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>A script reaches Cat8000V two ways. <b>RESTCONF</b> is HTTPS, and you call it with <code>requests</code>. <b>NETCONF</b> is SSH on port 830, and you call it with <code>ncclient</code>. Both serve the same YANG models.</li>
+<li>Every script has the same parts: transport, auth, an address (URI or filter), a payload, and response handling. Most bugs sit in the address and the payload shape, not in the Python.</li>
+<li>Each RESTCONF verb is a NETCONF edit operation. PATCH merges and never creates the target. PUT creates or replaces. POST only creates, and fails with 409 if the resource exists. DELETE fails if the resource is missing.</li>
+<li>JSON follows RFC 7951. The top-level member carries its module name. Lists are arrays, even with one entry. 64-bit integers and decimal64 arrive as strings. The empty type arrives as <code>[null]</code>.</li>
+<li>In ncclient, <code>edit_config()</code> targets <b>candidate</b> unless you say otherwise. On IOS XE, enabling candidate makes running read-only to NETCONF. So read the capabilities, then pick the target.</li>
+<li>Errors come back as data. RESTCONF sends an <code>ietf-restconf:errors</code> body. ncclient raises <code>RPCError</code> with <code>.tag</code>, <code>.path</code> and <code>.message</code>. Print them before you guess.</li>
+<li>A 2xx status means the device accepted the request, not that the config is right. Read the config back.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<div class="svgw">
+<svg viewBox="0 0 460 330" role="img" aria-label="Blueprint position of 3.1 IOS XE between the 2.4 to 2.6 payload units and the 3.2 configuration tasks, and the toolchain from a Python script through requests or ncclient to router1's YANG datastores">
+<defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z" fill="var(--svs)"/></marker></defs>
+<text x="8" y="18" class="m">Blueprint position</text>
+<rect x="8" y="28" width="136" height="46" rx="6" fill="var(--sv2)" class="s"/><text x="16" y="47">2.4–2.6 done</text><text x="16" y="64" class="m">payload, filter, SoT</text>
+<rect x="162" y="28" width="136" height="46" rx="6" fill="var(--sv3)" class="hl"/><text x="170" y="47" font-weight="700">3.1 IOS XE today</text><text x="170" y="64" class="m">scripts vs APIs</text>
+<rect x="316" y="28" width="136" height="46" rx="6" fill="var(--sv1)" class="s"/><text x="324" y="47">3.2 next</text><text x="324" y="64" class="m">config tasks a–g</text>
+<path class="ar" d="M144 51H160M298 51H314"/>
+<text x="8" y="96" class="m">3.1 siblings: ACI (11-19) · Catalyst Center · Intersight</text>
+<text x="8" y="113" class="m">Meraki · FDM · AppDynamics · Webex · NSO</text>
+<text x="8" y="142" class="m">Toolchain</text>
+<rect x="8" y="152" width="118" height="116" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="174" font-weight="700">script.py</text><text x="16" y="192" class="m">Python 3.13</text><text x="16" y="209" class="m">uv venv</text><text x="16" y="226" class="m">Session or</text><text x="16" y="243" class="m">Manager</text>
+<rect x="160" y="152" width="146" height="52" rx="6" fill="var(--sv2)" class="s"/><text x="168" y="172">requests</text><text x="168" y="190" class="m">HTTPS 443, /restconf</text>
+<rect x="160" y="216" width="146" height="52" rx="6" fill="var(--sv2)" class="s"/><text x="168" y="236">ncclient</text><text x="168" y="254" class="m">SSH 830, netconf</text>
+<rect x="336" y="152" width="116" height="116" rx="6" fill="var(--sv3)" class="s"/><text x="344" y="174" font-weight="700">router1</text><text x="344" y="192" class="m">Cat8000V 17.16</text><text x="344" y="216">running</text><text x="344" y="236">candidate</text><text x="344" y="252" class="m">(if enabled)</text>
+<path class="ar" d="M126 178H158M126 242H158M306 178H334M306 242H334"/>
+<text x="8" y="294" class="m">Same YANG models on both paths. JSON per RFC 7951 on</text>
+<text x="8" y="312" class="m">RESTCONF, XML per RFC 6241 on NETCONF.</text>
+</svg>
+</div>
+
+<h2 id="l1">L1 · Concept: two doors into one datastore</h2>
+<p>Every page in units 2.4 to 2.6 started from a YANG path and ended with a payload. Unit 3.1 wraps that payload in a program. The blueprint verbs are <b>create, modify, troubleshoot</b>, so expect three task shapes. In one you write a script from a requirement. In another you extend a working script: add a field, a read-back check, a second device or a flag. In the third you fix a script that fails. All three test the same skill: knowing what each layer of the call should look like, so you can see which layer is wrong.</p>
+<p>The <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">17.5 RESTCONF chapter</a> enables the API with <code>restconf</code> plus <code>ip http secure-server</code>. The <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">17.5 NETCONF chapter</a> says NETCONF runs over SSH on port 830 by default, and the port can be changed. It needs a privilege 15 user, and only the default AAA login method is supported. The same chapter says IOS XE does not support token-based RESTCONF authentication. So a Python RESTCONF client sends Basic credentials on every request. There is no login call to cache, unlike APIC (11-19) or Catalyst Center.</p>
+<div class="tw"><table>
+<caption>RESTCONF and NETCONF, from the script's side</caption>
+<tr><th>Aspect</th><th>RESTCONF via <code>requests</code></th><th>NETCONF via <code>ncclient</code></th></tr>
+<tr><td>Transport</td><td>HTTPS; root found at <code>/.well-known/host-meta</code>, normally <code>/restconf</code></td><td>SSH, port 830 by default (ncclient default is also 830)</td></tr>
+<tr><td>Enable on IOS XE</td><td><code>restconf</code> + <code>ip http secure-server</code></td><td><code>netconf-yang</code> (+ optional <code>netconf-yang feature candidate-datastore</code>)</td></tr>
+<tr><td>Python object</td><td><code>requests.Session</code> (keeps auth, headers, verify)</td><td><code>manager.connect(...)</code> returns a <code>Manager</code> context manager</td></tr>
+<tr><td>Address</td><td>URI path: <code>module:node/list=key/leaf</code></td><td>Subtree or XPath filter in <code>get</code>/<code>get_config</code></td></tr>
+<tr><td>Write semantics</td><td>Verb picks the operation (PATCH, PUT, POST, DELETE)</td><td><code>operation</code> attribute in the config (merge by default)</td></tr>
+<tr><td>Datastores</td><td>One datastore resource, <code>/restconf/data</code>; no confirmed commit (17.5 guide)</td><td>Running, or candidate when enabled; locks; confirmed commit (600 s default)</td></tr>
+<tr><td>Errors</td><td>HTTP status + <code>ietf-restconf:errors</code> body</td><td><code>rpc-error</code> raised as <code>RPCError</code></td></tr>
+<tr><td>Pick it when</td><td>One-resource reads and writes; quick JSON work</td><td>Multi-part changes that must commit together; filtered reads of large trees</td></tr>
+</table></div>
+<p class="small">Out of scope today: gNMI (unit 3.4 dial-in) and on-box Python in Guest Shell, which is its own chapter in the 17.5 guide.</p>
+
+<h2 id="l2">L2 · Mechanics</h2>
+<h3>A RESTCONF call, layer by layer</h3>
+<p>Read a RESTCONF URI as a list of YANG node names. The example below is from the Cisco 17.5 chapter, with a <code>fields</code> query added.</p>
+<div class="url"><span class="u1">https://10.0.0.251</span><span class="u2">/restconf/data</span><span class="u3">/Cisco-IOS-XE-native:native</span><span class="u1">/interface</span><span class="u4">/GigabitEthernet=0%2F0%2F2</span><span class="u2">?fields=name;mtu</span></div>
+<div class="legend"><span><b>Host</b> (TLS; cert check)</span><span><b>API root</b> + datastore resource</span><span><b>Top node</b>, module-qualified</span><span><b>Child</b>, same module: no prefix</span><span><b>List instance</b>: <code>list=key</code>, key percent-encoded</span><span><b>Query</b>: GET only</span></div>
+<p>The prefix rule comes from <a href="https://www.rfc-editor.org/info/rfc8040/#section-3.5.3" target="_blank" rel="noopener">RFC 8040 §3.5.3</a>. A node gets the <code>module:</code> prefix when its parent is the datastore, or when it comes from a different module than its parent. Multiple keys go in YANG <code>key</code> order, separated by commas. Reserved characters in a key value must be percent-encoded, so <code>/</code> becomes <code>%2F</code>. The Cisco chapter shows <code>GigabitEthernet=0%2F0%2F2</code>. The <code>depth</code> and <code>fields</code> query parameters appear in the Cisco examples. RFC 8040 §4.8 allows them only on GET and answers 400 on other methods. <code>depth</code> defaults to <code>unbounded</code>.</p>
+<p>Both Cisco and RFC 8040 use <code>application/yang-data+json</code> (or <code>+xml</code>) in <code>Accept</code> and <code>Content-Type</code>. On the Python side, the <a href="https://requests.readthedocs.io/en/latest/user/advanced/#session-objects" target="_blank" rel="noopener">Requests advanced guide</a> says a <code>Session</code> keeps auth and headers across calls but does not keep method-level parameters. Requests has no default timeout. <code>verify</code> defaults to True, so a lab router's self-signed cert fails until you set <code>verify=False</code> or point at a CA bundle. The <a href="https://requests.readthedocs.io/en/latest/user/quickstart/" target="_blank" rel="noopener">Quickstart</a> adds two traps. <code>r.json()</code> raises <code>JSONDecodeError</code> on a 204 response, which has no body. And passing <code>json=</code> sets <code>Content-Type: application/json</code> unless you set the header yourself. An offline test on Requests 2.34.2 confirmed that a session-level <code>Content-Type</code> wins over <code>json=</code>.</p>
+<div class="tw"><table>
+<caption>Verbs: Cisco label, RFC 8040 meaning, status codes</caption>
+<tr><th>Verb</th><th>Cisco 17.5 table</th><th>NETCONF equivalent (RFC 8040 §4)</th><th>Success</th><th>Typical failure</th></tr>
+<tr><td>GET</td><td>Read</td><td>get / get-config</td><td>200</td><td>404 instance missing (error-tag invalid-value)</td></tr>
+<tr><td>POST</td><td>Create (or operation)</td><td>edit-config create</td><td>201, Location header, no body</td><td>409 Conflict if it already exists</td></tr>
+<tr><td>PUT</td><td>Create or Replace</td><td>edit-config replace</td><td>201 new · 204 replaced</td><td>400 shape or key errors</td></tr>
+<tr><td>PATCH</td><td>Update</td><td>edit-config merge (plain patch)</td><td>200 with body · 204 without</td><td>Target missing: server must not create it (404 allowed)</td></tr>
+<tr><td>DELETE</td><td>Deletes the target</td><td>edit-config delete</td><td>204</td><td>Fails if the resource does not exist</td></tr>
+</table></div>
+
+<h3>A NETCONF session from ncclient</h3>
+<p>The <a href="https://ncclient.readthedocs.io/en/v0.7.1/transport.html" target="_blank" rel="noopener">transport docs</a> list the <code>connect()</code> defaults that matter in a lab: <code>port=830</code>, <code>hostkey_verify=True</code> (checks <code>~/.ssh/known_hosts</code>), and <code>allow_agent</code> and <code>look_for_keys</code> both True. ncclient tries public-key auth first and password second. The <a href="https://ncclient.readthedocs.io/en/v0.7.1/manager.html" target="_blank" rel="noopener">manager docs</a> give the method defaults. <code>get_config(source, filter=None)</code> takes a filter tuple: <code>("subtree", xml)</code>, or <code>("xpath", expr)</code> with an optional namespace map. <code>edit_config(config, target='candidate', ...)</code> needs config rooted in a <code>&lt;config&gt;</code> element. <code>lock()</code> and <code>unlock()</code> also default to candidate, and <code>locked(target)</code> is a context manager that always unlocks. <code>Manager</code> has a 30 s RPC timeout, and its <code>raise_mode</code> defaults to ALL, so any <code>rpc-error</code> becomes an exception. Read replies return <code>data_xml</code> (a string) and <code>data_ele</code> (an element).</p>
+<div class="svgw">
+<svg viewBox="0 0 460 392" role="img" aria-label="Sequence between script and Cat8000V: SSH connect, hello with capabilities, lock candidate, edit-config to candidate, commit, unlock, close-session, with an rpc-error branch">
+<text x="70" y="18" font-weight="700" text-anchor="middle">script (ncclient)</text>
+<text x="380" y="18" font-weight="700" text-anchor="middle">Cat8000V :830</text>
+<path class="s" d="M70 28V384M380 28V384" stroke-dasharray="3 4"/>
+<path class="ar" d="M70 48H378"/><text x="225" y="42" text-anchor="middle">SSH connect, subsystem netconf</text>
+<path class="ar" d="M380 82H72"/><text x="225" y="76" text-anchor="middle">&lt;hello&gt; server capabilities</text>
+<text x="225" y="98" text-anchor="middle" class="m">script checks ":candidate" in caps</text>
+<path class="ar hl" d="M70 128H378"/><text x="225" y="122" text-anchor="middle">lock(target="candidate")</text>
+<path class="ar" d="M380 156H72"/><text x="225" y="150" text-anchor="middle">&lt;ok/&gt; or lock-denied</text>
+<path class="ar hl" d="M70 190H378"/><text x="225" y="184" text-anchor="middle">edit_config(cfg, target="candidate")</text>
+<path class="ar" d="M380 218H72"/><text x="225" y="212" text-anchor="middle">&lt;ok/&gt; or rpc-error → RPCError</text>
+<path class="ar hl" d="M70 252H378"/><text x="225" y="246" text-anchor="middle">commit()  (optional confirmed, 600 s)</text>
+<path class="ar" d="M380 280H72"/><text x="225" y="274" text-anchor="middle">&lt;ok/&gt; running now updated</text>
+<path class="ar" d="M70 314H378"/><text x="225" y="308" text-anchor="middle">unlock("candidate")</text>
+<path class="ar" d="M70 348H378"/><text x="225" y="342" text-anchor="middle">close-session (end of with block)</text>
+<rect x="8" y="356" width="444" height="30" rx="5" fill="var(--sv4)" class="s"/><text x="16" y="376">On error: discard_changes() while locked, then unlock</text>
+</svg>
+</div>
+<p>For writes, the <code>operation</code> attribute inside the config does the work. <a href="https://www.rfc-editor.org/info/rfc6241/#section-7.2" target="_blank" rel="noopener">RFC 6241 §7.2</a> defines five values. <b>merge</b> is the default. <b>replace</b> replaces only the subtree it marks. <b>create</b> fails with <code>data-exists</code> if the data is already there. <b>delete</b> fails with <code>data-missing</code> if the data is absent. <b>remove</b> deletes the data and is silently ignored if it is absent. A teardown script that must be rerunnable uses <code>remove</code>. A guard against overwriting uses <code>create</code>.</p>
+
+<h2 id="l3">L3 · Exam detail</h2>
+<h3>1. The percent-encoding trap</h3>
+<p><a href="https://docs.python.org/3.13/library/urllib.parse.html#urllib.parse.quote" target="_blank" rel="noopener"><code>urllib.parse.quote</code></a> has <code>safe='/'</code> by default, because it is built for whole URL paths. <code>quote("0/0/2")</code> returns the string unchanged. The device then reads <code>GigabitEthernet=0</code> followed by two extra path segments. Encode each key with <code>quote(value, safe="")</code>. Cat8000V interface names (<code>GigabitEthernet1</code>) have no slash, so a script can pass in the lab and fail on a switch with <code>1/0/1</code> ports.</p>
+
+<h3>2. Decoding RFC 7951 JSON</h3>
+<div class="tw"><table>
+<caption>Types that break a dict-walking script (RFC 7951 §4–6)</caption>
+<tr><th>YANG</th><th>JSON form</th><th>What the script must do</th></tr>
+<tr><td>Top-level node</td><td><code>"Cisco-IOS-XE-native:native": {...}</code></td><td>Index with the module prefix. Children drop it unless their module changes.</td></tr>
+<tr><td>list</td><td>Array of objects, even with one entry</td><td>Always iterate. Never <code>d["Loopback"]["name"]</code>.</td></tr>
+<tr><td>int8–32, uint8–32</td><td>JSON number</td><td>Use as is.</td></tr>
+<tr><td>int64, uint64, decimal64</td><td>JSON <b>string</b></td><td><code>int()</code> or <code>Decimal()</code> before you do math or compare.</td></tr>
+<tr><td>empty</td><td><code>[null]</code></td><td>Test with <code>"leaf" in d</code>, not by truthiness.</td></tr>
+<tr><td>identityref</td><td><code>"iana-if-type:ethernetCsmacd"</code></td><td>Compare against the prefixed string when the identity's module differs from the leaf's module.</td></tr>
+</table></div>
+<p>RFC 8040 §4.3 adds a trap for XML: a GET that matches more than one list instance must return 400 when the response is XML. Ask for JSON, or GET the parent container.</p>
+
+<h3>3. Errors are structured, so print the structure</h3>
+<p><a href="https://www.rfc-editor.org/info/rfc8040/#section-7" target="_blank" rel="noopener">RFC 8040 §7</a> sends NETCONF error fields inside <code>{"ietf-restconf:errors": {"error": [...]}}</code> and maps each error-tag to a status code. ncclient's <a href="https://ncclient.readthedocs.io/en/v0.7.1/operations.html" target="_blank" rel="noopener"><code>RPCError</code></a> exposes the same fields as attributes. Your error printer should look the same on both paths.</p>
+<div class="tw"><table>
+<caption>One error, two shapes</caption>
+<tr><th>Field (RFC 6241 §4.3)</th><th>RESTCONF JSON key</th><th>ncclient attribute</th><th>Status when it is the tag (RFC 8040 §7)</th></tr>
+<tr><td>error-tag</td><td><code>error-tag</code></td><td><code>e.tag</code></td><td>in-use, lock-denied, data-exists, data-missing → 409 · access-denied → 401/403 · invalid-value → 400/404/406</td></tr>
+<tr><td>error-path</td><td><code>error-path</code></td><td><code>e.path</code></td><td>Tells you which node; check it first for 400s</td></tr>
+<tr><td>error-message</td><td><code>error-message</code></td><td><code>e.message</code></td><td>Human text; may be absent</td></tr>
+<tr><td>error-type / severity / info</td><td>same names</td><td><code>e.type</code> · <code>e.severity</code> · <code>e.info</code></td><td>malformed-message → 400 · operation-not-supported → 405/501</td></tr>
+</table></div>
+
+<h3>4. Datastore choice and leftover locks</h3>
+<p>The 17.5 NETCONF chapter says that with the candidate datastore enabled, running is not writable through NETCONF sessions, and <code>:writable-running</code> is not advertised. ncclient's default target is candidate. That gives two opposite failures. With the feature off, a bare <code>edit_config(cfg)</code> goes to candidate, and the device rejects it. With the feature on, <code>target="running"</code> is rejected. In both cases ncclient 0.7.1 sends the RPC without checking first, and the device's <code>rpc-error</code> comes back as <code>RPCError</code>. <code>commit()</code> is different: it depends on <code>:candidate</code>, and ncclient raises <code>MissingCapabilityError</code> before sending anything. The <a href="https://ncclient.readthedocs.io/en/v0.7.1/capabilities.html" target="_blank" rel="noopener">capabilities docs</a> allow shorthand tests such as <code>":candidate" in m.server_capabilities</code>, so choose the target at runtime.</p>
+<p>If a script crashes while holding a lock, the lock stays until that session ends. Other clients get <code>lock-denied</code> (409 on RESTCONF in the RFC 8040 example). Per the 17.5 chapter, <code>clear netconf-yang session</code> clears both the NETCONF lock and the configuration lock. The 17.5 chapter also says RESTCONF has no confirmed commit. When a task needs "apply, and roll back if the box stops answering", that points to NETCONF with <code>commit(confirmed=True)</code>.</p>
+<div class="svgw">
+<svg viewBox="0 0 460 360" role="img" aria-label="Decision flow. RESTCONF: merge into existing uses PATCH, replace or create uses PUT on the instance, create-only uses POST on the parent. NETCONF: if candidate capability, lock, edit candidate, commit, unlock; else if writable-running, edit running">
+<text x="8" y="18" font-weight="700">RESTCONF: which verb?</text>
+<rect x="8" y="28" width="210" height="34" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="50">What should the write do?</text>
+<path class="s" d="M18 62V239"/>
+<path class="ar" d="M18 111H34M18 175H34M18 239H34"/>
+<rect x="36" y="86" width="182" height="50" rx="6" fill="var(--sv2)" class="s"/><text x="44" y="106">Merge in: PATCH</text><text x="44" y="124" class="m">204; target must exist</text>
+<rect x="36" y="150" width="182" height="50" rx="6" fill="var(--sv2)" class="hl"/><text x="44" y="170">Exactly this: PUT</text><text x="44" y="188" class="m">201 new · 204 replaced</text>
+<rect x="36" y="214" width="182" height="50" rx="6" fill="var(--sv3)" class="s"/><text x="44" y="234">Create only: POST</text><text x="44" y="252" class="m">to parent; 201 or 409</text>
+<text x="242" y="18" font-weight="700">NETCONF: which target?</text>
+<rect x="242" y="28" width="210" height="34" rx="6" fill="var(--sv1)" class="s"/><text x="250" y="50">":candidate" in caps?</text>
+<path class="ar" d="M300 62V84"/><text x="306" y="78" class="m">yes</text>
+<path class="ar" d="M420 62V214"/><text x="426" y="78" class="m">no</text>
+<rect x="242" y="86" width="172" height="114" rx="6" fill="var(--sv2)" class="hl"/><text x="250" y="106">with m.locked("candidate"):</text><text x="250" y="126">edit_config(target=</text><text x="250" y="144">"candidate")</text><text x="250" y="164">commit()</text><text x="250" y="184" class="m">error: discard_changes()</text>
+<rect x="242" y="214" width="210" height="50" rx="6" fill="var(--sv2)" class="s"/><text x="250" y="234">edit_config(target="running")</text><text x="250" y="252" class="m">needs :writable-running</text>
+<rect x="8" y="286" width="444" height="66" rx="6" fill="var(--sv4)" class="s"/><text x="16" y="306" font-weight="700">Both paths end the same way</text><text x="16" y="326">Read back (GET or get_config) and compare to intent.</text><text x="16" y="344" class="m">A 2xx or &lt;ok/&gt; is acceptance, not proof.</text>
+</svg>
+</div>
+
+<h3>5. "Modify" tasks: the usual changes</h3>
+<ul>
+<li><b>Make it rerunnable.</b> Swap POST for PUT on the list-instance URI. On NETCONF, swap <code>create</code> for merge or <code>replace</code>.</li>
+<li><b>Add verification.</b> After every write, read back with <code>fields=</code> or a subtree filter and compare to intent. Return a non-zero exit code on mismatch so CI (1.3/1.4) can gate on it.</li>
+<li><b>Scale out.</b> Loop over an inventory. Keep one <code>Session</code> or one <code>Manager</code> per device, and set a timeout on every call.</li>
+<li><b>Harden.</b> Catch <code>requests.exceptions.ConnectionError</code>/<code>Timeout</code> and ncclient's <code>TimeoutExpiredError</code>, <code>AuthenticationError</code> and <code>SSHUnknownHostError</code> separately. A bare <code>except:</code> hides which layer failed.</li>
+</ul>
+
+<h2 id="anat">Anatomy</h2>
+<p class="small">Building blocks pinned to Python 3.13, Requests 2.34.2 and ncclient 0.7.1. The helpers were run offline against sample bodies (the RFC 8040 §3.6 error example and a 204). They have not been run against a device.</p>
+<pre><code># RESTCONF core: one Session, encoded keys, one error printer
+import sys
+from urllib.parse import quote
+import requests
+
+BASE = "https://10.0.0.251/restconf/data"
+s = requests.Session()
+s.auth = ("admin", "automation")             # Basic on every call; user needs priv 15
+s.verify = False                             # lab self-signed cert; True by default
+s.headers.update({"Accept": "application/yang-data+json",
+                  "Content-Type": "application/yang-data+json"})
+
+def key(v):                                  # "0/0/2" -> "0%2F0%2F2"
+    return quote(str(v), safe="")
+
+def explain(r):
+    if r.ok:
+        return r.json() if r.content else None          # 201/204: no body
+    try:
+        errs = r.json()["ietf-restconf:errors"]["error"]
+    except (requests.exceptions.JSONDecodeError, KeyError):
+        r.raise_for_status()                             # non-RESTCONF error page
+    for e in errs:
+        print(r.status_code, e.get("error-tag"), e.get("error-path"), e.get("error-message"))
+    sys.exit(1)
+
+r = s.get(f"{BASE}/Cisco-IOS-XE-native:native/interface/GigabitEthernet={key('0/0/2')}",
+          params={"fields": "name;mtu"}, timeout=(5, 30))  # (connect, read); per call, not persisted
+print(explain(r))</code></pre>
+<pre><code># NETCONF write: target chosen from capabilities, lock released on any exit
+from ncclient import manager
+from ncclient.operations import RPCError
+
+with manager.connect(host="10.0.0.251", port=830, username="admin",
+                     password="automation", hostkey_verify=False,
+                     look_for_keys=False, allow_agent=False) as m:
+    cand = ":candidate" in m.server_capabilities      # shorthand capability test
+    try:
+        if cand:
+            with m.locked("candidate"):
+                try:
+                    m.edit_config(config=CFG, target="candidate")  # CFG rooted in &lt;config&gt;
+                    m.commit()                    # needs :candidate, else MissingCapabilityError
+                except RPCError:
+                    m.discard_changes()           # still holding the lock here
+                    raise
+        else:
+            m.edit_config(config=CFG, target="running")    # never rely on the default
+    except RPCError as e:                         # raise_mode ALL: any rpc-error lands here
+        print(e.tag, e.path, e.message)
+        raise</code></pre>
+<pre><code># NETCONF read: subtree filter, parse the string with stdlib ElementTree
+import xml.etree.ElementTree as ET
+flt = ('&lt;native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"&gt;'   # ⚠ ns URI
+       '&lt;hostname/&gt;&lt;/native&gt;')
+reply = m.get_config(source="running", filter=("subtree", flt))
+root = ET.fromstring(reply.data_xml)
+print(root.findtext(".//{*}hostname"))      # {*} = any namespace (3.8+)</code></pre>
+<p class="small">The <code>{*}</code> wildcard works in <code>find</code>/<code>findall</code>/<code>findtext</code> paths, per <a href="https://docs.python.org/3.13/library/xml.etree.elementtree.html#parsing-xml-with-namespaces" target="_blank" rel="noopener">ElementTree's namespace section</a>. An offline test showed that <code>iter("{*}name")</code> matched nothing, so use <code>findall(".//{*}name")</code> instead.</p>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr>
+<tr><td>GET for <code>GigabitEthernet0/0/2</code> returns 404; works for <code>GigabitEthernet1</code></td><td>Key not encoded, or <code>quote()</code> left <code>/</code> alone (<code>safe='/'</code> default)</td><td><code>print(r.request.url)</code>: look for <code>=0/0/2</code> instead of <code>=0%2F0%2F2</code></td><td><code>quote(name, safe="")</code> on every key value</td></tr>
+<tr><td>Script passes once; the second run gets 409 Conflict</td><td>POST is create-only; the resource now exists</td><td>Print <code>error-tag</code> from the <code>ietf-restconf:errors</code> body</td><td>PUT to the list-instance URI (create or replace), or PATCH to merge</td></tr>
+<tr><td>PUT returns 400, error-path at the body root</td><td>Top member not module-qualified, list sent as an object, or body key differs from URI key</td><td><code>print(r.text)</code>; GET the same URI and diff the two JSON shapes</td><td>Send <code>{"Cisco-IOS-XE-native:Loopback": [{...}]}</code>, shape copied from a GET</td></tr>
+<tr><td><code>edit_config(config=cfg)</code> raises <code>RPCError</code>; or, after enabling candidate, <code>target="running"</code> fails</td><td>ncclient defaults to candidate; IOS XE makes running read-only to NETCONF when candidate is on</td><td><code>print(list(m.server_capabilities))</code>; <code>show running-config | include netconf-yang</code></td><td>Choose the target from <code>":candidate" in caps</code>; <code>commit()</code> after candidate edits</td></tr>
+<tr><td><code>manager.connect</code> raises <code>SSHUnknownHostError</code> or <code>AuthenticationError</code></td><td><code>hostkey_verify=True</code> with no known_hosts entry; or user not priv 15 / not on default AAA login</td><td><code>ssh admin@10.0.0.251 -p 830 -s netconf</code> (from your notes); <code>show netconf-yang sessions</code></td><td>Lab: <code>hostkey_verify=False</code>, <code>look_for_keys=False</code>, <code>allow_agent=False</code>; priv 15 local user</td></tr>
+</table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><b>Library help without docs:</b> <code>python -c "from ncclient import manager; help(manager.connect_ssh)"</code> and <code>python -c "import ncclient.operations as o; help(o.EditConfig.request)"</code> show the signatures above. <code>Manager</code> builds its methods dynamically, so <code>help(manager.Manager.edit_config)</code> fails. Confirmed offline on 0.7.1.</li>
+<li><b>What's installed:</b> the Equipment and Software List says the Python libraries come from a <code>pyproject.toml</code>/<code>uv.lock</code>. Check that file for <code>ncclient</code> and <code>requests</code> before you design around them. <span class="tag">⚠ file not in repo</span></li>
+<li><b>Shape discovery:</b> configure the object once by CLI, GET it with <code>?depth=2</code> or <code>?fields=</code>, and reuse that JSON as the PUT body. This is quicker and safer than hand-building from the YANG tree.</li>
+<li><b>Root discovery:</b> <code>curl -k -u admin:automation -H "Accept: application/yang-data+json" https://10.0.0.251/restconf</code> gives a known-good control test. If curl works and Python fails, the bug is in your headers, auth or encoding.</li>
+<li><b>Model discovery over NETCONF:</b> iterate <code>m.server_capabilities</code> for module URIs, then <code>m.get_schema("Cisco-IOS-XE-native")</code> to pull the YANG text (the 17.5 chapter lists get-schema). Run it through YANG Suite 3.0 (on the CWS list) or <code>pyang -f tree</code>. <span class="tag">⚠ pyang on CWS</span></li>
+<li><b>Device side:</b> <code>show netconf-yang sessions detail</code>, <code>clear netconf-yang session</code>, and <code>show platform software yang-management process</code> (all in the 17.5 chapters).</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Target:</b> router1 (Cat8000V, 10.0.0.251). Do <code>netconf-yang</code> first if it is not on.</p>
+<p><b>Requirement:</b> write <code>loopback_probe.py</code>. It must:</p>
+<ol>
+<li>Over RESTCONF, make Loopback101 exist with description <code>mgmt-probe</code> and 10.255.101.1/32. Running the script twice must succeed both times.</li>
+<li>Print each HTTP status. On failure, print error-tag, error-path and error-message, then exit 1.</li>
+<li>Over NETCONF, read the Loopback101 config back with a subtree filter, print PASS or FAIL, and exit 2 on FAIL.</li>
+</ol>
+<p><b>Reference names (check on the device):</b> URI <code>/restconf/data/Cisco-IOS-XE-native:native/interface/Loopback=101</code>; body under <code>ip/address/primary</code> with <code>address</code> and <code>mask</code> (the path follows the Cisco <code>fields</code> example). Native namespace <code>http://cisco.com/ns/yang/Cisco-IOS-XE-native</code>. <span class="tag">⚠ leaf names, key type, ns URI</span></p>
+<p><b>Verify:</b> <code>show running-config interface Loopback101</code>. The first run's PUT should return 201 and the second 204 (RFC 8040 §4.5). During step 3, <code>show netconf-yang sessions</code> shows your session. To clean up, DELETE the same URI and expect 204.</p>
+<details><summary>Hint</summary>PUT to the list-instance URI is the rerunnable verb. The body is an array of one object under a module-qualified key, and its <code>name</code> must equal the URI key. Get the exact shape by configuring Loopback100 by CLI and running a GET on <code>.../interface/Loopback=100</code>.</details>
+<details><summary>Solution</summary>
+<pre><code>#!/usr/bin/env python3
+import sys
+import xml.etree.ElementTree as ET
+import requests
+from ncclient import manager
+from ncclient.operations import RPCError
+
+HOST, USER, PWD = "10.0.0.251", "admin", "automation"
+NATIVE = "Cisco-IOS-XE-native"
+NS = "http://cisco.com/ns/yang/Cisco-IOS-XE-native"
+URI = f"https://{HOST}/restconf/data/{NATIVE}:native/interface/Loopback=101"
+BODY = {f"{NATIVE}:Loopback": [{
+    "name": 101, "description": "mgmt-probe",
+    "ip": {"address": {"primary": {"address": "10.255.101.1",
+                                   "mask": "255.255.255.255"}}}}]}
+
+def restconf_put():
+    s = requests.Session()
+    s.auth, s.verify = (USER, PWD), False
+    s.headers.update({"Accept": "application/yang-data+json",
+                      "Content-Type": "application/yang-data+json"})
+    r = s.put(URI, json=BODY, timeout=(5, 30))
+    print("PUT", r.status_code)
+    if not r.ok:
+        try:
+            for e in r.json()["ietf-restconf:errors"]["error"]:
+                print(e.get("error-tag"), e.get("error-path"), e.get("error-message"))
+        except (requests.exceptions.JSONDecodeError, KeyError):
+            print(r.text[:300])
+        sys.exit(1)
+
+def netconf_check():
+    flt = (f'&lt;native xmlns="{NS}"&gt;&lt;interface&gt;&lt;Loopback&gt;'
+           f'&lt;name&gt;101&lt;/name&gt;&lt;/Loopback&gt;&lt;/interface&gt;&lt;/native&gt;')
+    with manager.connect(host=HOST, port=830, username=USER, password=PWD,
+                         hostkey_verify=False, look_for_keys=False,
+                         allow_agent=False) as m:
+        try:
+            reply = m.get_config(source="running", filter=("subtree", flt))
+        except RPCError as e:
+            print("rpc-error", e.tag, e.path, e.message)
+            sys.exit(1)
+    ip = ET.fromstring(reply.data_xml).findtext(".//{*}primary/{*}address")
+    print("PASS" if ip == "10.255.101.1" else f"FAIL got {ip!r}")
+    return ip == "10.255.101.1"
+
+if __name__ == "__main__":
+    restconf_put()
+    sys.exit(0 if netconf_check() else 2)</code></pre>
+<p class="small">Compiled with Python 3.13 and run offline, with the XML parse tested on a sample reply. Not run against router1. The native-model leaf names are ⚠.</p>
+</details>
+</div>
+
+<h2 id="recall">Recall check</h2>
+<p>Today</p>
+<ol>
+<li>Your script PATCHes a list entry that does not exist, and POSTs one that does. What does RFC 8040 say happens in each case, and which verb makes the script rerunnable?
+<details><summary>Answer</summary>PATCH: the server must not create the target, so the call fails (404 is allowed). POST to an existing resource: 409 Conflict. PUT on the list-instance URI creates (201) or replaces (204), so reruns succeed.</details></li>
+<li><code>s.get(base + "/interface/GigabitEthernet=" + quote("0/0/2"))</code> still returns 404. Why, and what is the fix?
+<details><summary>Answer</summary><code>quote()</code> defaults to <code>safe='/'</code>, so the slashes stay and the device sees extra path segments. Use <code>quote("0/0/2", safe="")</code>, which gives <code>0%2F0%2F2</code>, the form in the Cisco 17.5 example.</details></li>
+<li>On a Cat8000V with only <code>netconf-yang</code> configured, <code>m.edit_config(config=cfg)</code> fails. Why? What changes if you enable the candidate feature and send <code>target="running"</code>?
+<details><summary>Answer</summary>ncclient defaults the target to candidate, which this device lacks. ncclient 0.7.1 sends the RPC anyway, and the device's rpc-error is raised as RPCError. With candidate enabled, running is not writable through NETCONF and <code>:writable-running</code> is not advertised, so the running edit fails instead. Pick the target from <code>":candidate" in m.server_capabilities</code> and commit after candidate edits.</details></li>
+<li>A JSON GET returns <code>"in-octets": "123456"</code> as a string. Why? Name two other RFC 7951 encodings that break a naive dict walk.
+<details><summary>Answer</summary>64-bit integer types (and decimal64) are encoded as JSON strings, so <code>int()</code> them before doing math. Others: lists are always arrays, even with one entry; the empty type is <code>[null]</code>; an identityref carries a module prefix (<code>iana-if-type:ethernetCsmacd</code>); the top-level member is module-qualified. ⚠ Check that leaf's base type in its YANG.</details></li>
+</ol>
+<p>From history</p>
+<ol start="5">
+<li>(from 2026-11-19) Name the three APIC session endpoints, what each takes, and the aaaRefresh detail that breaks naive token caching.
+<details><summary>Answer</summary><code>aaaLogin</code>: POST an <code>aaaUser</code> with name and pwd. <code>aaaRefresh</code>: GET with no body. <code>aaaLogout</code>: POST an <code>aaaUser</code> with name. The token changes on each refresh, so store the new one. The default timeout is 600 s; read <code>refreshTimeoutSeconds</code>. Contrast with today: IOS XE RESTCONF has no token at all and sends Basic auth on every call. (Restated from the 2026-11-19 page.)</details></li>
+<li>(from 2026-11-16) A request carries a well-formed, unexpired JWT whose scope lacks the needed value. Which status code and RFC 6750 error code apply?
+<details><summary>Answer</summary>403 Forbidden with <code>error="insufficient_scope"</code> (RFC 6750 §3.1). 401 is for a missing or invalid token. (Restated from the 2026-11-16 page.)</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - RESTCONF Protocol [Cisco IOS XE 17] - Cisco</a> <span class="b ok">✅ verified 2026-11-25</span> IOS XE 17.5 (lab 17.16). Best for enable steps, the verb table, the percent-encoded interface URI, <code>fields</code>/<code>depth</code> examples and restrictions.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - NETCONF Protocol [Cisco IOS XE 17] - Cisco</a> <span class="b ok">✅ verified 2026-11-25</span> IOS XE 17.5. Best for port 830, priv 15/AAA, candidate making running non-writable, the 600 s confirmed commit, locks and <code>clear netconf-yang session</code>.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/info/rfc8040/" target="_blank" rel="noopener">RFC 8040: RESTCONF Protocol | RFC Editor</a> <span class="b ok">✅ verified 2026-11-25</span> RFC. Best for §3.5.3 URI encoding, §4.4–4.7 verb status codes, §4.8 query parameters and the §7 error-tag table.</li>
+<li><a href="https://www.rfc-editor.org/info/rfc7951/#section-6.1" target="_blank" rel="noopener">RFC 7951: JSON Encoding of Data Modeled with YANG | RFC Editor</a> <span class="b ok">✅ verified 2026-11-25</span> RFC, opens at §6.1. Best for names and namespaces (§4), lists as arrays (§5.4), 64-bit strings, <code>[null]</code> and identityref.</li>
+<li><a href="https://www.rfc-editor.org/info/rfc6241/#section-7.2" target="_blank" rel="noopener">RFC 6241: Network Configuration Protocol (NETCONF) | RFC Editor</a> <span class="b ok">✅ verified 2026-11-25</span> RFC, opens at §7.2. Best for the edit-config operation attribute (merge/replace/create/delete/remove) and rpc-error fields (§4.3).</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://ncclient.readthedocs.io/en/v0.7.1/manager.html" target="_blank" rel="noopener">manager – High-level API — ncclient 0.7.1 documentation</a> <span class="b ok">✅ verified 2026-11-25</span> ncclient 0.7.1 (CWS version ⚠). Best for method defaults (<code>target='candidate'</code>), filter tuple forms, <code>locked()</code> and <code>raise_mode</code>.</li>
+<li><a href="https://requests.readthedocs.io/en/latest/user/quickstart/" target="_blank" rel="noopener">Quickstart — Requests 2.34.2 documentation</a> <span class="b ok">✅ verified 2026-11-25</span> Requests 2.34.2. Best for the <code>json=</code> header behavior, <code>raise_for_status()</code>, the 204 <code>r.json()</code> trap and timeouts.</li>
+<li><a href="https://docs.python.org/3.13/library/urllib.parse.html#urllib.parse.quote" target="_blank" rel="noopener">urllib.parse — Parse URLs into components — Python 3.13.18 documentation</a> <span class="b ok">✅ verified 2026-11-25</span> Python 3.13. Best for <code>quote()</code> and its <code>safe='/'</code> default.</li>
+</ul>
+<p class="small">Also verified this run and linked inline: ncclient 0.7.1 operations, transport and capabilities pages; Requests Advanced Usage; Python 3.13 ElementTree. Fetched as a hub, not linked: the 17.5 Programmability Configuration Guide table of contents.</p>
+
+<footer>
+<p><b>Links:</b> 13 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims:</b> <code>ncclient</code>/<code>requests</code> presence and versions in the CWS <code>pyproject.toml</code> (file not in the repo); whether IOS XE accepts plain <code>application/json</code>; the error-tag IOS XE returns for an edit to a missing candidate or to read-only running; IOS XE 17.16 status codes per verb (RFC 8040 behavior; not in the verbatim part of the Cisco chapter); IOS XE code for PATCH on a missing instance and for multi-instance XML GET; 401 vs 403 on IOS XE auth failure; Cisco-IOS-XE-native Loopback list name, key type, <code>ip/address/primary/address|mask</code> leaf names and namespace URI; <code>in-octets</code> base type; RESTCONF lock-denied while a NETCONF lock is held on IOS XE; pyang on the CWS; YANG Suite payload features; curl flags and the <code>show running-config | include</code> / <code>interface</code> forms (standard, not doc-checked this run); drill solution not run against a device; recall answers 5 and 6 restated from earlier pages.</p>
+<p><b>Version flag:</b> Cisco chapters are 17.5 (exam); the lab runs 17.16. ncclient docs are the 0.7.1 release (the "latest" build is 0.7.1.dev3). Requests docs 2.34.2. Python docs 3.13.18. The Cisco chapters were read verbatim for about the first 40K characters; the rest was summarized and is not relied on.</p>
+<p><b>Tomorrow:</b> Unit 36 of 49, 1.2: Modify an existing network automation solution (gap analysis, source of truth).</p>
+</footer>
+</main>
+
+</body></html>
