@@ -1,0 +1,385 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Modify Automation Solutions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* VOICE work, study page in a 36-page series
+   IDEA a change ticket against running code: requirement delta, state delta, smallest safe edit
+   PICTURE toolchain map, two-gaps model, the modify loop as a snake of nine stations
+   COLOUR series tokens: near-white ground, blue accent, green ok, amber warn
+   TYPE system UI stack (no external fonts per spec)
+   LAYOUT single 860px column, sticky mini TOC, tables in scroll wrappers */
+:root{--bg:#fbfbfa;--fg:#1c1f23;--mut:#5b636d;--card:#fff;--bd:#d9dde2;--ac:#0b6bcb;--ac2:#0f8a5f;--wn:#b45309;--bad:#b42318;--code:#f1f3f5;--sv1:#dbeafe;--sv2:#dcfce7;--sv3:#fef3c7;--sv4:#fee2e2;--svs:#334155}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:clip}
+main{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--bd);padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5;display:flex;gap:12px;overflow-x:auto;white-space:nowrap;font-size:14px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+h1,h2,h3{text-wrap:balance}
+nav a{color:var(--ac);text-decoration:none}
+h1{font-size:26px;margin:20px 0 4px}h2{font-size:21px;margin:32px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:17px;margin:20px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--mut);font-size:14px}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+caption{text-align:left;padding-bottom:4px}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45;margin:10px 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;overflow-wrap:anywhere}
+pre code{overflow-wrap:normal}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+.svgw{max-width:580px;margin:12px auto}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font:13px system-ui,sans-serif}
+svg .sm{font-size:12px}
+svg .s{stroke:var(--svs);stroke-width:1.3;fill:none}
+svg .m{fill:var(--mut)}
+svg .w{fill:var(--wn)}
+svg .hl{stroke:var(--ac);stroke-width:2}
+svg .ar{stroke:var(--svs);stroke-width:1.3;fill:none;marker-end:url(#ah)}
+svg .dw{stroke:var(--wn);stroke-width:1.6;fill:none;stroke-dasharray:5 4}
+a{color:var(--ac)}
+.b{display:inline-block;font-size:12px;border:1px solid var(--bd);border-radius:10px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.ok{color:var(--ac2)}.wn{color:var(--wn)}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+ul{padding-left:20px}li{margin:3px 0}
+.tag{font-size:12px;color:var(--wn);white-space:nowrap}
+.small{font-size:14px;color:var(--mut)}
+footer{margin-top:36px;border-top:1px solid var(--bd);padding-top:12px;font-size:14px;color:var(--mut)}
+</style>
+<nav><a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Fit</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#deeper">Go deeper</a></nav>
+<main id="top">
+<h1>Modify Automation Solutions</h1>
+<div class="card meta">
+<span><b>Date</b> Thu 2026-11-26</span>
+<span><b>Blueprint</b> 1.2 Modify an existing network automation solution based on business and technical requirements (includes gap analysis, source of truth)</span>
+<span><b>Domain</b> 1.0 Software Design, Development, and Deployment (20%)</span>
+<span><b>Tier</b> 3</span>
+<span><b>Read</b> ~18 min</span>
+<span><b>Unit</b> 36 of 49</span>
+<span><b>Docs</b> Terraform v1.13.x · ciscodevnet/aci 2.17.0 schema · ansible-core 2.19.3 + ansible.utils 6.0.1 (run offline) · NSO 6.5 · RFC 8342</span>
+</div>
+<p class="small">This is the last unit of the week; tomorrow is weekly review 9. Today's verb is <b>Modify</b>. You get code that already works and a list of new requirements. The job is to find what is missing and change only that, without breaking what runs today. The drill uses Terraform against the DevNet ACI sandbox, because Terraform with <code>ciscodevnet/aci</code> is what the workstation ships.</p>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>"Modify" means you start from working code and a requirement delta. Make the smallest change that closes the delta. Nothing that works today should be destroyed, recreated or reconfigured.</li>
+<li>Gap analysis has two halves. The <b>requirement gap</b> is what the solution cannot do yet. The <b>state gap</b> is where the network differs from the source of truth (SoT). List both before you edit anything.</li>
+<li>The SoT is the data your automation renders from. It is the authority for the fields it owns. When network and SoT disagree, decide per field: push the SoT value (remediate), or pull the network value into the SoT (accept).</li>
+<li>Every tool has a read-only compare: <code>terraform plan</code>, <code>ansible-playbook --check --diff</code>, NSO <code>compare-config</code>, <code>genie diff</code>. Run it before the change to get a clean baseline, and again after it to prove you get zero.</li>
+<li>Change the data model first (schema and SoT entries), then the code, then the checks. Validate the SoT before it touches a device.</li>
+<li>Refactors must keep object identity. In Terraform, <code>moved</code> blocks keep a count→for_each change from destroying anything, and <code>import</code> blocks adopt hand-made objects. In NSO, <code>re-deploy reconcile</code> takes ownership of existing config.</li>
+<li>Merge-style compares see "missing" and "changed", never "extra". To find objects on the network that the SoT does not list, diff both ways.</li>
+</ul>
+
+<h2 id="fit">Where this fits</h2>
+<div class="svgw">
+<svg viewBox="0 0 460 318" role="img" aria-label="Blueprint position of 1.2 between 1.1 design and 1.3/1.4 CI, fed by earlier units 2.6, 2.8.f, 2.9 and 3.3.b, and a toolchain from source of truth through render tools to the network with a compare path back">
+<defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z" fill="var(--svs)"/></marker></defs>
+<text x="8" y="18" class="m">Blueprint position</text>
+<rect x="8" y="28" width="136" height="46" rx="6" fill="var(--sv2)" class="s"/><text x="16" y="47">1.1 Design</text><text x="16" y="64" class="m sm">done 11-23</text>
+<rect x="162" y="28" width="136" height="46" rx="6" fill="var(--sv3)" class="hl"/><text x="170" y="47" font-weight="700">1.2 Modify</text><text x="170" y="64" class="m sm">today</text>
+<rect x="316" y="28" width="136" height="46" rx="6" fill="var(--sv2)" class="s"/><text x="324" y="47">1.3 / 1.4 Git, CI</text><text x="324" y="64" class="m sm">ship the change</text>
+<path class="ar" d="M144 51H160"/><path class="ar" d="M298 51H314"/>
+<text x="8" y="100" class="m">Mechanics you already have</text>
+<rect x="8" y="108" width="104" height="40" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="133">2.6 SoT push</text>
+<rect x="124" y="108" width="104" height="40" rx="6" fill="var(--sv1)" class="s"/><text x="132" y="133">2.8.f TF state</text>
+<rect x="240" y="108" width="104" height="40" rx="6" fill="var(--sv1)" class="s"/><text x="248" y="133">2.9 NSO sync</text>
+<rect x="356" y="108" width="96" height="40" rx="6" fill="var(--sv1)" class="s"/><text x="364" y="133">3.3.b diff</text>
+<path class="ar" d="M230 108V78"/>
+<text x="8" y="176" class="m">Toolchain</text>
+<rect x="6" y="186" width="140" height="52" rx="6" fill="var(--sv2)" class="s"/><text x="14" y="207">Source of truth</text><text x="14" y="225" class="m sm">Git YAML, NSO CDB</text>
+<rect x="160" y="186" width="140" height="52" rx="6" fill="var(--sv3)" class="hl"/><text x="168" y="207">Solution</text><text x="168" y="225" class="m sm">TF · Ansible · NSO</text>
+<rect x="314" y="186" width="140" height="52" rx="6" fill="var(--sv1)" class="s"/><text x="322" y="207">Network</text><text x="322" y="225" class="m sm">Cat8000V · APIC</text>
+<path class="ar" d="M146 212H158"/><path class="ar" d="M300 212H312"/>
+<path class="dw" d="M384 238V272H76V242"/><path d="M71 248L76 240L81 248" fill="none" stroke="var(--wn)" stroke-width="1.6"/>
+<text x="120" y="292" class="w">compare actual with intended</text>
+<text x="120" y="310" class="m sm">plan · --check --diff · compare-config</text>
+</svg>
+</div>
+<p>Unit 1.1 asked you to design a solution from scratch. Unit 1.2 hands you one that exists and asks you to change it. The mechanics come from units already covered: rendering from a SoT (2.6), Terraform state (2.8.f), NSO sync (2.9) and Genie diff (3.3.b). This unit is the judgment that sits on top of them: what to change, in what order, and how to prove nothing else moved.</p>
+
+<h2 id="l1">L1: Two gaps and one authority</h2>
+<div class="svgw">
+<svg viewBox="0 0 460 250" role="img" aria-label="Requirements sit above the solution; the requirement gap is between them. Source of truth feeds the solution, which pushes to the network. The state gap is the compare path from network back to source of truth.">
+<rect x="150" y="10" width="160" height="46" rx="6" fill="var(--sv4)" class="s"/><text x="160" y="30" font-weight="700">Requirements</text><text x="160" y="47" class="m sm">business + technical</text>
+<path class="dw" d="M230 56V102"/><text x="240" y="76" class="w">requirement gap</text><text x="240" y="93" class="m sm">fix: code + schema</text>
+<rect x="8" y="104" width="128" height="48" rx="6" fill="var(--sv2)" class="s"/><text x="16" y="124">Source of truth</text><text x="16" y="141" class="m sm">intended data</text>
+<rect x="166" y="104" width="128" height="48" rx="6" fill="var(--sv3)" class="hl"/><text x="174" y="124">Solution</text><text x="174" y="141" class="m sm">code, templates</text>
+<rect x="324" y="104" width="128" height="48" rx="6" fill="var(--sv1)" class="s"/><text x="332" y="124">Network</text><text x="332" y="141" class="m sm">actual state</text>
+<path class="ar" d="M136 128H164"/><path class="ar" d="M294 128H322"/>
+<path class="dw" d="M388 152V198H72V158"/><path d="M67 164L72 156L77 164" fill="none" stroke="var(--wn)" stroke-width="1.6"/>
+<text x="110" y="220" class="w">state gap (drift)</text>
+<text x="110" y="238" class="m sm">fix: push SoT value, or pull network value into SoT</text>
+</svg>
+</div>
+<p>A requirement arrives as prose. "Operations wants tenants defined in a YAML file with descriptions." "The lab tenant someone built by hand must come under automation." Some of that is a <b>business requirement</b>: who uses the tool, and what outcome they need. Some is <b>technical</b>: platforms, interfaces, constraints. The gap analysis turns that prose into a list of concrete differences you can test.</p>
+<p>The SoT is the answer to "what should be there?" It can be a YAML file in Git, a database, or NSO's CDB. The NSO 6.5 guide lists "act as a network source of truth" among the reasons to make every change through NSO. NetBox does not appear on the <a href="https://learningcontent.cisco.com/documents/marketing/exam-topics/ccie-automation-1.1-Software-and-Equipment-list-24.04.pdf" target="_blank" rel="noopener">v1.1 Equipment and Software List</a>. So expect files in the Git repo, NSO, or an API the task gives you. <span class="tag">⚠ inference from the list</span></p>
+<p>RFC 8342 (NMDA) gives this the standard vocabulary. <code>&lt;intended&gt;</code> is the configuration the system tries to apply. <code>&lt;operational&gt;</code> holds what is actually in use, plus state. They can differ for honest reasons. A resource may be missing, for example config for an interface that is not present. Remnant config may linger while resources are released. The device may add system or default configuration. A good gap report keeps those apart from real drift.</p>
+<div class="tw"><table>
+<caption>Four kinds of gap you will see in a Modify task</caption>
+<thead><tr><th>Gap</th><th>Question</th><th>Example</th><th>Found by</th><th>Closed by</th></tr></thead>
+<tbody>
+<tr><td><b>Requirement</b></td><td>What must it do that it can't?</td><td>Code loops a list of names; the requirement wants a YAML map with descriptions</td><td>Reading the requirements against the code and its TODOs</td><td>Code change plus SoT schema change</td></tr>
+<tr><td><b>State (drift)</b></td><td>Where does the network differ from the SoT?</td><td>A tenant description was edited in the APIC GUI during an incident</td><td><code>plan</code>, <code>--check --diff</code>, <code>compare-config</code>, <code>genie diff</code></td><td>Push (remediate), or pull into the SoT (accept)</td></tr>
+<tr><td><b>SoT defect</b></td><td>Is the data itself wrong?</td><td>A new entry uses <code>desc</code> where the schema says <code>descr</code></td><td>Schema validation before render</td><td>Fix the data, or extend the schema on purpose</td></tr>
+<tr><td><b>Ownership</b></td><td>Does the network hold things nobody manages?</td><td>Tenant <code>cw-lab</code> created by hand</td><td>Two-way diff: the "extra" list</td><td>Adopt (import, reconcile) or delete</td></tr>
+</tbody></table></div>
+<p>The Cisco Live session <a href="https://www.ciscolive.com/c/dam/r/ciscolive/apjc/docs/2023/pdf/BRKDEV-2014.pdf" target="_blank" rel="noopener">BRKDEV-2014</a> covers the DevNet Expert v1.0 lab, the predecessor of this exam. It lists this task as "Modify ... (includes gap analysis)"; v1.1 added "source of truth". Its hands-on tasks are described as starting code with a list of TODOs and expected results, and you commit and push with git. Its best-practice slide says, among other things: "Don't automate halfway." A partial change that leaves the network between states is worse than no change. <span class="tag">⚠ v1.0-era format; v1.1 layout not confirmed</span></p>
+
+<h2 id="l2">L2: The modify loop</h2>
+<div class="svgw">
+<svg viewBox="0 0 460 300" role="img" aria-label="Nine-step modify loop laid out as a snake: read, baseline, gap list, authority, data first, code, validate, apply and re-compare, commit and push. Validate loops back to code on failure; a non-zero baseline sends you to fix drift first.">
+<g>
+<rect x="6" y="20" width="140" height="54" rx="6" fill="var(--sv1)" class="s"/><text x="14" y="42" font-weight="700">1 Read</text><text x="14" y="62" class="m sm">code, SoT, TODOs</text>
+<rect x="160" y="20" width="140" height="54" rx="6" fill="var(--sv3)" class="hl"/><text x="168" y="42" font-weight="700">2 Baseline</text><text x="168" y="62" class="m sm">compare: expect 0</text>
+<rect x="314" y="20" width="140" height="54" rx="6" fill="var(--sv1)" class="s"/><text x="322" y="42" font-weight="700">3 Gap list</text><text x="322" y="62" class="m sm">requirement + state</text>
+<rect x="314" y="118" width="140" height="54" rx="6" fill="var(--sv4)" class="s"/><text x="322" y="140" font-weight="700">4 Authority</text><text x="322" y="160" class="m sm">push or pull?</text>
+<rect x="160" y="118" width="140" height="54" rx="6" fill="var(--sv2)" class="s"/><text x="168" y="140" font-weight="700">5 Data first</text><text x="168" y="160" class="m sm">schema, SoT</text>
+<rect x="6" y="118" width="140" height="54" rx="6" fill="var(--sv2)" class="s"/><text x="14" y="140" font-weight="700">6 Code</text><text x="14" y="160" class="m sm">smallest change</text>
+<rect x="6" y="216" width="140" height="54" rx="6" fill="var(--sv3)" class="hl"/><text x="14" y="238" font-weight="700">7 Validate</text><text x="14" y="258" class="m sm">schema, plan, check</text>
+<rect x="160" y="216" width="140" height="54" rx="6" fill="var(--sv3)" class="hl"/><text x="168" y="238" font-weight="700">8 Apply</text><text x="168" y="258" class="m sm">re-compare: 0</text>
+<rect x="314" y="216" width="140" height="54" rx="6" fill="var(--sv1)" class="s"/><text x="322" y="238" font-weight="700">9 Commit, push</text><text x="322" y="258" class="m sm">MR, pipeline</text>
+</g>
+<path class="ar" d="M146 47H158"/><path class="ar" d="M300 47H312"/><path class="ar" d="M384 74V116"/><path class="ar" d="M314 145H302"/><path class="ar" d="M160 145H148"/><path class="ar" d="M76 172V214"/><path class="ar" d="M146 243H158"/><path class="ar" d="M300 243H312"/>
+<path class="dw" d="M112 216V176"/><text x="118" y="200" class="w sm">fail</text>
+<text x="160" y="96" class="w sm">not 0? that is drift: list it first</text>
+</svg>
+</div>
+<p><b>Step 2 is the one people skip.</b> Run the read-only compare before you touch the code. If it already shows changes, the network has drifted, or someone left work half-done. Your change and that old drift would then show up mixed in one plan, and you could not tell them apart. Record the drift as a gap and decide its authority (step 4). Only then start changing things.</p>
+<p><b>Step 4 is per field, not per system.</b> Some values belong to the SoT and must be enforced, such as IP addresses or a tenant's existence. Others can be owned by operators, such as an MTU tweak or a description. NSO 6.5 makes this explicit with out-of-band policies (L3). In Terraform you express it with <code>lifecycle { ignore_changes = [...] }</code> or by moving the field out of the config. <span class="tag">⚠ ignore_changes not re-read today</span></p>
+<p><b>Step 5 before step 6.</b> Change the schema and the SoT entries first. Then the template or resource only reads fields that already exist and are validated. Data errors then fail fast with a JSON path, not deep in a device error.</p>
+<div class="tw"><table>
+<caption>Same five questions, per tool (versions as pinned)</caption>
+<thead><tr><th>Tool</th><th>Compare (read-only)</th><th>Pull (accept network)</th><th>Push (enforce SoT)</th><th>Adopt existing</th><th>Item removed from SoT</th></tr></thead>
+<tbody>
+<tr><td><b>Terraform 1.13</b></td><td><code>plan</code>; <code>plan -refresh-only</code>; <code>-detailed-exitcode</code></td><td><code>apply -refresh-only</code>, then update config</td><td><code>apply</code></td><td><code>import</code> block (ACI ID = DN)</td><td>Planned destroy (state remembers it)</td></tr>
+<tr><td><b>Ansible 2.19</b></td><td><code>--check --diff</code>; <code>ansible.utils.fact_diff</code></td><td>Query task, then you edit vars</td><td>Run the playbook</td><td>Nothing to do; no state file</td><td>Nothing happens; needs an explicit absent/delete task</td></tr>
+<tr><td><b>NSO 6.5</b></td><td><code>compare-config</code>; <code>check-sync</code>; service <code>deep-check-sync</code></td><td><code>sync-from</code>; policy <code>sync-from-device</code></td><td><code>sync-to</code>; policy <code>sync-to-device</code></td><td><code>re-deploy reconcile</code></td><td>Delete the service instance; NSO removes the config it created</td></tr>
+<tr><td><b>pyATS/Genie</b></td><td><code>genie learn</code> twice, then <code>genie diff</code></td><td>—</td><td>—</td><td>—</td><td>Shows as a removed key</td></tr>
+<tr><td><b>Python script</b></td><td>Your own two-way diff</td><td>Write back to the SoT file</td><td>PUT/PATCH</td><td>Add to the SoT</td><td>Whatever you code</td></tr>
+</tbody></table></div>
+<p>The last column is the classic trap. Terraform deletes what leaves the SoT because state remembers it. Ansible forgets it, because there is no state. If the requirement says "remove anything not in the SoT," a playbook needs an explicit list of extras and a delete task for each.</p>
+
+<h2 id="l3">L3: Exam-depth detail</h2>
+<h3>Terraform: refactor without churn, and drift</h3>
+<ul>
+<li>Changing a resource from <code>count</code> to <code>for_each</code> changes every address, from <code>t[0]</code> to <code>t["prod"]</code>. By default Terraform reads a new address as destroy-old, create-new. On 1.13.3 offline, two live instances refactored without help planned <b>3 to add, 2 to destroy</b>. With one <code>moved { from = t[0]  to = t["prod"] }</code> per index, the same plan showed "has moved to" for each, and <b>1 to add, 0 to destroy</b>. The <a href="https://developer.hashicorp.com/terraform/language/v1.13.x/modules/develop/refactoring" target="_blank" rel="noopener">v1.13.x refactoring page</a> shows the index-to-key form.</li>
+<li>If <code>moved</code> blocks live in a module other people consume, keep them. The same page warns that removing them is a breaking change for anyone who has not applied yet.</li>
+<li><code>-refresh-only</code> plans or applies only state updates for changes made outside Terraform. The <a href="https://developer.hashicorp.com/terraform/tutorials/state/refresh" target="_blank" rel="noopener">refresh-only tutorial</a> notes it replaces the deprecated <code>terraform refresh</code>, which overwrote state without review. It changes state, not config. Normal mode then still drives remote objects to match the config, so the next plan proposes undoing the drift. To accept the change, also change the SoT. <span class="tag">⚠ derived from the two mode definitions</span></li>
+<li><code>-detailed-exitcode</code> returns 0 for no changes, 1 for an error and 2 for changes, per the <a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/plan" target="_blank" rel="noopener">v1.13.x plan reference</a>. That is your CI drift gate. Confirmed offline: 2 with a pending change.</li>
+<li>Adopting a hand-made ACI object uses an <code>import</code> block with the full DN as ID. Cisco Live <a href="https://www.ciscolive.com/c/dam/r/ciscolive/emea/docs/2025/pdf/BRKDCN-2607.pdf" target="_blank" rel="noopener">BRKDCN-2607</a> imports <code>aci_tenant</code> with <code>id = "uni/tn-tf_test_import"</code>. The 2.17.0 provider schema also has a provider argument <code>allow_existing_on_create</code>, described as letting existing objects be managed. Its default is not in the schema. <span class="tag">⚠ default and behavior untested</span></li>
+</ul>
+<h3>Ansible: what check and diff cannot see</h3>
+<ul>
+<li>Per the <a href="https://docs.ansible.com/projects/ansible/13/playbook_guide/playbooks_checkmode.html" target="_blank" rel="noopener">check-mode guide</a>, modules without check-mode support report nothing and do nothing under <code>--check</code>. A silent run is not proof that there is no gap. In the pinned collections, <code>cisco.aci.aci_tenant</code> (2.12.0) and <code>ansible.netcommon.restconf_config</code>/<code>netconf_config</code> (8.4.0) all declare <code>supports_check_mode=True</code> in their source.</li>
+<li><code>restconf_config</code> 8.4.0 GETs the path, then computes <code>dict_diff(running, candidate)</code> and sends only that diff. That helper only returns keys that are in the candidate, so config on the device but absent from the SoT never shows up. It also puts the candidate under <code>before</code> and running under <code>after</code> in <code>--diff</code> output, the reverse of what you expect. <span class="tag">read from 8.4.0 source</span></li>
+<li>Validate SoT data before render with <a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/utils/validate_module.html" target="_blank" rel="noopener">ansible.utils.validate</a>. The default engine is <code>ansible.utils.jsonschema</code>, which needs the <code>jsonschema</code> Python library on the controller. <span class="tag">⚠ library on CWS unconfirmed</span></li>
+<li>For a two-way list compare, use the builtin <code>difference</code> filter in both directions. Its <code>ansible-doc</code> says the output order is arbitrary, so <code>sort</code> before you compare or print.</li>
+</ul>
+<h3>NSO 6.5: sync verbs and out-of-band policy</h3>
+<ul>
+<li>Device actions in <a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/lifecycle-operations" target="_blank" rel="noopener">Lifecycle Operations</a>: <code>check-sync</code> compares a signature. It is cheap, but it may report <code>unsupported</code>. <code>compare-config</code> fetches the config and diffs it. <code>sync-from</code> pulls the device config into CDB and commits it at once. <code>sync-to</code> pushes a minimal diff. Both take <code>dry-run</code>.</li>
+<li>After a <code>sync-from</code>, services may be out of sync; the guide says to run <code>check-sync</code> and <code>re-deploy</code>. Service <code>check-sync</code> does not contact the device. Only <code>deep-check-sync</code> catches an edit made out of band.</li>
+<li>Brownfield adoption: <code>re-deploy reconcile</code> makes the service own config that existed before it. Manual config further down the tree is kept unless you add <code>discard-non-service-config</code>.</li>
+<li>New in 6.5 (<a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/out-of-band-interoperation.md" target="_blank" rel="noopener">Out-of-band Interoperation</a>): <code>confirm-network-state</code>, set per commit or per device. Each rule in a service out-of-band policy picks an action by path and change type (<code>at-create</code>, <code>at-delete</code>, <code>at-value-set</code>). <code>sync-from-device</code> accepts the change into CDB. <code>sync-to-device</code> reverts the device. <code>manage-by-service</code> keeps the value through re-deploy and deletes it with the service. If no rule matches, NSO uses <code>sync-from-device</code>.</li>
+</ul>
+<h3>Task shapes consistent with the verb</h3>
+<ul>
+<li>Starting code plus a requirements paragraph. You add a field, a platform or a resource. Then show that existing objects did not change (plan: 0 to destroy, check: changed=0).</li>
+<li>A drift report: name what differs, say which side wins and why, and close it in the right direction.</li>
+<li>A design-style question: given business constraints (who calls it, what they need, mixed old and new devices), choose which part of the existing solution to extend. The BRKDEV-2014 worked example favours NSO over a per-device REST collection, because it gives one consistent northbound API across old and new devices.</li>
+</ul>
+
+<h2 id="anat">Anatomy</h2>
+<p class="small">Each snippet was run or validated offline this run, at the versions noted. None of them is the drill solution.</p>
+<h3>A. Two-way gap report in plain Python (3.13.18, stdlib, executed)</h3>
+<pre><code>def gap(intended: dict, actual: dict) -&gt; dict:
+    want, have = set(intended), set(actual)        # set(dict) = its keys
+    return {
+        "missing": sorted(want - have),            # in SoT, not on device
+        "extra":   sorted(have - want),            # on device, not in SoT
+        "changed": sorted(k for k in want &amp; have   # on both...
+                          if intended[k] != actual[k]),   # ...values differ
+    }
+
+sot = {"Loopback10": "10.10.10.1/32", "Loopback20": "10.20.20.1/32"}
+dev = {"Loopback10": "10.10.10.9/32", "Loopback99": "10.99.99.1/32"}
+# -&gt; {"missing": ["Loopback20"], "extra": ["Loopback99"], "changed": ["Loopback10"]}</code></pre>
+<p>Three set operations make up the whole gap report. <code>-</code> is difference and <code>&amp;</code> is intersection. Sorting makes the output stable for diffs and tests. Fill <code>actual</code> from a RESTCONF GET (unit 3.1.iosxe) or from an APIC class query.</p>
+<h3>B. Validate the SoT, then diff both ways (ansible-core 2.19.3, ansible.utils 6.0.1, executed on localhost)</h3>
+<pre><code>- name: Validate SoT before touching anything
+  ansible.utils.validate:
+    data: "{{ {'tenants': tenants} }}"
+    criteria: "{{ lookup('ansible.builtin.file', 'tenant_schema.json') | from_json }}"
+    engine: ansible.utils.jsonschema           # default; needs python jsonschema
+
+- name: Compute gaps                           # actual_names from a query task
+  ansible.builtin.set_fact:
+    missing: "{{ tenants | map(attribute='name') | difference(actual_names) }}"
+    extra:   "{{ actual_names | difference(tenants | map(attribute='name')) }}"
+
+- name: Human-readable diff (shows with --diff, reports changed when different)
+  ansible.utils.fact_diff:
+    before: "{{ actual_names | sort }}"
+    after:  "{{ tenants | map(attribute='name') | sort }}"</code></pre>
+<p>On a bad entry, validate fails with a message like <code>Additional properties are not allowed ('desc' was unexpected)</code> and <code>json_path $.tenants[2]</code>. <code>fact_diff</code> returns <code>diff_text</code> and <code>diff_lines</code>.</p>
+<h3>C. CI drift gate (Terraform 1.13.3)</h3>
+<pre><code>terraform plan -input=false -detailed-exitcode -out=tfplan
+case $? in
+  0) echo "network matches SoT" ;;
+  2) echo "diff present: review tfplan before apply"; exit 1 ;;
+  *) echo "plan error"; exit 1 ;;
+esac</code></pre>
+<h3>D. NSO 6.5 compare, decide, act</h3>
+<pre><code>admin@ncs# devices device r1 compare-config        ! what differs from CDB
+admin@ncs# devices device r1 sync-from dry-run     ! preview accepting it
+admin@ncs# devices device r1 sync-to dry-run       ! preview rejecting it
+
+! per-field authority for one service type (paths relative to device config)
+services out-of-band policy iface-servicepoint
+ rule allow-mtu
+  path         ios:interface/GigabitEthernet/mtu
+  at-value-set sync-from-device                    ! accept operator MTU
+ !
+ rule keep-ip
+  path         ios:interface/GigabitEthernet/ip/address
+  at-delete    sync-to-device                      ! deleting it: revert
+  at-value-set manage-by-service                   ! changing it: keep, tie to service
+ !
+!</code></pre>
+
+<h2 id="bf">Break/fix</h2>
+<div class="tw"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Refactor to <code>for_each</code>; plan says "2 to destroy" for tenants that should stay</td><td>Addresses changed from index to key with no <code>moved</code> blocks</td><td><code>terraform state list</code> shows <code>[0]</code>, <code>[1]</code>; plan lists "will be destroyed"</td><td>One <code>moved</code> per old index → new key; re-plan shows "has moved to", 0 to destroy</td></tr>
+<tr><td>After <code>apply -refresh-only</code>, the next plan still wants to change the description</td><td>Refresh-only wrote reality into state; config still has the old value</td><td><code>terraform plan</code> shows an update in place on that attribute</td><td>Accepting it: put the new value in the SoT. Rejecting it: apply normally</td></tr>
+<tr><td>Requirement says "remove anything not in the SoT"; playbook runs clean, extras remain</td><td>Merge-style module; <code>dict_diff</code> never reports device-only keys; Ansible has no state</td><td>Two-way <code>difference</code>; <code>fact_diff</code> shows <code>-</code> lines for extras</td><td>Loop over the extra list with an explicit delete task (<code>method: delete</code>, <code>state: absent</code>)</td></tr>
+<tr><td>NSO <code>devices check-sync</code> says in-sync or <code>unsupported</code>, yet a service's config is missing on r1</td><td>Signature check, or out-of-band edit under the service</td><td><code>devices device r1 compare-config</code>; service <code>deep-check-sync</code></td><td><code>sync-to</code> to revert, or <code>sync-from</code> + <code>re-deploy</code> to accept, per policy</td></tr>
+<tr><td>Validate task fails at once on the new SoT entry</td><td>Key typo or new field the schema doesn't allow</td><td>Error names the field and <code>json_path</code> (e.g. <code>$.tenants[2]</code>)</td><td>Fix the data; if the field is a new requirement, extend the schema first</td></tr>
+</tbody></table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>terraform providers schema -json | jq -r '.provider_schemas[].resource_schemas.aci_tenant.block.attributes | keys[]'</code> lists valid attributes (run on 2.17.0: <code>name</code> required; <code>description</code>, <code>annotation</code>, <code>name_alias</code> optional).</li>
+<li><code>terraform state list</code> before and after a refactor. <code>terraform plan -refresh-only</code> shows drift with no proposed actions.</li>
+<li><code>ansible-doc ansible.utils.fact_diff</code>, <code>ansible-doc ansible.utils.validate</code>, <code>ansible-doc -t filter ansible.builtin.difference</code>.</li>
+<li>To see which modules really support <code>--check</code>: <code>grep -rn supports_check_mode ~/.ansible/collections/ansible_collections/cisco/aci/plugins/modules/</code>. <span class="tag">⚠ collection path on CWS</span></li>
+<li>NSO CLI: <code>devices device r1 ?</code> lists the sync actions; <code>services out-of-band policy ?</code> for rule syntax. <span class="tag">⚠ no NSO in lab yet</span></li>
+<li><code>git log -p -- sot.yaml</code> shows who changed which SoT field, and when. That is often the fastest route to the cause of a "drift".</li>
+<li><code>genie diff dir1 dir2 --exclude "age"</code>; counters and timestamps are excluded by default (<a href="https://pubhub.devnetcloud.com/media/genie-docs/docs/cli/genie_diff.html" target="_blank" rel="noopener">Genie Diff</a>).</li>
+</ul>
+
+<h2 id="drill">Micro-drill (~10 min)</h2>
+<div class="card">
+<p><b>Target:</b> DevNet ACI Simulator Always-On sandbox APIC (credentials from the sandbox page), from the workstation with Terraform 1.13.3 and <code>ciscodevnet/aci</code> 2.17.0. Replace <code>cw</code> with your initials, because the sandbox is shared.</p>
+<p><b>Setup:</b> apply the starting code below. Then, in the APIC GUI, create tenant <code>cw-lab</code> by hand. Change <code>cw-dev</code>'s description to <code>Dev (incident 4711)</code>.</p>
+<pre><code>variable "tenants" { default = ["cw-prod", "cw-dev"] }
+
+resource "aci_tenant" "t" {
+  count = length(var.tenants)
+  name  = var.tenants[count.index]
+}</code></pre>
+<p><b>Requirements:</b></p>
+<ol>
+<li>Tenants and their descriptions come from <code>sot.yaml</code> (a map: name → <code>descr</code>).</li>
+<li><code>cw-lab</code> comes under Terraform without being recreated.</li>
+<li>Neither <code>cw-prod</code> nor <code>cw-dev</code> may be destroyed or recreated.</li>
+<li>The incident description on <code>cw-dev</code> is accepted as the new standard.</li>
+<li>A CI step fails whenever the APIC and the SoT disagree.</li>
+</ol>
+<p><b>Reference:</b> <code>aci_tenant</code>: <code>name</code> (required), <code>description</code>. Import ID: tenant DN <code>uni/tn-&lt;name&gt;</code>. <code>moved</code>: <code>from</code>/<code>to</code>. <code>yamldecode(file(...))</code>. <code>plan -detailed-exitcode</code>.</p>
+<p><b>Verify:</b> (1) Before you edit, <code>terraform plan</code> on the starting code should show the GUI description change. That is your baseline drift. (2) After the edit, the plan has two "has moved to" lines, one import, and <b>0 to destroy</b>. (3) After apply, <code>terraform state list</code> shows three keyed addresses. (4) <code>terraform plan -detailed-exitcode; echo $?</code> prints <code>0</code>.</p>
+</div>
+<details><summary>Hint</summary>Write the data first: the YAML with three entries, using the incident text for <code>cw-dev</code>. Map each old index to its new key with <code>moved</code>. A tenant that already exists gets an <code>import</code> block, not just a new map entry. Accepting drift here means changing the SoT, not running refresh-only.</details>
+<details><summary>Solution</summary>
+<pre><code># sot.yaml
+tenants:
+  cw-prod: { descr: "Production" }
+  cw-dev:  { descr: "Dev (incident 4711)" }   # accepted drift lives in the SoT
+  cw-lab:  { descr: "Lab - adopted" }
+
+# main.tf
+locals {
+  sot = yamldecode(file("${path.module}/sot.yaml"))
+}
+
+resource "aci_tenant" "t" {
+  for_each    = local.sot.tenants
+  name        = each.key
+  description = each.value.descr
+}
+
+moved {
+  from = aci_tenant.t[0]
+  to   = aci_tenant.t["cw-prod"]
+}
+moved {
+  from = aci_tenant.t[1]
+  to   = aci_tenant.t["cw-dev"]
+}
+
+import {
+  to = aci_tenant.t["cw-lab"]
+  id = "uni/tn-cw-lab"
+}
+
+# CI: terraform plan -input=false -detailed-exitcode  (exit 2 = APIC and SoT differ)</code></pre>
+<p>Passes <code>terraform validate</code> and <code>fmt -check</code> on 1.13.3 with provider 2.17.0. Not run against an APIC. <span class="tag">⚠ exact plan counts on the sandbox</span> Remove <code>variable "tenants"</code>. Leave the <code>moved</code> blocks in until every workspace has applied.</p>
+</details>
+
+<h2 id="recall">Recall check</h2>
+<p>Today</p>
+<ol>
+<li>You change <code>count</code> to <code>for_each</code> on a resource that holds two live tenants. What does the plan propose with no extra blocks, and what fixes it?
+<details><summary>Answer</summary>It plans to destroy <code>[0]</code> and <code>[1]</code> and create keyed instances (offline: 3 to add, 2 to destroy). Fix: one <code>moved { from = r[0]  to = r["key"] }</code> per index. The plan then shows "has moved to" and 0 to destroy.</details></li>
+<li>A colleague edits a tenant description in the GUI during an incident. You run <code>terraform apply -refresh-only</code>. What changed, what didn't, and what does the next normal plan show?
+<details><summary>Answer</summary>State (and outputs) now hold the GUI value. Nothing changed on the APIC, and the config still has the old value. So the next normal plan proposes reverting the description. To accept the change, put it in the SoT.</details></li>
+<li>Why can a <code>restconf_config</code> run, or its <code>--check</code>, report no change while the Cat8000V has extra loopbacks that the SoT doesn't list?
+<details><summary>Answer</summary>In 8.4.0 it computes <code>dict_diff(running, candidate)</code>, which only returns keys present in the candidate. Device-only config is never reported or removed. Diff both ways, and delete the extras explicitly.</details></li>
+<li>NSO 6.5: name the three out-of-band policy actions and what each does with an outside change to service-managed config. Which applies when no rule matches?
+<details><summary>Answer</summary><code>sync-from-device</code> copies the device value into CDB (accept). <code>sync-to-device</code> reverts the device to CDB (reject). <code>manage-by-service</code> accepts the value and stores it with the service instance, so it survives re-deploy and is removed with the service. The fallback is <code>sync-from-device</code>.</details></li>
+</ol>
+<p>From history</p>
+<ol start="5">
+<li>(from 2026-11-18) Which tag goes on <code>&lt;device&gt;</code> in an NSO service template, why, and what does <code>replace</code> do differently from <code>merge</code> for children?
+<details><summary>Answer</summary><code>tags="nocreate"</code>: the template must never create a device entry, only add config under one that exists. <code>merge</code> and <code>nocreate</code> are inherited by child nodes; <code>replace</code> and <code>create</code> are not. <code>replace</code> replaces the node's content instead of merging into it. (Restated from the 2026-11-18 page.)</details></li>
+<li>(from 2026-11-23) A requirement says "two NSO nodes with automatic failover and no split-brain." What do you push back with?
+<details><summary>Answer</summary>HA Raft needs at least 3 nodes: 3 tolerate one failure and 5 tolerate two. Two nodes cannot tell a dead peer from a lost link. Rule-based HA may need manual action to recover. (Restated from the 2026-11-23 page.)</details></li>
+</ol>
+
+<h2 id="deeper">Go deeper</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/out-of-band-interoperation.md" target="_blank" rel="noopener">Out-of-band Interoperation</a> <span class="b ok">✅ verified 2026-11-26</span> NSO 6.5. Best for <code>confirm-network-state</code>, policy rules and actions, and the worked rule-behavior example.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/lifecycle-operations" target="_blank" rel="noopener">Lifecycle Operations | Guides and References NSO 6.5 (EoM) | Cisco Crosswork NSO Documentation</a> <span class="b ok">✅ verified 2026-11-26</span> NSO 6.5. Best for device <code>check-sync</code>/<code>compare-config</code>/<code>sync-from</code>/<code>sync-to</code> and service <code>deep-check-sync</code> and <code>re-deploy reconcile</code>.</li>
+<li><a href="https://www.ciscolive.com/c/dam/r/ciscolive/apjc/docs/2023/pdf/BRKDEV-2014.pdf" target="_blank" rel="noopener">Breaking down the DevNet Expert Lab Exam (BRKDEV-2014)</a> <span class="b ok">✅ verified 2026-11-26</span> Cisco Live APJC 2023, DevNet Expert v1.0. Best for task format (starting code, TODOs, commit and push), solution best practices and sample scenario questions.</li>
+<li><a href="https://learningcontent.cisco.com/documents/marketing/exam-topics/CCIE_Automation_V1.1_BP.pdf" target="_blank" rel="noopener">CCIE Automation v1.1 – Lab Exam Topics</a> <span class="b ok">✅ verified 2026-11-26</span> v1.1 (2025). Best for the exact 1.2 wording and domain weights.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/info/rfc8342/#section-5.3" target="_blank" rel="noopener">RFC 8342: Network Management Datastore Architecture (NMDA) | RFC Editor</a> <span class="b ok">✅ verified 2026-11-26</span> RFC, opens at §5.3. Best for intended vs applied vs operational, and why they legitimately differ (remnant config, missing resources, system-controlled resources).</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://developer.hashicorp.com/terraform/language/v1.13.x/modules/develop/refactoring" target="_blank" rel="noopener">Refactor modules | Terraform | HashiCorp Developer</a> <span class="b ok">✅ verified 2026-11-26</span> Terraform v1.13.x. Best for <code>moved</code> with count/for_each key mapping and why to keep moved blocks.</li>
+<li><a href="https://developer.hashicorp.com/terraform/tutorials/state/refresh" target="_blank" rel="noopener">Use refresh-only mode to sync Terraform state | Terraform | HashiCorp Developer</a> <span class="b ok">✅ verified 2026-11-26</span> Current tutorial (pin 1.13). Best for reading a refresh-only plan and when to apply one.</li>
+<li><a href="https://docs.ansible.com/projects/ansible/latest/collections/ansible/utils/fact_diff_module.html" target="_blank" rel="noopener">ansible.utils.fact_diff module – Find the difference between currently set facts</a> <span class="b ok">✅ verified 2026-11-26</span> ansible.utils 6.1.1 docs (lab 6.0.1). Best for <code>before</code>/<code>after</code>, <code>skip_lines</code> and the <code>diff_lines</code> return.</li>
+</ul>
+<p class="small">Also verified this run and linked inline: the v1.1 Equipment and Software List (PDF), Cisco Live BRKDCN-2607, Genie Diff, the Terraform v1.13.x plan reference, the check-mode guide (Ansible 13 docs), and ansible.utils.validate. Fetched, not linked: the NSO llms.txt index (hub), the Terraform <code>moved</code> and <code>import</code> block references (JavaScript shell over curl), "Validate data against set criteria with Ansible".</p>
+
+<footer>
+<p><b>Links:</b> 14 ✅ · 0 🔎 · 0 removed</p>
+<p><b>⚠ Unverified claims:</b> v1.1 lab task format and module layout (BRKDEV-2014 describes v1.0); expectation that the SoT is files, NSO or a given API (inferred from the equipment list); Terraform <code>ignore_changes</code> syntax (not re-read today); "next normal plan reverts the drift" after refresh-only (derived from the plan modes, not stated verbatim); <code>allow_existing_on_create</code> default and behavior on 2.17.0; drill plan counts and import behavior against the sandbox APIC (syntax validated only); <code>jsonschema</code> library and the collection path on the CWS; ansible.utils 6.0.1 on the CWS (per the tracker, not the equipment list); NSO CLI forms (<code>devices device r1 ?</code>, <code>services out-of-band policy ?</code>) and the cisco-ios-cli NED's check-sync support (no NSO in lab); deleting an NSO service instance removes the config it created (core FASTMAP behavior, not re-read today); <code>restconf_config</code> behavior read from 8.4.0 source, not run against a device; recall answers 5 and 6 restated from earlier pages.</p>
+<p><b>Version flag:</b> Terraform docs v1.13.x; offline checks on 1.13.3 with <code>ciscodevnet/aci</code> 2.17.0. Ansible docs are newer than the pin (check mode from Ansible 13, i.e. core 2.20; ansible.utils 6.1.1). Offline runs used core 2.19.3, ansible.utils 6.0.1, ansible.netcommon 8.4.0 and cisco.aci 2.12.0. NSO pages are 6.5. BRKDEV-2014 (2023) predates v1.1.</p>
+<p><b>Tomorrow:</b> Friday 2026-11-27, Weekly review 9: units 33–36 (1.1, 2.9.c-d, 3.1.iosxe, 1.2). Next new unit: Monday 2026-11-30, unit 37 of 49, 3.1 Catalyst Center + Intersight.</p>
+</footer>
+</main>
+
+</body></html>
