@@ -1,0 +1,473 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Weekly Review 9</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* VOICE work, study page in a 45-page series (weekly review)
+   IDEA a pre-change checklist: every check compares one pair of things, so name the pair and you know its blind spot
+   PICTURE week map grouped by drill, a six-rung check ladder, the drill's request sequence
+   COLOUR series tokens: near-white ground, blue accent, green ok, amber warn
+   TYPE system UI stack (no external fonts per spec)
+   LAYOUT single 860px column, sticky mini TOC, tables in scroll wrappers */
+:root{--bg:#fbfbfa;--fg:#1c1f23;--mut:#5b636d;--card:#fff;--bd:#d9dde2;--ac:#0b6bcb;--ac2:#0f8a5f;--wn:#b45309;--bad:#b42318;--code:#f1f3f5;--sv1:#dbeafe;--sv2:#dcfce7;--sv3:#fef3c7;--sv4:#fee2e2;--svs:#334155}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171a;--fg:#e6e8ea;--mut:#9aa3ad;--card:#1b1f24;--bd:#333a42;--ac:#6cb2ff;--ac2:#4ade9b;--wn:#fbbf24;--bad:#f87171;--code:#23282e;--sv1:#1e3a5f;--sv2:#14532d;--sv3:#5a4310;--sv4:#5b1d1d;--svs:#aab4c0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow-x:clip}
+main{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--bd);padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5;display:flex;gap:12px;overflow-x:auto;white-space:nowrap;font-size:14px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+h1,h2,h3{text-wrap:balance}
+nav a{color:var(--ac);text-decoration:none}
+h1{font-size:26px;margin:20px 0 4px}h2{font-size:21px;margin:32px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}h3{font-size:17px;margin:20px 0 6px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--mut);font-size:14px}
+.meta b{color:var(--fg)}
+.tw{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+caption{text-align:left;padding-bottom:4px}
+pre{background:var(--code);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;overflow-x:auto;font-size:13px;line-height:1.45;margin:10px 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;overflow-wrap:anywhere}
+pre code{overflow-wrap:normal}
+p code,li code,td code{background:var(--code);padding:1px 4px;border-radius:4px}
+.svgw{max-width:580px;margin:12px auto}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--fg);font:13px system-ui,sans-serif}
+svg .sm{font-size:12px}
+svg .s{stroke:var(--svs);stroke-width:1.3}
+svg .m{fill:var(--mut)}
+svg .w{fill:var(--wn)}
+svg .hl{stroke:var(--ac);stroke-width:2}
+svg .ar{stroke:var(--svs);stroke-width:1.3;fill:none;marker-end:url(#ah)}
+svg .ar2{stroke:var(--svs);stroke-width:1.3;fill:none;marker-end:url(#ah2)}
+svg .aw{stroke:var(--wn);stroke-width:1.5;fill:none;marker-end:url(#ah2)}
+svg .ll{stroke:var(--svs);stroke-width:1;stroke-dasharray:4 4}
+a{color:var(--ac)}
+.b{display:inline-block;font-size:12px;border:1px solid var(--bd);border-radius:10px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.ok{color:var(--ac2)}.wn{color:var(--wn)}
+details{border:1px solid var(--bd);border-radius:8px;padding:6px 10px;margin:8px 0;background:var(--card)}
+summary{cursor:pointer;font-weight:600}
+ul,ol{padding-left:22px}li{margin:3px 0}
+.tag{font-size:12px;color:var(--wn);white-space:nowrap}
+.small{font-size:14px;color:var(--mut)}
+.q{margin:14px 0 4px;font-weight:600}
+footer{margin-top:36px;border-top:1px solid var(--bd);padding-top:12px;font-size:14px;color:var(--mut)}
+@media (max-width:600px){table{font-size:13px}th,td{padding:5px 6px}}
+</style>
+
+<nav><a href="#top">Top</a><a href="#snap">Snapshot</a><a href="#fit">Week map</a><a href="#l1">L1</a><a href="#l2">L2</a><a href="#l3">L3</a><a href="#anat">Anatomy</a><a href="#bf">Break/fix</a><a href="#speed">Speed</a><a href="#drill">Drill</a><a href="#recall">Recall</a><a href="#self">Self-check</a><a href="#deeper">Go deeper</a></nav>
+<main id="top">
+<h1>Weekly Review 9</h1>
+<div class="card meta">
+<span><b>Date</b> Fri 2026-11-27</span>
+<span><b>Covers</b> units 33–36 of 49: 1.1 · 2.9.c-d · 3.1 (IOS XE) · 1.2</span>
+<span><b>Domains</b> 1.0 Software Design, Development, and Deployment (20%) · 2.0 Infrastructure as Code (30%) · 3.0 Network Programmability and Automation (25%)</span>
+<span><b>Tiers</b> T1 2.9.c-d · T2 3.1 · T3 1.1, 1.2</span>
+<span><b>Read</b> ~18 min (+ drill ~25 min)</span>
+<span><b>Review</b> 9 of the first pass</span>
+</div>
+<p class="small">No new topic today. Weights are from the <a href="https://learningcontent.cisco.com/documents/marketing/exam-topics/CCIE_Automation_V1.1_BP.pdf" target="_blank" rel="noopener">CCIE Automation v1.1 – Lab Exam Topics</a><span class="b ok">✅</span> PDF, read today. Pages reviewed: <a href="https://claude.ai/artifact/2Fs7TL8Pbkhsgnd9S3jWap" target="_blank" rel="noopener">Designing Automation Solutions</a> · <a href="https://claude.ai/artifact/8L7GX3D7bgtXWDJx4nELLK" target="_blank" rel="noopener">NSO Actions and Logs</a> · <a href="https://claude.ai/artifact/YSAeHN2HFZju1jRsAMqAit" target="_blank" rel="noopener">Python Against IOS XE</a> · <a href="https://claude.ai/artifact/VZ72JXo7tzzCfYEXBR9RhP" target="_blank" rel="noopener">Modify Automation Solutions</a>.</p>
+
+<h2 id="snap">Mental snapshot</h2>
+<ul>
+<li>Theme of the week: every tool has a read-only check, and each check compares exactly one pair of things. Name the pair and you know the blind spot.</li>
+<li>Design (1.1) decides failure behaviour up front. NSO HA Raft needs at least three nodes. Kubernetes splits "restart it" (liveness) from "stop sending it traffic" (readiness).</li>
+<li>Your clients live inside other people's limits. A 429 may carry <code>Retry-After</code>, and its value is either seconds or an HTTP-date.</li>
+<li>An NSO action (2.9.c) is YANG <code>action</code> + <code>tailf:actionpoint</code> + a registered <code>ncs.dp.Action</code>. Its transaction is read-only. Service <code>check-sync</code> never touches the device; <code>deep-check-sync</code> does.</li>
+<li>Python VM logs (2.9.d): <code>self.log</code> goes to <code>logs/ncs-python-vm-&lt;pkg&gt;.log</code> at level info by default. <code>print()</code> and compile errors go to the shared <code>ncs-python-vm.log</code>.</li>
+<li>IOS XE scripts (3.1): PATCH never creates, POST fails with 409 on an existing resource, PUT does both. Encode keys with <code>quote(v, safe="")</code>. ncclient targets candidate unless you say otherwise.</li>
+<li>Modify (1.2): compare first, change the smallest thing, compare again. Keep object identity with <code>moved</code>, and settle drift field by field: accept, reject or co-own.</li>
+</ul>
+
+<h2 id="fit">Where this week fits</h2>
+<div class="svgw">
+<svg viewBox="0 0 460 312" role="img" aria-label="Week map: units 1.1, 3.1 and 1.2 feed drill A, a runnable Python script against Cat8000V; units 1.2 and 2.9.c-d feed drill B, a paper NSO exercise. Next week continues 3.1 with Catalyst Center, Intersight, Meraki and FDM.">
+<defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z" fill="var(--svs)"/></marker></defs>
+<text x="8" y="18" class="m">This week, grouped by drill (not by day)</text>
+<rect x="8" y="30" width="102" height="56" rx="6" fill="var(--sv2)" class="s"/><text x="16" y="52">1.1 Design</text><text x="16" y="72" class="m sm">Mon · T3</text>
+<rect x="122" y="30" width="102" height="56" rx="6" fill="var(--sv1)" class="s"/><text x="130" y="52">3.1 IOS XE</text><text x="130" y="72" class="m sm">Wed · T2</text>
+<rect x="236" y="30" width="102" height="56" rx="6" fill="var(--sv2)" class="s"/><text x="244" y="52">1.2 Modify</text><text x="244" y="72" class="m sm">Thu · T3</text>
+<rect x="350" y="30" width="102" height="56" rx="6" fill="var(--sv1)" class="s"/><text x="358" y="52">2.9.c-d NSO</text><text x="358" y="72" class="m sm">Tue · T1</text>
+<path class="ar" d="M57 86V138"/><path class="ar" d="M171 86V138"/><path class="ar" d="M270 86V138"/>
+<path class="ar" d="M320 86V220"/><path class="ar" d="M401 86V220"/>
+<rect x="8" y="140" width="292" height="52" rx="6" fill="var(--sv3)" class="hl"/><text x="16" y="162" font-weight="700">Drill A · runnable</text><text x="16" y="180" class="m sm">Python reconcile script → Cat8000V RESTCONF</text>
+<rect x="236" y="222" width="216" height="52" rx="6" fill="var(--sv3)" class="s"/><text x="244" y="244" font-weight="700">Drill B · paper</text><text x="244" y="262" class="m sm">NSO actions, logs, OOB policy</text>
+<text x="8" y="242" class="w">Thread: every check</text><text x="8" y="260" class="w">has a blind spot</text>
+<text x="8" y="302" class="m sm">Next: 3.1 Catalyst Center + Intersight (Mon), Meraki + FDM (Tue)</text>
+</svg>
+</div>
+<p class="small">1.2 feeds both drills: the same "compare, decide, change, re-compare" loop runs in a Python script and in NSO. NSO is still unbuilt in the lab, so Drill B stays on paper.</p>
+
+<h2 id="l1">L1 · What the four units are for</h2>
+<p>The four units form one loop. 1.1 decides how a solution behaves when something fails or slows down, before any code exists. 3.1 and 2.9 are the two ways this week's solutions touch a device. One is a direct Python client against Cat8000V. The other is NSO with the cisco-ios-cli NED, where you add actions to check what a service did, and logs to see what your own code did. 1.2 covers every day after go-live: a requirement changes, someone edits a box by hand, and you change the solution without breaking what already runs.</p>
+<p>Each of those steps needs the difference between "the request was accepted" and "the network is in the intended state". A 204 from RESTCONF, an <code>&lt;ok/&gt;</code> from NETCONF, a green readiness probe and an in-sync service each prove one narrow thing. The review below lines those checks up so you can pick the right one under time pressure.</p>
+
+<h2 id="l2">L2 · Mechanics: what each check compares</h2>
+<div class="tw"><table>
+<caption>Read-only checks met this week (and in 1.2's toolset)</caption>
+<thead><tr><th>Check</th><th>Compares</th><th>Blind spot</th><th>Next step</th></tr></thead>
+<tbody>
+<tr><td>HTTP 2xx / NETCONF <code>&lt;ok/&gt;</code></td><td>Request accepted by the server</td><td>What the device now holds (merges, defaults, other writers)</td><td>GET or get-config of the same path, then compare</td></tr>
+<tr><td>K8s readiness probe</td><td>Is the container ready for traffic?</td><td>Restarts nothing; the Pod just leaves the Service's EndpointSlices</td><td>Fix the endpoint; hangs are liveness's job</td></tr>
+<tr><td>K8s liveness probe</td><td>Is the process healthy?</td><td>A dependency check here restarts every replica when that dependency blips</td><td>Keep it local; add a startupProbe for slow boots</td></tr>
+<tr><td>NSO <code>devices device r1 check-sync</code></td><td>Config signature vs NSO's copy</td><td>The NED may answer <code>unsupported</code></td><td><code>compare-config</code> (full fetch)</td></tr>
+<tr><td>NSO <code>&lt;svc&gt; check-sync</code></td><td>Service code output vs CDB</td><td>Never contacts the device</td><td><code>&lt;svc&gt; deep-check-sync</code></td></tr>
+<tr><td><code>restconf_config</code>, <code>--check</code></td><td>SoT keys vs running</td><td>Device-only extras; modules without check-mode support report nothing</td><td>Diff both ways; delete extras explicitly</td></tr>
+<tr><td><code>terraform plan</code></td><td>Config vs refreshed state</td><td>Objects the config never declared</td><td><code>import</code> block to adopt</td></tr>
+<tr><td><code>terraform plan -refresh-only</code></td><td>Remote objects vs state</td><td>Updates state only; config still says the old value</td><td>Edit the SoT to accept, or apply normally to revert</td></tr>
+</tbody></table></div>
+<p>Readiness and liveness behaviour is from <a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" target="_blank" rel="noopener">Pod Lifecycle | Kubernetes</a><span class="b ok">✅</span>. The two NSO rows are from <a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/lifecycle-operations" target="_blank" rel="noopener">Lifecycle Operations (NSO 6.5)</a><span class="b ok">✅</span>. The check-mode rule is from <a href="https://docs.ansible.com/projects/ansible/13/playbook_guide/playbooks_checkmode.html" target="_blank" rel="noopener">Validating tasks: check mode and diff mode</a><span class="b ok">✅</span>. The <code>restconf_config</code> diff behaviour was read from the netcommon 8.4.0 source on 2026-11-26.</p>
+<div class="svgw">
+<svg viewBox="0 0 460 350" role="img" aria-label="Check ladder with six rungs from shallow to deep: HTTP 2xx misses the device's real state; device check-sync may be unsupported; service check-sync never contacts the device; a one-way diff misses device-only extras; a full fetch and diff costs a config read; a two-way diff still needs an authority decision per field.">
+<text x="8" y="18" class="m">Shallow and cheap</text><text x="452" y="18" class="m" text-anchor="end">What it misses</text>
+<rect x="8" y="28" width="230" height="42" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="45">HTTP 2xx · &lt;ok/&gt;</text><text x="16" y="62" class="m sm">request accepted</text>
+<text x="248" y="45" class="w">what the device now holds</text><text x="248" y="62" class="m sm">→ read back</text>
+<rect x="8" y="76" width="230" height="42" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="93">devices check-sync</text><text x="16" y="110" class="m sm">config signature vs NSO copy</text>
+<text x="248" y="93" class="w">may say unsupported</text><text x="248" y="110" class="m sm">→ compare-config</text>
+<rect x="8" y="124" width="230" height="42" rx="6" fill="var(--sv1)" class="s"/><text x="16" y="141">service check-sync</text><text x="16" y="158" class="m sm">service output vs CDB</text>
+<text x="248" y="141" class="w">never contacts the device</text><text x="248" y="158" class="m sm">→ deep-check-sync</text>
+<rect x="8" y="172" width="230" height="42" rx="6" fill="var(--sv2)" class="s"/><text x="16" y="189">one-way diff</text><text x="16" y="206" class="m sm">restconf_config · --check</text>
+<text x="248" y="189" class="w">device-only extras</text><text x="248" y="206" class="m sm">→ diff both ways</text>
+<rect x="8" y="220" width="230" height="42" rx="6" fill="var(--sv2)" class="s"/><text x="16" y="237">full fetch + diff</text><text x="16" y="254" class="m sm">compare-config · deep-check · GET</text>
+<text x="248" y="237" class="w">nothing on that box</text><text x="248" y="254" class="m sm">cost: a full config read</text>
+<rect x="8" y="268" width="230" height="42" rx="6" fill="var(--sv3)" class="hl"/><text x="16" y="285" font-weight="700">two-way diff</text><text x="16" y="302" class="m sm">missing · changed · extra</text>
+<text x="248" y="285" class="w">decides nothing by itself</text><text x="248" y="302" class="m sm">→ authority per field</text>
+<text x="8" y="336" class="m sm">Deeper rungs do more device I/O and leave fewer blind spots.</text>
+</svg>
+</div>
+
+<h2 id="l3">L3 · Exam detail: the traps worth one more pass</h2>
+<h3>1.1 Design</h3>
+<ul>
+<li><b>Two-node HA.</b> <a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/high-availability" target="_blank" rel="noopener">NSO 6.5 High Availability</a><span class="b ok">✅</span> says Raft needs at least three nodes. Three survives one failure, and five survives two. A two-node system cannot tell a dead peer from its own lost link. Rule-based HA may need occasional manual operator action.</li>
+<li><b>Probes.</b> If a startup probe is configured, liveness and readiness wait until it succeeds. The docs' sizing example is 30 × 10 s = 300 s (<a href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/" target="_blank" rel="noopener">Configure Liveness, Readiness and Startup Probes</a><span class="b ok">✅</span>).</li>
+<li><b>Rate limits.</b> Meraki allows 10 requests/s per organization, shared by every application, with 10 extra in the first second, plus 100 requests/s per source IP (<a href="https://developer.cisco.com/meraki/api-v1/rate-limit/" target="_blank" rel="noopener">Meraki Rate Limit</a><span class="b ok">✅</span>). <a href="https://www.rfc-editor.org/info/rfc9110/#section-10.2.3" target="_blank" rel="noopener">RFC 9110 §10.2.3</a><span class="b ok">✅</span> allows <code>Retry-After</code> as an HTTP-date or delay-seconds. A client that calls <code>float()</code> on it crashes on the date form.</li>
+</ul>
+<h3>2.9.c-d NSO actions and logs</h3>
+<ul>
+<li><b>Join key.</b> The <code>tailf:actionpoint</code> name must equal the first argument of <code>register_action()</code>. <code>action</code> needs <code>yang-version 1.1</code>; YANG 1.0 used <code>tailf:action</code>. The <code>trans</code> passed to <code>cb_action</code> is read-only, because configuration belongs in services (<a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/applications-in-nso.md" target="_blank" rel="noopener">Applications in NSO</a><span class="b ok">✅</span>).</li>
+<li><b>Timeout.</b> <code>/ncs-config/api/action-timeout</code> defaults to PT240S (<a href="https://nso-docs.cisco.com/guides/nso-6.5/resources/man/ncs.conf.5.md" target="_blank" rel="noopener">ncs.conf</a><span class="b ok">✅</span>). When it fires, NSO kills the worker sockets for that action and calls <code>cb_abort()</code> without restarting the VMs.</li>
+<li><b>Log levels.</b> The default is info. <code>python-vm logging level level-debug</code> raises every VM. <code>vm-levels &lt;pkg&gt;</code> raises one and takes precedence. Files are named <code>ncs-python-vm-&lt;pkg&gt;.log</code> (<a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/nso-virtual-machines/nso-python-vm.md" target="_blank" rel="noopener">NSO Python VM</a><span class="b ok">✅</span>). The levels match Python's <a href="https://docs.python.org/3.13/library/logging.html#levels" target="_blank" rel="noopener">logging levels</a><span class="b ok">✅</span>: DEBUG 10, INFO 20.</li>
+</ul>
+<h3>3.1 Python against IOS XE</h3>
+<ul>
+<li><b>Verbs.</b> <a href="https://www.rfc-editor.org/info/rfc8040/#section-4.6" target="_blank" rel="noopener">RFC 8040 §4.6</a><span class="b ok">✅</span>: if the PATCH target does not exist, the server must not create it. §4.4.1: POST to an existing resource gives 409. §4.5: PUT gives 201 on create and 204 on replace.</li>
+<li><b>Encoding.</b> <a href="https://docs.python.org/3.13/library/urllib.parse.html#urllib.parse.quote" target="_blank" rel="noopener">urllib.parse.quote</a><span class="b ok">✅</span> has <code>safe='/'</code>, so <code>quote("1/0/1")</code> leaves the slashes. <a href="https://www.rfc-editor.org/info/rfc7951/#section-6.1" target="_blank" rel="noopener">RFC 7951 §6.1</a><span class="b ok">✅</span> sends int64, uint64 and decimal64 as JSON strings.</li>
+<li><b>Datastores.</b> ncclient's <code>edit_config</code> defaults to <code>target='candidate'</code> (<a href="https://ncclient.readthedocs.io/en/v0.7.1/manager.html" target="_blank" rel="noopener">ncclient manager</a><span class="b ok">✅</span>). The <a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">17.5 NETCONF chapter</a><span class="b ok">✅</span> says that with the candidate datastore on, running is not writable through NETCONF. It also gives a 600 s confirmed-commit default and says RESTCONF has no confirmed commit.</li>
+</ul>
+<h3>1.2 Modify</h3>
+<ul>
+<li><b>Refactor.</b> Moving to <code>for_each</code> needs a <code>moved</code> block naming the instance key, or Terraform plans destroy-and-create. Removing a moved block later is a breaking change (<a href="https://developer.hashicorp.com/terraform/language/v1.13.x/modules/develop/refactoring" target="_blank" rel="noopener">Refactor modules, v1.13.x</a><span class="b ok">✅</span>).</li>
+<li><b>Drift gate.</b> <code>-detailed-exitcode</code> returns 0 (no changes), 1 (error) or 2 (changes). Refresh-only mode updates state and root outputs only (<a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/plan" target="_blank" rel="noopener">terraform plan, v1.13.x</a><span class="b ok">✅</span>).</li>
+<li><b>Out-of-band policy.</b> Rules match by path and change type, longest path first. If no rule matches, NSO falls back to <code>sync-from-device</code>. On re-deploy, a value accepted with <code>sync-from-device</code> is overwritten by the service value; <code>manage-by-service</code> keeps it (<a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/out-of-band-interoperation.md" target="_blank" rel="noopener">Out-of-band Interoperation</a><span class="b ok">✅</span>).</li>
+</ul>
+<div class="tw"><table>
+<caption>Who wins when the network and the SoT disagree</caption>
+<thead><tr><th>Decision</th><th>Terraform 1.13</th><th>NSO 6.5 out-of-band policy</th><th>Python script (Drill A)</th></tr></thead>
+<tbody>
+<tr><td>Accept the network value</td><td><code>apply -refresh-only</code>, then put the value in config</td><td><code>sync-from-device</code> (a re-deploy writes the service value back)</td><td>Write the value back to the SoT file</td></tr>
+<tr><td>Reject: restore the SoT</td><td>Normal <code>apply</code></td><td><code>sync-to-device</code></td><td>PUT the SoT entry</td></tr>
+<tr><td>Co-own: keep the operator's value</td><td><code>lifecycle { ignore_changes }</code> <span class="tag">⚠ not re-read</span></td><td><code>manage-by-service</code> (kept through re-deploy, deleted with the service)</td><td>Leave that field out of the compare</td></tr>
+<tr><td>Nobody decided</td><td>Next plan proposes the revert <span class="tag">⚠ derived</span></td><td>Fallback <code>sync-from-device</code></td><td>Whatever the code defaults to: report extras, delete only with <code>--prune</code></td></tr>
+</tbody></table></div>
+
+<h2 id="anat">Anatomy: five shapes to recognise</h2>
+<p class="small">These are annotated fragments, not the drill solution.</p>
+<pre><code># RESTCONF: rerunnable write to a list instance (requests 2.34, Python 3.13)
+from urllib.parse import quote
+url = f"{base}/Loopback={quote(str(lo_id), safe='')}"   # keys: always safe=""
+r = s.put(url, json=body, timeout=10)                   # 201 create / 204 replace (RFC 8040 s4.5)
+r.raise_for_status()                                    # then GET it back and compare</code></pre>
+<pre><code># NETCONF: choose the target from what the device advertises (ncclient 0.7.1)
+from ncclient import manager
+with manager.connect(host="10.0.0.251", port=830, username=u, password=p,
+                     hostkey_verify=False, look_for_keys=False, allow_agent=False) as m:  # lab only
+    target = "candidate" if ":candidate" in m.server_capabilities else "running"
+    m.edit_config(config=cfg, target=target)           # default would be 'candidate'
+    if target == "candidate":
+        m.commit()</code></pre>
+<pre><code>// NSO 6.5 action: YANG side (module must declare yang-version 1.1)
+action self-test {
+  tailf:actionpoint loopback-self-test;       // join key, part 1
+  output { leaf success { type boolean; } }
+}
+# Python side
+import ncs
+from ncs.dp import Action
+class SelfTest(Action):
+    @Action.action
+    def cb_action(self, uinfo, name, kp, input, output, trans):  # trans is read-only
+        self.log.debug("kp=", kp)            # dropped at the default level (info)
+        output.success = True
+class Main(ncs.application.Application):
+    def setup(self):
+        self.register_action('loopback-self-test', SelfTest)     # join key, part 2</code></pre>
+<pre><code># Terraform 1.13: count -> for_each without destroying index 0
+resource "aci_tenant" "t" {
+  for_each = toset(["prod", "lab"])
+  name     = each.key
+}
+moved {
+  from = aci_tenant.t[0]
+  to   = aci_tenant.t["prod"]
+}</code></pre>
+<pre><code># NSO 6.5 out-of-band policy (shape from the 6.5 guide; Loopback paths ⚠ unverified)
+services out-of-band policy loopback-servicepoint
+ rule keep-description
+  path         ios:interface/Loopback/description
+  at-value-set manage-by-service
+ !
+ rule protect-ip
+  path         ios:interface/Loopback/ip/address
+  at-delete    sync-to-device
+  at-value-set sync-to-device
+ !
+!</code></pre>
+
+<h2 id="bf">Break/fix: one row per failure mode</h2>
+<div class="tw"><table>
+<thead><tr><th>Symptom</th><th>Cause</th><th>Verify</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td>Loopback script works once; the rerun gets 409 Conflict</td><td>POST is create-only (RFC 8040 §4.4.1)</td><td>Print <code>r.status_code</code> and the <code>ietf-restconf:errors</code> body</td><td>PUT to <code>…/Loopback=&lt;key&gt;</code>; read back</td></tr>
+<tr><td>Script reports "no gaps" but router1 still has a hand-made Loopback99</td><td>Compare iterates SoT keys only</td><td><code>run.keys() - want.keys()</code> on the GET result</td><td>Report extras; delete them only when the requirement says the SoT is authoritative (<code>--prune</code>)</td></tr>
+<tr><td>All API replicas restart together when the DB blips</td><td>Liveness probe checks the DB</td><td><code>kubectl describe pod</code>: liveness failures, restart count <span class="tag">⚠</span></td><td>Liveness checks only the process; the DB check moves to readiness</td></tr>
+<tr><td>NSO <code>loopback L10 check-sync</code> says in-sync, but the IP is gone on r1</td><td>Service check-sync compares with CDB, not the device</td><td><code>loopback L10 deep-check-sync</code>; <code>devices device r1 compare-config</code></td><td>Per policy: <code>sync-to</code> to revert, or <code>sync-from</code> then <code>re-deploy dry-run</code> to accept</td></tr>
+<tr><td><code>self.log.debug()</code> lines never appear; <code>print()</code> output is missing too</td><td>Level is info; stdout goes to the shared log</td><td><code>show running-config python-vm logging</code>; <code>ls logs/ncs-python-vm*</code></td><td><code>vm-levels loopback level level-debug</code>, commit; read <code>ncs-python-vm.log</code> for print and tracebacks</td></tr>
+</tbody></table></div>
+
+<h2 id="speed">Speed notes (offline on the workstation)</h2>
+<ul>
+<li><code>python3 -c "import urllib.parse as u, inspect; print(inspect.signature(u.quote))"</code> prints <code>(string, safe='/', encoding=None, errors=None)</code> (run here on 3.13.18).</li>
+<li><code>python3 -c "from ncclient import manager; help(manager.Manager.edit_config)"</code> shows the default target <span class="tag">⚠ ncclient on CWS unconfirmed</span>.</li>
+<li><code>terraform plan -detailed-exitcode; echo $?</code> gives 0, 1 or 2. That is the drift gate shape Drill A copies.</li>
+<li>NSO CLI: <code>loopback L10 ?</code> lists the service actions; <code>show python-vm status start</code> shows each class and its error-info <span class="tag">⚠ ? output not seen</span>.</li>
+<li><code>kubectl explain pod.spec.containers.readinessProbe</code> lists probe fields without the docs <span class="tag">⚠ needs an API server</span>.</li>
+<li><code>curl -sk -u admin:admin -H 'Accept: application/yang-data+json' https://10.0.0.251/restconf/data/Cisco-IOS-XE-native:native/interface/Loopback</code> shows the real JSON shape before you write a parser <span class="tag">⚠</span>.</li>
+</ul>
+
+<h2 id="drill">Integration drill (~25 min)</h2>
+<p><b>Combines</b> 1.1 (resilience, observability), 1.2 (gap analysis, authority) and 3.1 (RESTCONF from Python) in Part A, then 1.2 and 2.9.c-d in Part B.</p>
+<h3>Part A: modify a loopback script (runnable)</h3>
+<p><b>Target:</b> router1 (Cat8000V 10.0.0.251, RESTCONF already in its day-0 config). Before you start, create Loopback10 with description <code>old</code> and a hand-made Loopback99 by CLI. <b>Given:</b> this script, which works once.</p>
+<pre><code># loopbacks_v1.py (the existing solution)
+import json, requests
+BASE = "https://10.0.0.251/restconf/data/Cisco-IOS-XE-native:native/interface"
+s = requests.Session(); s.auth = ("admin", "admin"); s.verify = False
+s.headers.update({"Content-Type": "application/yang-data+json"})
+for lo in json.load(open("sot.json"))["loopbacks"]:
+    try:
+        s.post(BASE, json={"Cisco-IOS-XE-native:Loopback": [{"name": lo["id"],
+               "description": lo["description"],
+               "ip": {"address": {"primary": {"address": lo["ip"], "mask": "255.255.255.255"}}}}]})
+    except:
+        pass
+print("done")</code></pre>
+<pre><code>{"loopbacks": [
+  {"id": 10, "ip": "10.10.10.10", "description": "probe"},
+  {"id": 11, "ip": "10.10.10.11", "description": "bgp-rid"}
+]}</code></pre>
+<p><b>New requirements</b></p>
+<ol>
+<li>Default run is a gap report: print <code>missing</code>, <code>changed</code> (IP or description) and <code>extra</code> against <code>sot.json</code>. Exit 0 if there are no gaps, 2 if there are, 1 on any error, so CI can gate on it.</li>
+<li><code>--apply</code> writes only the gaps and must rerun cleanly (no 409).</li>
+<li>Extras are reported but left alone. They are deleted only with <code>--prune</code>.</li>
+<li>Every call has a timeout. On 429 or 503, wait <code>Retry-After</code> when it is in seconds, otherwise use capped backoff. Give up after 5 tries. No bare <code>except</code>.</li>
+<li>After <code>--apply</code>, read back and exit with the post-change result.</li>
+<li>Three-line design note: where this runs (CI job, cron or container), and the two numbers you would alert on.</li>
+</ol>
+<p><b>Reference:</b> list-instance URI <code>…/interface/Loopback=&lt;name&gt;</code>; body <code>{"Cisco-IOS-XE-native:Loopback": [{"name": …}]}</code> <span class="tag">⚠ leaf names</span>; RFC 8040 §4.4.1 / §4.5 / §4.6; requests <a href="https://requests.readthedocs.io/en/latest/user/quickstart/#timeouts" target="_blank" rel="noopener">Quickstart: Timeouts</a><span class="b ok">✅</span>.</p>
+<p><b>Verify:</b> the first run exits 2 with <code>missing ["11"]</code>, <code>changed ["10"]</code>, <code>extra ["99"]</code>. <code>--apply</code> exits 0, with only the extra left. A rerun exits 0. <code>--prune</code> alone exits 2; <code>--apply --prune</code> exits 0. On the router, <code>show running-config | section interface Loopback</code> matches the SoT.</p>
+<div class="svgw">
+<svg viewBox="0 0 460 424" role="img" aria-label="Request sequence for Drill A: GET Loopback returns 429 with Retry-After 1, the script waits and retries, gets the list, computes gaps, PUTs Loopback11 and Loopback10, deletes Loopback99 only with prune, reads back and exits 0, 2 or 1.">
+<defs><marker id="ah2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z" fill="var(--svs)"/></marker></defs>
+<rect x="20" y="8" width="120" height="30" rx="6" fill="var(--sv3)" class="s"/><text x="80" y="28" text-anchor="middle">loopbacks.py</text>
+<rect x="300" y="8" width="156" height="30" rx="6" fill="var(--sv1)" class="s"/><text x="378" y="28" text-anchor="middle" class="sm">Cat8000V RESTCONF</text>
+<path class="ll" d="M80 38V416"/><path class="ll" d="M380 38V416"/>
+<text x="90" y="60" class="sm">GET …/interface/Loopback</text><path class="ar2" d="M80 66H378"/>
+<text x="370" y="88" class="sm w" text-anchor="end">429 · Retry-After: 1</text><path class="aw" d="M380 94H82"/>
+<text x="90" y="116" class="m sm">sleep 1 s (seconds form)</text>
+<text x="90" y="140" class="sm">GET (retry 2 of 5)</text><path class="ar2" d="M80 146H378"/>
+<text x="370" y="168" class="sm" text-anchor="end">200 · Loopback [10, 99]</text><path class="ar2" d="M380 174H82"/>
+<text x="90" y="198" class="m sm">missing 11 · changed 10 · extra 99</text>
+<text x="90" y="222" class="sm">PUT Loopback=11</text><path class="ar2" d="M80 228H378"/>
+<text x="370" y="248" class="sm" text-anchor="end">201 Created</text><path class="ar2" d="M380 254H82"/>
+<text x="90" y="276" class="sm">PUT Loopback=10</text><path class="ar2" d="M80 282H378"/>
+<text x="370" y="302" class="sm" text-anchor="end">204</text><path class="ar2" d="M380 308H82"/>
+<text x="90" y="330" class="sm">DELETE Loopback=99 (--prune only)</text><path class="ar2" d="M80 336H378"/>
+<text x="90" y="360" class="sm">GET read-back</text><path class="ar2" d="M80 366H378"/>
+<text x="370" y="386" class="sm" text-anchor="end">200</text><path class="ar2" d="M380 392H82"/>
+<text x="90" y="412" class="m sm">exit 0 clean · 2 gaps · 1 error</text>
+</svg>
+</div>
+<h3>Part B: the same loopbacks under NSO (paper)</h3>
+<p>Assume a <code>loopback</code> service (servicepoint <code>loopback-servicepoint</code>) with a <code>self-test</code> action, as in Tuesday's drill. Answer in writing:</p>
+<ol>
+<li>An operator removed Loopback10's IP on r1 by hand. Which action proves it from the service's view, which device action proves it, and which check stays green?</li>
+<li>Write a policy that keeps operator-edited descriptions through re-deploy and reverts IP changes. What does NSO do for a change no rule matches?</li>
+<li>Your <code>self-test</code> logs a debug line and prints the raw device output. Where does each land, and what one setting shows the debug line for this package only?</li>
+</ol>
+<details><summary>Hint</summary>
+<p>Part A: three set operations on two dicts keyed by loopback name, as strings. Treat a 404 on the parent GET as "no loopbacks" <span class="tag">⚠ device behaviour</span>. <code>Retry-After</code> in seconds is all digits, so <code>str.isdigit()</code> separates it from the date form. Part B: look at the ladder figure and the "who wins" table above.</p>
+</details>
+<details><summary>Solution</summary>
+<pre><code>#!/usr/bin/env python3
+"""Reconcile Cat8000V loopbacks with sot.json over RESTCONF.
+Exit codes: 0 = no gaps, 1 = error, 2 = gaps remain (CI gate)."""
+import argparse, json, sys, time
+from urllib.parse import quote
+import requests
+
+HDRS = {"Accept": "application/yang-data+json",
+        "Content-Type": "application/yang-data+json"}
+
+def call(s, method, url, tries=5, **kw):
+    for attempt in range(tries):
+        r = s.request(method, url, timeout=10, **kw)
+        if r.status_code not in (429, 503):
+            return r
+        ra = r.headers.get("Retry-After", "")
+        time.sleep(float(ra) if ra.isdigit() else min(2 ** attempt, 30))
+    raise RuntimeError(f"rate limited {tries}x: {method} {url}")
+
+def running(s, base):
+    r = call(s, "GET", base + "/Loopback")
+    if r.status_code == 404:                       # no Loopback entries
+        return {}
+    r.raise_for_status()
+    rows = r.json().get("Cisco-IOS-XE-native:Loopback", [])
+    return {str(lo["name"]): lo for lo in rows}
+
+def ip_of(lo):
+    return lo.get("ip", {}).get("address", {}).get("primary", {}).get("address")
+
+def body(lo):
+    return {"Cisco-IOS-XE-native:Loopback": [{
+        "name": int(lo["id"]),
+        "description": lo.get("description", ""),
+        "ip": {"address": {"primary": {"address": lo["ip"],
+                                       "mask": "255.255.255.255"}}}}]}
+
+def gaps(sot, run):
+    want = {str(lo["id"]): lo for lo in sot}
+    missing = sorted(want.keys() - run.keys())
+    extra = sorted(run.keys() - want.keys())
+    changed = sorted(k for k in want.keys() &amp; run.keys()
+                     if ip_of(run[k]) != want[k]["ip"]
+                     or run[k].get("description", "") != want[k].get("description", ""))
+    return want, missing, changed, extra
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument("base")                 # https://&lt;host&gt;/restconf/data/Cisco-IOS-XE-native:native/interface
+    p.add_argument("sot")
+    p.add_argument("--apply", action="store_true")
+    p.add_argument("--prune", action="store_true")
+    p.add_argument("--user", default="admin")
+    p.add_argument("--password", default="admin")
+    a = p.parse_args()
+    sot = json.load(open(a.sot))["loopbacks"]
+    with requests.Session() as s:
+        s.auth, s.verify = (a.user, a.password), False
+        s.headers.update(HDRS)
+        try:
+            want, missing, changed, extra = gaps(sot, running(s, a.base))
+            print(json.dumps({"missing": missing, "changed": changed, "extra": extra}))
+            if a.apply:
+                for k in missing + changed:
+                    url = f"{a.base}/Loopback={quote(k, safe='')}"
+                    call(s, "PUT", url, json=body(want[k])).raise_for_status()
+                for k in extra if a.prune else []:
+                    call(s, "DELETE", f"{a.base}/Loopback={quote(k, safe='')}").raise_for_status()
+                want, missing, changed, extra = gaps(sot, running(s, a.base))
+                print(json.dumps({"after": {"missing": missing, "changed": changed, "extra": extra}}))
+        except (requests.exceptions.RequestException, RuntimeError, KeyError) as e:
+            print(f"ERROR {type(e).__name__}: {e}", file=sys.stderr)
+            return 1
+    return 2 if missing or changed or (a.prune and extra) else 0
+
+if __name__ == "__main__":
+    sys.exit(main())</code></pre>
+<p><b>Tested</b> 2026-11-27 on Python 3.13.18 with requests 2.34.2, against a local mock RESTCONF server: the first GET returned 429 with <code>Retry-After: 1</code> (honoured, about 1.1 s), then the run went exit 2 → <code>--apply</code> exit 0 (PUT 201 and 204) → rerun 0 → <code>--prune</code> 2 → <code>--apply --prune</code> 0 (DELETE 204), and an unreachable host gave exit 1. <span class="tag">⚠ not run against Cat8000V: Loopback JSON leaf names, integer vs string <code>name</code>, and the 404 on an empty list are unverified</span>. <code>verify=False</code> is lab-only and prints an InsecureRequestWarning.</p>
+<p><b>Design note:</b> run it as a CI job on merge and on a schedule, since the exit code is the gate. Alert on the gap count per run and on the number of 429/503 retries. A rising retry count means you are close to someone else's budget.</p>
+<p><b>Part B:</b> (1) <code>loopback L10 deep-check-sync</code> and <code>devices device r1 compare-config</code> show it. <code>loopback L10 check-sync</code> stays in-sync, because it never contacts the device. (2) Use the policy shape in Anatomy: description <code>at-value-set manage-by-service</code>, IP <code>sync-to-device</code> for delete and value-set. A change no rule matches falls back to <code>sync-from-device</code>. The policy is evaluated with <code>confirm-network-state</code>, set per commit or sync-from, or enabled by default per device, profile or globally. (3) The debug line goes to <code>logs/ncs-python-vm-loopback.log</code>, but only after <code>python-vm logging vm-levels loopback level level-debug</code> <span class="tag">⚠ C-style form; the guide shows J-style <code>set …</code></span>. The <code>print()</code> output goes to the shared <code>logs/ncs-python-vm.log</code>.</p>
+</details>
+
+<h2 id="recall">Recall check: 12 questions</h2>
+<h3>1.1 Design</h3>
+<p class="q">1. A requirement reads "two NSO nodes, automatic failover, no split-brain". What do you push back with?</p>
+<details><summary>Answer</summary><p>HA Raft needs at least three nodes. Three tolerates one failure, and five tolerates two. A two-node system can't tell whether it lost connectivity or its peer died. Rule-based HA works with two nodes but may need occasional manual operator action.</p></details>
+<p class="q">2. A colleague copies the readiness endpoint, which checks the database, into the livenessProbe. The DB blips for 20 s. What happens, and what is the right split?</p>
+<details><summary>Answer</summary><p>Liveness failures make the kubelet restart the container, so every replica restarts at once. Readiness failures only remove the Pod's IP from the matching Services' EndpointSlices. Keep liveness local, put the dependency check in readiness, and add a startupProbe sized to the worst-case boot (the docs use 30 × 10 s = 300 s).</p></details>
+<p class="q">3. A 429 arrives with <code>Retry-After: Fri, 27 Nov 2026 12:00:05 GMT</code>, and the helper does <code>float(value)</code>. What breaks, which RFC allows this form, and what are Meraki's two budgets?</p>
+<details><summary>Answer</summary><p><code>float()</code> raises ValueError. RFC 9110 §10.2.3 allows an HTTP-date or delay-seconds, and RFC 6585 §4 defines 429. Meraki: 10 requests/s per organization, shared across applications (plus 10 extra in the first second), and 100 requests/s per source IP.</p></details>
+<h3>2.9.c-d NSO actions and logs</h3>
+<p class="q">4. The YANG says <code>tailf:actionpoint loop-check;</code> and setup() calls <code>register_action('loop-check-action', Check)</code>. What is wrong? What must the module declare to use <code>action</code>, and can <code>cb_action</code> write config through <code>trans</code>?</p>
+<details><summary>Answer</summary><p>The strings differ, so no callback is registered for <code>loop-check</code>. The first argument of <code>register_action()</code> must equal the actionpoint name. The module needs <code>yang-version 1.1</code>; YANG 1.0 used <code>tailf:action</code>. <code>trans</code> is read-only, because configuration changes belong in services.</p></details>
+<p class="q">5. Someone removed a service-created IP directly on r1. <code>loopback L10 check-sync</code> says in-sync. Why, which action shows the problem, and what is the limit of <code>devices device r1 check-sync</code>?</p>
+<details><summary>Answer</summary><p>Service check-sync compares the service code's output with CDB and never contacts the device. <code>deep-check-sync</code> fetches from the device and catches it. Device check-sync compares a config signature, and the NED may answer <code>unsupported</code>; then use <code>compare-config</code>.</p></details>
+<p class="q">6. <code>self.log.debug()</code> and <code>print()</code> output are both missing from <code>logs/ncs-python-vm-loopback.log</code>. Explain both. Then: what is the action timeout default, and what happens when it fires?</p>
+<details><summary>Answer</summary><p>The default level is info, so debug lines are dropped until <code>vm-levels loopback</code> (or the global level) is set to <code>level-debug</code>. <code>print()</code> goes to stdout, which lands in the shared <code>ncs-python-vm.log</code>. <code>/ncs-config/api/action-timeout</code> is PT240S. NSO kills that action's worker sockets and calls <code>cb_abort()</code> without restarting the VMs.</p></details>
+<h3>3.1 Python against IOS XE</h3>
+<p class="q">7. A script POSTs Loopback11 and gets 409 on the rerun. A colleague switches to PATCH on the list-instance URI, and the first run on a fresh router fails. Explain both, and name the verb that is safe on every run.</p>
+<details><summary>Answer</summary><p>POST is create, and an existing resource gives 409 Conflict (RFC 8040 §4.4.1). With PATCH, if the target does not exist the server must not create it (§4.6). PUT on the list-instance URI creates with 201 or replaces with 204 (§4.5).</p></details>
+<p class="q">8. Two bugs: <code>quote("1/0/1")</code> in a URI, and <code>"in-octets": "123456"</code> treated as a number. Explain each and fix it.</p>
+<details><summary>Answer</summary><p><code>quote()</code> defaults to <code>safe='/'</code>, so the slashes stay and become extra path segments; use <code>quote(v, safe="")</code> to get <code>1%2F0%2F1</code>. RFC 7951 §6.1 encodes int64, uint64 and decimal64 as JSON strings, so convert with <code>int()</code> before comparing or doing maths.</p></details>
+<p class="q">9. <code>m.edit_config(config=cfg)</code> fails on a Cat8000V that has only <code>netconf-yang</code>. After you enable the candidate datastore, <code>target="running"</code> fails instead. Why both, and what does the script do?</p>
+<details><summary>Answer</summary><p>ncclient's <code>edit_config</code> defaults to <code>target='candidate'</code>, which the device does not have. With the candidate feature on, the 17.5 guide says running is not writable through NETCONF. Pick the target from <code>":candidate" in m.server_capabilities</code>, and <code>commit()</code> after candidate edits. If the requirement says "roll back if the box stops answering", use a confirmed commit (default 600 s); RESTCONF has none.</p></details>
+<h3>1.2 Modify</h3>
+<p class="q">10. You move a resource holding two live tenants from <code>count</code> to <code>for_each</code>. What does the plan propose with no extra blocks, what fixes it, and can you delete the fix later?</p>
+<details><summary>Answer</summary><p>Destroy the indexed instances and create keyed ones (on 2026-11-26, offline on 1.13.3: 3 to add, 2 to destroy). Add one <code>moved { from = r[0] to = r["key"] }</code> per index, and Terraform treats each object as if it had been created at the new key. Removing a moved block later is a breaking change for anyone who has not applied yet.</p></details>
+<p class="q">11. After an incident you run <code>terraform apply -refresh-only</code>. What changed, what didn't, and how does CI catch what remains?</p>
+<details><summary>Answer</summary><p>State and root outputs now match the remote objects. Infrastructure and config are unchanged, so the next normal plan proposes reverting the drift <span class="tag">⚠ derived</span>. To accept it, put the value in the SoT. <code>plan -detailed-exitcode</code> returns 2 when changes are pending, which is the CI gate.</p></details>
+<p class="q">12. Operators may edit loopback descriptions and keep them through re-deploy, but IP changes must be reverted. Which NSO 6.5 policy actions do you use, and what happens to a change no rule matches?</p>
+<details><summary>Answer</summary><p>Description: <code>at-value-set manage-by-service</code>. <code>sync-from-device</code> would accept the edit, but a re-deploy would overwrite it with the service value. IP address: <code>sync-to-device</code> for delete and value-set. When no rule matches, NSO falls back to <code>sync-from-device</code>.</p></details>
+
+<h2 id="self">Self-assessment: flag units as <code>weak:</code></h2>
+<p>Add <code>weak:</code> to the unit's line in <code>daily-notes/topic-queue.md</code> if you can't tick every box from memory.</p>
+<div class="tw"><table>
+<thead><tr><th>Unit</th><th>I can, without notes…</th></tr></thead>
+<tbody>
+<tr><td>33 · 1.1</td><td>☐ argue VM vs Compose vs Kubernetes for a given requirement · ☐ size startup/liveness/readiness probes and say what each failure does · ☐ write a 429 handler for both Retry-After forms · ☐ explain why NSO Raft needs three nodes</td></tr>
+<tr><td>34 · 2.9.c-d</td><td>☐ write an action YANG + register_action pair that matches · ☐ pick check-sync vs deep-check-sync vs compare-config · ☐ find any Python log line and raise one VM to debug · ☐ state the action-timeout default</td></tr>
+<tr><td>35 · 3.1 IOS XE</td><td>☐ choose PUT/PATCH/POST from RFC 8040 rules · ☐ build an encoded list-instance URI · ☐ decode RFC 7951 types · ☐ choose the NETCONF target from capabilities and commit</td></tr>
+<tr><td>36 · 1.2</td><td>☐ write a two-way gap report · ☐ refactor count → for_each with moved and see 0 to destroy · ☐ use refresh-only and -detailed-exitcode · ☐ write an NSO out-of-band policy</td></tr>
+</tbody></table></div>
+<p class="small">Honest read: Part A of today's drill is the first runnable 3.1 task against router1 this week. Do it on the device, not just the mock. 2.9.c-d is still reading-only, because the tracker lists NSO 6.5 as fully unbuilt. Next week's 3.1 units are controller APIs, so this weekend is a reasonable time to stand up NSO.</p>
+
+<h2 id="deeper">Go deeper: the week's best links (all re-verified today)</h2>
+<h3>Cisco</h3>
+<ul>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_yang_netconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - NETCONF Protocol [Cisco IOS XE 17] - Cisco</a><span class="b ok">✅</span> IOS XE 17.5 · verified 2026-11-27. Candidate datastore, running not writable, confirmed commit, session and lock clearing.</li>
+<li><a href="https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/prog/configuration/175/b_175_programmability_cg/m_175_prog_restconf.html" target="_blank" rel="noopener">Programmability Configuration Guide, Cisco IOS XE Bengaluru 17.5.x - RESTCONF Protocol [Cisco IOS XE 17] - Cisco</a><span class="b ok">✅</span> IOS XE 17.5 · verified 2026-11-27. Enable steps, methods table, encoded key URI, fields= and depth= examples.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/introduction-to-automation/applications-in-nso.md" target="_blank" rel="noopener">Applications in NSO</a><span class="b ok">✅</span> NSO 6.5 · verified 2026-11-27. Action YANG, register_action, read-only trans, cb_abort.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/development/core-concepts/nso-virtual-machines/nso-python-vm.md" target="_blank" rel="noopener">NSO Python VM</a><span class="b ok">✅</span> NSO 6.5 · verified 2026-11-27. Log file naming, global vs per-VM levels, status tree.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/out-of-band-interoperation.md" target="_blank" rel="noopener">Out-of-band Interoperation</a><span class="b ok">✅</span> NSO 6.5 · verified 2026-11-27. confirm-network-state, policy rules, matching order and fallback.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/operation-and-usage/operations/lifecycle-operations" target="_blank" rel="noopener">Lifecycle Operations | Guides and References NSO 6.5 (EoM) | Cisco Crosswork NSO Documentation</a><span class="b ok">✅</span> NSO 6.5 · verified 2026-11-27. Device and service sync actions, re-deploy options.</li>
+<li><a href="https://nso-docs.cisco.com/guides/nso-6.5/administration/management/high-availability" target="_blank" rel="noopener">High Availability | Guides and References NSO 6.5 (EoM) | Cisco Crosswork NSO Documentation</a><span class="b ok">✅</span> NSO 6.5 · verified 2026-11-27. Raft vs rule-based vs external HA, node counts.</li>
+<li><a href="https://developer.cisco.com/meraki/api-v1/rate-limit/" target="_blank" rel="noopener">Rate Limit - Meraki Dashboard API v1 - Cisco Meraki Developer Hub</a><span class="b ok">✅</span> Meraki API v1 · verified 2026-11-27. Per-org and per-IP budgets, 429 body, action batches.</li>
+</ul>
+<h3>Standards</h3>
+<ul>
+<li><a href="https://www.rfc-editor.org/info/rfc8040/" target="_blank" rel="noopener">RFC 8040: RESTCONF Protocol | RFC Editor</a><span class="b ok">✅</span> RFC · verified 2026-11-27. §4.4–4.6 verb semantics and status codes, §7 error mapping.</li>
+<li><a href="https://www.rfc-editor.org/info/rfc7951/" target="_blank" rel="noopener">RFC 7951: JSON Encoding of Data Modeled with YANG | RFC Editor</a><span class="b ok">✅</span> RFC · verified 2026-11-27. §6 type encodings that break naive parsers.</li>
+<li><a href="https://www.rfc-editor.org/info/rfc9110/" target="_blank" rel="noopener">RFC 9110: HTTP Semantics | RFC Editor</a><span class="b ok">✅</span> RFC · verified 2026-11-27. §10.2.3 Retry-After grammar.</li>
+</ul>
+<h3>Third-party</h3>
+<ul>
+<li><a href="https://ncclient.readthedocs.io/en/v0.7.1/manager.html" target="_blank" rel="noopener">manager – High-level API — ncclient 0.7.1 documentation</a><span class="b ok">✅</span> ncclient 0.7.1 · verified 2026-11-27. Operation signatures and defaults. Connect arguments are in <a href="https://ncclient.readthedocs.io/en/v0.7.1/transport.html" target="_blank" rel="noopener">transport</a><span class="b ok">✅</span>, and capability shorthand is in <a href="https://ncclient.readthedocs.io/en/v0.7.1/capabilities.html" target="_blank" rel="noopener">capabilities</a><span class="b ok">✅</span>.</li>
+<li><a href="https://developer.hashicorp.com/terraform/language/v1.13.x/modules/develop/refactoring" target="_blank" rel="noopener">Refactor modules | Terraform | HashiCorp Developer</a><span class="b ok">✅</span> v1.13.x · verified 2026-11-27. moved blocks for count/for_each and renames.</li>
+<li><a href="https://developer.hashicorp.com/terraform/cli/v1.13.x/commands/plan" target="_blank" rel="noopener">terraform plan command reference | Terraform | HashiCorp Developer</a><span class="b ok">✅</span> v1.13.x · verified 2026-11-27. Planning modes, -detailed-exitcode. See also <a href="https://developer.hashicorp.com/terraform/tutorials/state/refresh" target="_blank" rel="noopener">Use refresh-only mode to sync Terraform state</a><span class="b ok">✅</span>.</li>
+<li><a href="https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/" target="_blank" rel="noopener">Pod Lifecycle | Kubernetes</a><span class="b ok">✅</span> docs main branch (pin 1.33) · verified 2026-11-27. What each probe failure does.</li>
+<li><a href="https://docs.python.org/3.13/library/urllib.parse.html" target="_blank" rel="noopener">urllib.parse — Parse URLs into components — Python 3.13.18 documentation</a><span class="b ok">✅</span> Python 3.13 · verified 2026-11-27. quote() and its safe default.</li>
+</ul>
+
+<footer>
+<p><b>Links:</b> 25 ✅ · 0 🔎 · 0 removed (25 distinct pages, 29 hrefs counting section anchors; plus 4 internal links to this week's pages, confirmed in the artifact listing today).</p>
+<p><b>⚠ Unverified claims:</b> Cisco-IOS-XE-native Loopback JSON shape, leaf names and integer <code>name</code> on 17.16, and a 404 for an empty Loopback list (drill tested only against a local mock); NSO out-of-band policy paths for Loopback under the cisco-ios NED; C-style <code>python-vm logging vm-levels</code> form (guide shows J-style); NSO CLI <code>?</code> output; exact error text for an unregistered actionpoint; Terraform <code>ignore_changes</code> syntax (not re-read); "next plan reverts refresh-only drift" (derived from the mode definitions); count → for_each plan counts (offline run on 2026-11-26, restated); <code>kubectl describe</code> / <code>kubectl explain</code> output; ncclient and requests on the Candidate Workstation (Python package list not in the repo); Kubernetes docs are the main branch, newer than the 1.33 pin.</p>
+<p><b>Next:</b> Monday 2026-11-30, unit 37: 3.1 Python scripts against APIs: Catalyst Center + Intersight.</p>
+</footer>
+</main>
+
+</body></html>
